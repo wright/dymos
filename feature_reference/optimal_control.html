@@ -1,0 +1,201 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Optimal Control &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Defining ODEs" href="defining_odes.html" />
+    <link rel="prev" title="Installation" href="installation.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="defining_odes.html" title="Defining ODEs"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" accesskey="U">Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Optimal Control</a><ul>
+<li><a class="reference internal" href="#controls-and-design-parameters">Controls and Design Parameters</a></li>
+<li><a class="reference internal" href="#constraints">Constraints</a></li>
+<li><a class="reference internal" href="#the-objective">The Objective</a></li>
+<li><a class="reference internal" href="#the-overall-optimization-problem">The Overall Optimization Problem</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="installation.html"
+                        title="previous chapter">Installation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="defining_odes.html"
+                        title="next chapter">Defining ODEs</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/feature_reference/optimal_control.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="optimal-control">
+<h1>Optimal Control<a class="headerlink" href="#optimal-control" title="Permalink to this headline">¶</a></h1>
+<p>Optimal control implies the optimization of a dynamical system.  Typically this takes the form
+of a trajectory in which the <em>states</em> of the system evolve with time.  The evolution of the states
+<span class="math notranslate nohighlight">\(\left(\bar{x}\right)\)</span> are typically governed by an ordinary differential equation (ODE) or
+a differential algebraic equation (DAE).  In Dymos we characterize all dynamics as an (ODE),
+although solving systems of DAEs is also possible.</p>
+<div class="math notranslate nohighlight">
+\[\dot{\bar{x}} = f_{ode}(\bar{x},t,\bar{u},\bar{d})\]</div>
+<div class="section" id="controls-and-design-parameters">
+<h2>Controls and Design Parameters<a class="headerlink" href="#controls-and-design-parameters" title="Permalink to this headline">¶</a></h2>
+<p>In order to impact the behavior of such systems we need <em>controls</em>.  Controls may be allowed
+to vary with time, such as the angle-of-attack of an aircraft during flight.  We refer to these
+as <em>dynamic</em> controls <span class="math notranslate nohighlight">\(\left(\bar{u}\right)\)</span>.  Other controllable parameters might be fixed
+with time, such as the wingspan of an aircraft.  We refer to these
+as <em>design parameters</em> <span class="math notranslate nohighlight">\(\left(\bar{d}\right)\)</span>, although in the literature they may also be
+referred to as static controls.  The endpoints in time, state values, control values, and
+design parameter values define the independent variables for our optimization problem.
+In Dymos, we discretize these variables in time to convert a continuous-time optimal control
+problem into a nonlinear programming (NLP) problem.</p>
+</div>
+<div class="section" id="constraints">
+<h2>Constraints<a class="headerlink" href="#constraints" title="Permalink to this headline">¶</a></h2>
+<p>When optimizing problems there will always be constraints on the system.  Some of these constraints
+can be characterized as bounds on our independent variables.  For instance, fixing the initial
+conditions of a trajectory can be accomplished by bounding the initial states and time to the
+desired value.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align*}
+\mathrm{Time:}&amp; \qquad {t}_{lb} \leq t \leq {t}_{ub} \\
+\mathrm{State \, Variables:}&amp; \qquad \bar{x}_{lb} \leq \bar{x} \leq \bar{x}_{ub} \\
+\mathrm{Dynamic \, Controls:}&amp; \qquad \bar{u}_{lb} \leq \bar{u} \leq \bar{u}_{ub} \\
+\mathrm{Design \, Parameters:}&amp; \qquad \bar{d}_{lb} \leq \bar{d} \leq \bar{d}_{ub} \\
+\end{align*}\end{split}\]</div>
+<p>Other times we may want to constrain an output of our system at a specific point along the trajectory
+(boundary constraints) or along the entire trajectory (path constraints).  These are so-called
+nonlinear constraints because they <em>may</em> be nonlinear functions of our independent variables.</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align*}
+\mathrm{Initial \, Boundary \, Constraints:}&amp; \qquad \bar{g}_{0,lb} \leq g_{0}(\bar{x}_0,t_0,\bar{u}_0, \bar{d}) \leq \bar{g}_{0,ub} \\
+\mathrm{Final \, Boundary \, Constraints:}&amp; \qquad \bar{g}_{f,lb} \leq g_{f}(\bar{x}_f,t_f,\bar{u}_f, \bar{d}) \leq \bar{g}_{f,ub} \\
+\mathrm{Path \, Constraints:}&amp; \qquad \bar{p}_{f,lb} \leq p_{f}(\bar{x},t,\bar{u},\bar{d}) \leq \bar{p}_{f,ub} \\
+\end{align*}\end{split}\]</div>
+<p>In practice, bound constraints typically govern the limits which the optimizer must observe when
+providing values of our independent variables.  Nonlinear constraints, on the other hand, are
+constraints applied to the outputs of a system.  To put another way, bound constraints are always
+observed, while nonlinear constraints are not necessarily observed until the optimizer has finished
+solving the optization problem.</p>
+</div>
+<div class="section" id="the-objective">
+<h2>The Objective<a class="headerlink" href="#the-objective" title="Permalink to this headline">¶</a></h2>
+<p>Dymos man be used to both simulate and optimize dynamical systems. The phase construct is
+generally used in optimization contexts.  Within each phase, the user can set the objective:</p>
+<div class="math notranslate nohighlight">
+\[\begin{align*}
+\mathrm{J} = f_{obj}(\bar{x},t,\bar{u},\bar{d})
+\end{align*}\]</div>
+<p>As with constraints, the objective may be any output within the Phase.  Phases can also be
+incorporated into larger models wherein the objective is defined in some subsystem outside of the
+phase.  In this case, the standard OpenMDAO method <cite>add_objective</cite> can be used.</p>
+</div>
+<div class="section" id="the-overall-optimization-problem">
+<h2>The Overall Optimization Problem<a class="headerlink" href="#the-overall-optimization-problem" title="Permalink to this headline">¶</a></h2>
+<p>The optimization problem as defined by Dymos can Thus be stated as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\begin{align*}
+\mathrm{Minimize}&amp; \qquad \mathrm{J} = f_{obj}(\bar{x},t,\bar{u},\bar{d}) \\
+\mathrm{Subject \, to:}&amp; \\
+\mathrm{Dynamic \, Constraints:}&amp; \qquad \dot{\bar{x}} = f_{ode}(\bar{x},t,\bar{u},\bar{d}) \\
+\mathrm{Time:}&amp; \qquad {t}_{lb} \leq t \leq {t}_{ub} \\
+\mathrm{State \, Variables:}&amp; \qquad \bar{x}_{lb} \leq \bar{x} \leq \bar{x}_{ub} \\
+\mathrm{Dynamic \, Controls:}&amp; \qquad \bar{u}_{lb} \leq \bar{u} \leq \bar{u}_{ub} \\
+\mathrm{Design \, Parameters:}&amp; \qquad \bar{d}_{lb} \leq \bar{d} \leq \bar{d}_{ub} \\
+\mathrm{Initial \, Boundary \, Constraints:}&amp; \qquad \bar{g}_{0,lb} \leq g_{0}(\bar{x}_0,t_0,\bar{u}_0, \bar{d}) \leq \bar{g}_{0,ub} \\
+\mathrm{Final \, Boundary \, Constraints:}&amp; \qquad \bar{g}_{f,lb} \leq g_{f}(\bar{x}_f,t_f,\bar{u}_f, \bar{d}) \leq \bar{g}_{f,ub} \\
+\mathrm{Path \, Constraints:}&amp; \qquad \bar{p}_{f,lb} \leq p_{f}(\bar{x},t,\bar{u},\bar{d}) \leq \bar{p}_{f,ub} \\
+\end{align*}\end{split}\]</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="defining_odes.html" title="Defining ODEs"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="installation.html" title="Installation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" >Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

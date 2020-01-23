@@ -1,0 +1,999 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Defining ODEs &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Transcriptions" href="transcriptions/transcriptions.html" />
+    <link rel="prev" title="Optimal Control" href="optimal_control.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transcriptions/transcriptions.html" title="Transcriptions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="optimal_control.html" title="Optimal Control"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" accesskey="U">Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Defining ODEs</a><ul>
+<li><a class="reference internal" href="#ode-systems">ODE Systems</a></li>
+<li><a class="reference internal" href="#the-brachistochrone-ode">The Brachistochrone ODE</a></li>
+<li><a class="reference internal" href="#system-options">System Options</a></li>
+<li><a class="reference internal" href="#variables-of-the-optimal-control-problem">Variables of the Optimal Control Problem</a><ul>
+<li><a class="reference internal" href="#time">Time</a></li>
+<li><a class="reference internal" href="#states">States</a></li>
+<li><a class="reference internal" href="#controls">Controls</a></li>
+<li><a class="reference internal" href="#design-parameters">Design Parameters</a></li>
+<li><a class="reference internal" href="#input-parameters">Input Parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#using-decorators-to-associate-time-control-and-parameter-options-with-the-ode-system">Using decorators to associate time, control, and parameter options with the ODE system</a></li>
+<li><a class="reference internal" href="#vectorizing-the-ode">Vectorizing the ODE</a></li>
+<li><a class="reference internal" href="#dimensioned-inputs-and-outputs">Dimensioned Inputs and Outputs</a></li>
+<li><a class="reference internal" href="#non-vector-inputs">Non-Vector Inputs</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="optimal_control.html"
+                        title="previous chapter">Optimal Control</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="transcriptions/transcriptions.html"
+                        title="next chapter">Transcriptions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/feature_reference/defining_odes.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="defining-odes">
+<h1>Defining ODEs<a class="headerlink" href="#defining-odes" title="Permalink to this headline">¶</a></h1>
+<p>Optimal control problems contain ordinary differential equations (ODE) or
+differential algebraic equations (DAE) that dictate the evolution of the state of the system.
+Typically this evolution occurs in time, and the ODE represents equations of motion (EOM).
+The equations of motion can define a variety of systems, not just mechanical ones.
+In other fields they are sometimes referred to as <em>process equations</em>.</p>
+<div class="math notranslate nohighlight">
+\[\dot{\bar{x}} = f_{ode}(\bar{x},t,\bar{u},\bar{d})\]</div>
+<p>To represent EOM, Dymos uses a standard OpenMDAO System (a Group or Component).  This System
+takes some set of variables as input and computes outputs that include the time-derivatives of
+the state variables <span class="math notranslate nohighlight">\(\bar{x}\)</span>.  The ODE may also be a function of the the
+current time <span class="math notranslate nohighlight">\(t\)</span>.  Finally, the dynamics may be subject to some set of controllable parameters.
+In Dymos these are broken into the dynamic controls <span class="math notranslate nohighlight">\(\bar{u}\)</span> and the static design
+parameters <span class="math notranslate nohighlight">\(\bar{d}\)</span>.</p>
+<div class="section" id="ode-systems">
+<h2>ODE Systems<a class="headerlink" href="#ode-systems" title="Permalink to this headline">¶</a></h2>
+<p>In Dymos, the ODE is simply an OpenMDAO system that accepts some inputs and computes some outputs,
+among which are the rates of the state variables <span class="math notranslate nohighlight">\(\dot{\bar{x}}\)</span>.</p>
+</div>
+<div class="section" id="the-brachistochrone-ode">
+<h2>The Brachistochrone ODE<a class="headerlink" href="#the-brachistochrone-ode" title="Permalink to this headline">¶</a></h2>
+<p>For example, lets consider the ODE for the simple Brachistochrone problem.  In this problem
+we have three state variables (<cite>x</cite>, <cite>y</cite>, and <cite>v</cite>) and two parameters that can potentially
+be used as controls or connected to external sources (<cite>theta</cite> and <cite>g</cite>).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">BrachistochroneODE</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;velocity&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">9.80665</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;acceleration of gravity&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s**2&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;angle of wire&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;rad&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;xdot&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;horizontal velocity&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;ydot&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;vertical velocity&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;vdot&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span><span class="p">),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;acceleration mag.&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s**2&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Setup partials</span>
+        <span class="n">arange</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;vdot&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">arange</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">nn</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;vdot&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">arange</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">arange</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;xdot&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">arange</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">arange</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;xdot&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">arange</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">arange</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;ydot&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">arange</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">arange</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;ydot&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">arange</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">arange</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>
+        <span class="n">cos_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">sin_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span>
+
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;vdot&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span> <span class="o">*</span> <span class="n">cos_theta</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;xdot&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="n">sin_theta</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;ydot&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">v</span> <span class="o">*</span> <span class="n">cos_theta</span>
+
+    <span class="k">def</span> <span class="nf">compute_partials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">jacobian</span><span class="p">):</span>
+        <span class="n">theta</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">]</span>
+        <span class="n">cos_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">sin_theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">theta</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">]</span>
+        <span class="n">v</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">]</span>
+
+        <span class="n">jacobian</span><span class="p">[</span><span class="s1">&#39;vdot&#39;</span><span class="p">,</span> <span class="s1">&#39;g&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cos_theta</span>
+        <span class="n">jacobian</span><span class="p">[</span><span class="s1">&#39;vdot&#39;</span><span class="p">,</span> <span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">g</span> <span class="o">*</span> <span class="n">sin_theta</span>
+
+        <span class="n">jacobian</span><span class="p">[</span><span class="s1">&#39;xdot&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">sin_theta</span>
+        <span class="n">jacobian</span><span class="p">[</span><span class="s1">&#39;xdot&#39;</span><span class="p">,</span> <span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="n">cos_theta</span>
+
+        <span class="n">jacobian</span><span class="p">[</span><span class="s1">&#39;ydot&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">cos_theta</span>
+        <span class="n">jacobian</span><span class="p">[</span><span class="s1">&#39;ydot&#39;</span><span class="p">,</span> <span class="s1">&#39;theta&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">v</span> <span class="o">*</span> <span class="n">sin_theta</span>
+</pre></div>
+</div>
+<p>In the following sections, we’ll explain the definition of this ODE in a step-by-step fasion.</p>
+</div>
+<div class="section" id="system-options">
+<h2>System Options<a class="headerlink" href="#system-options" title="Permalink to this headline">¶</a></h2>
+<p>ODE Systems in Dymos need provide values at numerous points in time we call nodes.  For performance
+reasons, it’s best if it can do so using vectorized mathematical operations to compute the values
+simultaneously rather than using the loop to perform the calculation at each node.  Different
+optimal control transcriptions will need to have computed ODE values at different numbers of nodes,
+so each ODE system in Dymos is required to support the option <cite>num_nodes</cite>, which is defined
+in the <cite>initialize</cite> method.</p>
+<p>ODE system may define initial options as well.  Since these options in OpenMDAO are typically
+provided as arguments to the instantiation of the ODE system, the user has the ability to provide
+additional input keyword arguments using the <cite>ode_init_kwargs</cite> option on Phase.</p>
+</div>
+<div class="section" id="variables-of-the-optimal-control-problem">
+<h2>Variables of the Optimal Control Problem<a class="headerlink" href="#variables-of-the-optimal-control-problem" title="Permalink to this headline">¶</a></h2>
+<p>Dymos needs to know how state, time, and control variables are to be connected to the System,
+and needs to know which outputs to use as state time-derivatives.</p>
+<div class="section" id="time">
+<h3>Time<a class="headerlink" href="#time" title="Permalink to this headline">¶</a></h3>
+<p>The following time options can be set via the <cite>set_time_options</cite> method of Phase:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 11%" />
+<col style="width: 7%" />
+<col style="width: 10%" />
+<col style="width: 10%" />
+<col style="width: 62%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Acceptable Values</p></th>
+<th class="head"><p>Acceptable Types</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>duration_adder</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Adder for the duration of the integration variable across the phase.</p></td>
+</tr>
+<tr class="row-odd"><td><p>duration_bounds</p></td>
+<td><p>(None, None)</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Tuple of (lower, upper) bounds for the duration of the integration variable across the phase.</p></td>
+</tr>
+<tr class="row-even"><td><p>duration_ref</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Unit-reference value for the duration of the integration variable across the phase.</p></td>
+</tr>
+<tr class="row-odd"><td><p>duration_ref0</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Zero-reference value for the duration of the integration variable across the phase.</p></td>
+</tr>
+<tr class="row-even"><td><p>duration_scaler</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Scalar for the duration of the integration variable across the phase.</p></td>
+</tr>
+<tr class="row-odd"><td><p>duration_val</p></td>
+<td><p>1.0</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Value of the duration of the integration variable across the phase.</p></td>
+</tr>
+<tr class="row-even"><td><p>fix_duration</p></td>
+<td><p>False</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the  phase duration is not a design variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p>fix_initial</p></td>
+<td><p>False</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the initial value of time is not a design variable.</p></td>
+</tr>
+<tr class="row-even"><td><p>initial_adder</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Adder for the initial value of the integration variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p>initial_bounds</p></td>
+<td><p>(None, None)</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Tuple of (lower, upper) bounds for the integration variable at the start of the phase.</p></td>
+</tr>
+<tr class="row-even"><td><p>initial_ref</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Unit-reference value for the initial value of the integration variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p>initial_ref0</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Zero-reference value for the initial value of the integration variable.</p></td>
+</tr>
+<tr class="row-even"><td><p>initial_scaler</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Scalar for the initial value of the integration variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p>initial_val</p></td>
+<td><p>0.0</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Value of the integration variable at the start of the phase.</p></td>
+</tr>
+<tr class="row-even"><td><p>input_duration</p></td>
+<td><p>False</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the phase duration (t_duration) is expected to be connected to an external output source.</p></td>
+</tr>
+<tr class="row-odd"><td><p>input_initial</p></td>
+<td><p>False</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the initial value of time (t_initial) is expected to be connected to an external output source.</p></td>
+</tr>
+<tr class="row-even"><td><p>t_duration_targets</p></td>
+<td><p>[]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>targets in the ODE to which the total duration of the phase is connected</p></td>
+</tr>
+<tr class="row-odd"><td><p>t_initial_targets</p></td>
+<td><p>[]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>targets in the ODE to which the initial time of the phase is connected</p></td>
+</tr>
+<tr class="row-even"><td><p>targets</p></td>
+<td><p>[]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>targets in the ODE to which the integration variable is connected</p></td>
+</tr>
+<tr class="row-odd"><td><p>time_phase_targets</p></td>
+<td><p>[]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>targets in the ODE to which the elapsed duration of the phase is connected</p></td>
+</tr>
+<tr class="row-even"><td><p>units</p></td>
+<td><p>s</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>Units for the integration variable</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="states">
+<h3>States<a class="headerlink" href="#states" title="Permalink to this headline">¶</a></h3>
+<p>States have the following options set via the <cite>add_state</cite> method of Phase:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 3%" />
+<col style="width: 5%" />
+<col style="width: 6%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Acceptable Values</p></th>
+<th class="head"><p>Acceptable Types</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>adder</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Adder of the state variable at the discretization nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>connected_initial</p></td>
+<td><p>False</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>Whether an input is created to pass in the initial state. This may be set by a trajectory that links phases.</p></td>
+</tr>
+<tr class="row-even"><td><p>continuity</p></td>
+<td><p>True</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘bool’, ‘dict’]</p></td>
+<td><p>Enforce continuity of state values at segment boundaries. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>defect_ref</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Unit-reference value of the state defects at the collocation nodes. This option is invalid if opt=False.  If provided, this option overrides defect_scaler. If defect_scaler and defect_ref are both None but the state scaler or ref are provided, use those values as the defect scaler or ref.</p></td>
+</tr>
+<tr class="row-even"><td><p>defect_scaler</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Scaler of the state variable defects at the collocation nodes. If defect_scaler and defect_ref are both None but the state scaler or ref are provided, use those values as the defect scaler or ref. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>desc</p></td>
+<td></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>description of the state variable</p></td>
+</tr>
+<tr class="row-even"><td><p>final_bounds</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Bounds on the value of the state at the end of the phase. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>fix_final</p></td>
+<td><p>False</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘bool’, ‘Iterable’]</p></td>
+<td><p>If True, the final value of this state is fixed and not a design variable. If the state variable has a non-scalar shape, this may be an iterable of bool for each index. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>fix_initial</p></td>
+<td><p>False</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘bool’, ‘Iterable’]</p></td>
+<td><p>If True, the initial value of this state is fixed and not a design variable. If the state variable has a non-scalar shape, this may be an iterable of bool for each index. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>initial_bounds</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Bounds on the value of the state at the start of the phase. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>lower</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Lower bound of the state variable at the discretization nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>name</p></td>
+<td><p><strong>Required</strong></p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>name of ODE state variable</p></td>
+</tr>
+<tr class="row-even"><td><p>opt</p></td>
+<td><p>True</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If true, the values of this state are a design variable for the optimizer.  Otherwise it exists as an unconnectedinput.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rate_source</p></td>
+<td><p><strong>Required</strong></p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>ODE-path to the derivative of the state variable</p></td>
+</tr>
+<tr class="row-even"><td><p>ref</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Unit-reference value of the state variable at the discretization nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ref0</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Zero-reference value of the state variable at the discretization nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>scaler</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Scaler of the state variable at the discretization nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>shape</p></td>
+<td><p>(1,)</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>shape of the state variable</p></td>
+</tr>
+<tr class="row-even"><td><p>solve_segments</p></td>
+<td><p>None</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If true, collocation defects within each segment are solved with a newton solver.  If None, use the value of solve_segments in the transcription.</p></td>
+</tr>
+<tr class="row-odd"><td><p>targets</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Targets in the ODE to which the state is connected</p></td>
+</tr>
+<tr class="row-even"><td><p>units</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>units in which the state variable is defined</p></td>
+</tr>
+<tr class="row-odd"><td><p>upper</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Upper bound of the state variable at the discretization nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>val</p></td>
+<td><p>0.0</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>Default value of the state variable at the discretization nodes</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="controls">
+<h3>Controls<a class="headerlink" href="#controls" title="Permalink to this headline">¶</a></h3>
+<p>Inputs to the ODE which are to be dynamic controls are added via the <cite>add_control</cite> method of
+Phase.  The available options are as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 5%" />
+<col style="width: 3%" />
+<col style="width: 4%" />
+<col style="width: 8%" />
+<col style="width: 81%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Acceptable Values</p></th>
+<th class="head"><p>Acceptable Types</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>adder</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The adder of the control variable at the nodes. Thisoption is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>continuity</p></td>
+<td><p>True</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘bool’, ‘dict’]</p></td>
+<td><p>Enforce continuity of control values at segment boundaries. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>desc</p></td>
+<td></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The description of the control variable.</p></td>
+</tr>
+<tr class="row-odd"><td><p>dynamic</p></td>
+<td><p>True</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the value of the shape of the parameter will be (num_nodes, …), allowing the variable to be used as either a static or dynamic control.  This impacts the shape of the partial derivatives matrix.  Unless a parameter is large and broadcasting a value to each individual node would be inefficient, users should stick to the default value of True.</p></td>
+</tr>
+<tr class="row-even"><td><p>fix_final</p></td>
+<td><p>False</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the final value of this control is fixed and not a design variable. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>fix_initial</p></td>
+<td><p>False</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the initial value of this control is fixed and not a design variable. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>lower</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The lower bound of the control variable at the nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>name</p></td>
+<td><p><strong>Required</strong></p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The name of ODE system parameter to be controlled.</p></td>
+</tr>
+<tr class="row-even"><td><p>opt</p></td>
+<td><p>True</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the control value will be a design variable for the optimization problem.  If False, allow the control to be connected externally.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rate2_continuity</p></td>
+<td><p>False</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘bool’, ‘dict’]</p></td>
+<td><p>Enforce continuity of control second derivatives at segment boundaries. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>rate2_continuity_scaler</p></td>
+<td><p>1.0</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Scaler of the dimensionless rate continuity constraint at segment boundaries. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rate2_targets</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>The parameter in the ODE to which the control 2nd derivative is connected.</p></td>
+</tr>
+<tr class="row-even"><td><p>rate_continuity</p></td>
+<td><p>True</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘bool’, ‘dict’]</p></td>
+<td><p>Enforce continuity of control first derivatives in dimensionless time at segment boundaries. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>rate_continuity_scaler</p></td>
+<td><p>1.0</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Number’]</p></td>
+<td><p>Scaler of the dimensionless rate continuity constraint at segment boundaries. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>rate_targets</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>The targets in the ODE to which the control rate is connected</p></td>
+</tr>
+<tr class="row-odd"><td><p>ref</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The unit-reference value of the control variable at the nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>ref0</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The zero-reference value of the control variable at the nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>scaler</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The scaler of the control variable at the nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>shape</p></td>
+<td><p>(1,)</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>The shape of the control variable at each point in time.</p></td>
+</tr>
+<tr class="row-odd"><td><p>targets</p></td>
+<td><p>[]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Used to store target information for the control.</p></td>
+</tr>
+<tr class="row-even"><td><p>units</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The units in which the control variable is defined.</p></td>
+</tr>
+<tr class="row-odd"><td><p>upper</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The upper bound of the control variable at the nodes. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>val</p></td>
+<td><p>[0.]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘ndarray’, ‘Number’]</p></td>
+<td><p>The default value of the control variable at the control discretization nodes.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="design-parameters">
+<h3>Design Parameters<a class="headerlink" href="#design-parameters" title="Permalink to this headline">¶</a></h3>
+<p>Inputs to the ODE which can be design parameters are added via the <cite>add_design_parameter</cite> method of
+Phase.  The available options are as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 3%" />
+<col style="width: 6%" />
+<col style="width: 8%" />
+<col style="width: 16%" />
+<col style="width: 67%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Acceptable Values</p></th>
+<th class="head"><p>Acceptable Types</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>adder</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The adder of the design parameter. Thisoption is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>desc</p></td>
+<td></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The description of the design parameter.</p></td>
+</tr>
+<tr class="row-even"><td><p>dynamic</p></td>
+<td><p>True</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>True if this parameter can be used as a dynamic control, else False</p></td>
+</tr>
+<tr class="row-odd"><td><p>lower</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The lower bound of the design parameter. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>name</p></td>
+<td><p><strong>Required</strong></p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The name of ODE system parameter to be set via design parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p>opt</p></td>
+<td><p>True</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>If True, the control value will be a design variable for the optimization problem.  If False, allow the control to be connected externally.</p></td>
+</tr>
+<tr class="row-even"><td><p>ref</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The unit-reference value of the design parameter. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ref0</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The zero-reference value of the design parameter. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-even"><td><p>scaler</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The scaler of the design parameter. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>shape</p></td>
+<td><p>(1,)</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>The shape of the design parameter.</p></td>
+</tr>
+<tr class="row-even"><td><p>targets</p></td>
+<td><p>[]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Used to store target information for the design parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p>units</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The units in which the design parameter is defined.</p></td>
+</tr>
+<tr class="row-even"><td><p>upper</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘Number’]</p></td>
+<td><p>The upper bound of the design parameter. This option is invalid if opt=False.</p></td>
+</tr>
+<tr class="row-odd"><td><p>val</p></td>
+<td><p>[0.]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘ndarray’, ‘Number’]</p></td>
+<td><p>The default value of the design parameter in the phase.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="section" id="input-parameters">
+<h3>Input Parameters<a class="headerlink" href="#input-parameters" title="Permalink to this headline">¶</a></h3>
+<p>Inputs to the ODE which can be input parameters are added via the <cite>add_input_parameter</cite> method of
+Phase.
+They are similar to design parameters, but the phase cannot treat them as design
+variables to the optimization problem.
+The available options are as follows:</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 3%" />
+<col style="width: 5%" />
+<col style="width: 7%" />
+<col style="width: 14%" />
+<col style="width: 71%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Option</p></th>
+<th class="head"><p>Default</p></th>
+<th class="head"><p>Acceptable Values</p></th>
+<th class="head"><p>Acceptable Types</p></th>
+<th class="head"><p>Description</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>desc</p></td>
+<td></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The description of the design parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p>dynamic</p></td>
+<td><p>True</p></td>
+<td><p>[True, False]</p></td>
+<td><p>[‘bool’]</p></td>
+<td><p>True if this parameter can be used as a dynamic control, else False</p></td>
+</tr>
+<tr class="row-even"><td><p>name</p></td>
+<td><p><strong>Required</strong></p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The name of ODE system parameter to be set via input parameter, or an alias.  If an alias is provided, then “target_param” should providethe ODE system parameter name.</p></td>
+</tr>
+<tr class="row-odd"><td><p>shape</p></td>
+<td><p>(1,)</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>The shape of the design parameter.</p></td>
+</tr>
+<tr class="row-even"><td><p>targets</p></td>
+<td><p>[]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’]</p></td>
+<td><p>Used to store target information for the input parameter.</p></td>
+</tr>
+<tr class="row-odd"><td><p>units</p></td>
+<td><p>None</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘str’]</p></td>
+<td><p>The units in which the design parameter is defined.</p></td>
+</tr>
+<tr class="row-even"><td><p>val</p></td>
+<td><p>[0.]</p></td>
+<td><p>N/A</p></td>
+<td><p>[‘Iterable’, ‘ndarray’, ‘Number’]</p></td>
+<td><p>The default value of the design parameter in the phase.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="section" id="using-decorators-to-associate-time-control-and-parameter-options-with-the-ode-system">
+<h2>Using decorators to associate time, control, and parameter options with the ODE system<a class="headerlink" href="#using-decorators-to-associate-time-control-and-parameter-options-with-the-ode-system" title="Permalink to this headline">¶</a></h2>
+<p>Some properties of the variables associated with the ODE function are dependent on the particular
+optimization problem.
+For example, bounds on times, states, and controls will be problem-dependent.
+Other options, such as the <cite>rate_source</cite> of state variables or the target of time, states, or controllable parameters are a function of the ODE itself.
+Therefore it can sometimes be convenient to associate those properties with the ODE class itself.
+To allow this, Dymos provides decorators for ODEs which assign <em>default</em> values of these properties at the ODE level.
+These values can be overridden using the <cite>set_time_options</cite>, <cite>add_state</cite>, <cite>add_control</cite>, <cite>add_design_parameter</cite> or <cite>add_input_parameter</cite> methods on Phase.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The units of variables need not match the units used inside the ODE system, it only needs to be compatible.
+These are the default units in which the variable will be provided at the Phase level.</p>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">openmdao.api</span> <span class="kn">import</span> <span class="n">ExplicitComponent</span>
+<span class="kn">from</span> <span class="nn">dymos</span> <span class="kn">import</span> <span class="n">declare_time</span><span class="p">,</span> <span class="n">declare_state</span><span class="p">,</span> <span class="n">declare_parameter</span>
+
+<span class="nd">@declare_time</span><span class="p">(</span><span class="n">units</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="nd">@declare_state</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;xdot&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+<span class="nd">@declare_state</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;ydot&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+<span class="nd">@declare_state</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;vdot&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;v&#39;</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s&#39;</span><span class="p">)</span>
+<span class="nd">@declare_parameter</span><span class="p">(</span><span class="s1">&#39;theta&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;theta&#39;</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;rad&#39;</span><span class="p">)</span>
+<span class="nd">@declare_parameter</span><span class="p">(</span><span class="s1">&#39;g&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s**2&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;g&#39;</span><span class="p">])</span>
+<span class="k">class</span> <span class="nc">BrachistochroneODE</span><span class="p">(</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+
+    <span class="o">...</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="vectorizing-the-ode">
+<h2>Vectorizing the ODE<a class="headerlink" href="#vectorizing-the-ode" title="Permalink to this headline">¶</a></h2>
+<p>In addition to specifying the ODE Options, a system used as an ODE is required to have a metadata
+entry called <cite>num_nodes</cite>.  When evaluating the dynamics, these systems will receive time, states,
+controls, and other inputs as <em>vectorized</em> values, where item in the vector represents the variable
+value at a discrete time in the trajectory.</p>
+<p>The nodes are discretization or collocation locations in the polynomials which represent
+each segment.  The number of nodes in a given phase (to be evaluated by the ODE system) is determined
+by the number of segments in the phase and the polynomial order in each segment.  When Dymos instantiates
+the ODE system it provides the total number of nodes at which evaluation is required to the ODE system.
+Thus, at a minimum, the <cite>initialize</cite> method of components for an ODE system typically look something
+like this:</p>
+<p>The inputs and outputs of the system are expected to provide a scalar or dimensioned
+value <em>at each node</em>.  Vectorization of the component via numpy adds a significant performance increase
+compared to using a for loop to cycle through calculations at each node.  It’s important to remember
+that vectorized data is going to be coming in, this is especially important for defining partials.
+From the perspective of the ODE system, the outputs at some time <cite>t</cite> only depend on the values
+of the input variables at time <cite>t</cite>.  When the output variables are scalar at any given time, this
+results in components whose Jacobian matrices are diagonal.  This large degree of sparsity leads
+to computational advantages when using sparse-aware optimizers like SNOPT.  Users should declare
+the partial derivatives of their components to be sparse (by specifying nonzero rows and columns)
+whenever possible.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">MyODESystem</span><span class="p">(</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">metadata</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>For example, if <cite>MyODEComponent</cite> is to compute the linear function <span class="math notranslate nohighlight">\(y = a * x + b\)</span> then the
+setup, compute, and compute partials methods might look like this:</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">def setup(self):</span>
+<span class="go">    nn = self.metadata[&#39;num_nodes&#39;]</span>
+
+<span class="go">    self.add_input(&#39;a&#39;, shape=(nn,), units=&#39;m&#39;)</span>
+<span class="go">    self.add_input(&#39;x&#39;, shape=(nn,), units=&#39;1/s&#39;)</span>
+<span class="go">    self.add_input(&#39;b&#39;, shape=(nn,), units=&#39;m/s&#39;)</span>
+
+<span class="go">    self.add_output(&#39;y&#39;, shape=(nn,), units=&#39;m/s&#39;)</span>
+
+<span class="go">    r = c = np.arange(nn)</span>
+<span class="go">    self.declare_partials(of=&#39;y&#39;, wrt=&#39;a&#39;, rows=r, cols=c)</span>
+<span class="go">    self.declare_partials(of=&#39;y&#39;, wrt=&#39;x&#39;, rows=r, cols=c)</span>
+<span class="go">    self.declare_partials(of=&#39;y&#39;, wrt=&#39;b&#39;, rows=r, cols=c, val=1.0)</span>
+
+<span class="go">def compute(self, inputs, outputs):</span>
+<span class="go">    a = inputs[&#39;a&#39;]</span>
+<span class="go">    x = inputs[&#39;x&#39;]</span>
+<span class="go">    b = inputs[&#39;b&#39;]</span>
+
+<span class="go">    outputs[&#39;y&#39;] = a * x + b</span>
+
+<span class="go">def compute_partials(self, inputs, outputs, partials):</span>
+<span class="go">    a = inputs[&#39;a&#39;]</span>
+<span class="go">    x = inputs[&#39;x&#39;]</span>
+<span class="go">    b = inputs[&#39;b&#39;]</span>
+
+<span class="go">    partials[&#39;y&#39;, &#39;a&#39;] = x</span>
+<span class="go">    partials[&#39;y&#39;, &#39;x&#39;] = a</span>
+</pre></div>
+</div>
+<p>A few things to note here.  We can use the <cite>shape</cite> or <cite>val</cite> argument of <cite>add_input</cite> and <cite>add_output</cite>
+to dimension each variable.  In this case each variable is assumed to be a scalar at each point in
+time (each node).  We use the <cite>rows</cite> and <cite>cols</cite> arguments of <cite>declare_partials</cite> to provide the sparsity.
+Here using <cite>arange(nn)</cite> for both gives us a diagonal jacobian with <cite>nn</cite> rows and <cite>nn</cite> columns.  Since
+the number of nonzero values in the jacobian is <cite>nn</cite>, we only need to provide <cite>nn</cite> values in the
+<cite>compute_partials</cite> method.  It will automatically fill them into the sparse jacobian matrix, in
+row-major order.</p>
+<p>In this example, the partial of <cite>y</cite> with respect to <cite>b</cite> is linear, so we can simply provide it in
+the <cite>declare_partials</cite> call rather than reassigning it every time <cite>compute_partials</cite> is called.
+The provided scalar value of <cite>1.0</cite> is broadcast to all <cite>nn</cite> values of the Jacobian matrix.</p>
+</div>
+<div class="section" id="dimensioned-inputs-and-outputs">
+<h2>Dimensioned Inputs and Outputs<a class="headerlink" href="#dimensioned-inputs-and-outputs" title="Permalink to this headline">¶</a></h2>
+<p>The above example assumes all inputs and outputs are scalar at each node.  Sometimes the user may
+encounter a situation in which the inputs and/or outputs are vectors, matrices, or tensors at
+each node.  In this case the dimension of the variable is <cite>num_nodes</cite>, with the dimension of the
+variable at a single node filling out the remaining indices. A 3-vector is thus dimensioned
+<cite>(num_nodes, 3)</cite>, while a 3 x 3 matrix would be sized <cite>(num_nodes, 3, 3)</cite>.</p>
+</div>
+<div class="section" id="non-vector-inputs">
+<h2>Non-Vector Inputs<a class="headerlink" href="#non-vector-inputs" title="Permalink to this headline">¶</a></h2>
+<p>Declaring inputs as vectors means that they have the potential to be used either as design parameters or as dynamic controls which can assume a different value at each node.
+For some quantities, such as gravitational acceleration in the Brachistochrone example, we can assume that the value will never need to be dynamic.
+To accommodate this, design and input parameters can be declared static with the argument <cite>dynamic=False</cite>.
+This prevents Dymos from “fanning out” the static value to the <em>n</em> nodes in the ODE system.
+If a parameter is declared static in the <cite>declare_parameter</cite> decorator, it cannot be used as a dynamic control.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transcriptions/transcriptions.html" title="Transcriptions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="optimal_control.html" title="Optimal Control"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" >Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

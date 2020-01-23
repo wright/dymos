@@ -1,0 +1,130 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Segments &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Variables" href="variables.html" />
+    <link rel="prev" title="Phases of a Trajectory" href="phases.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="variables.html" title="Variables"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="phases.html" title="Phases of a Trajectory"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="phases.html" accesskey="U">Phases of a Trajectory</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="phases.html"
+                        title="previous chapter">Phases of a Trajectory</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="variables.html"
+                        title="next chapter">Variables</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/feature_reference/phases/segments.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="segments">
+<h1>Segments<a class="headerlink" href="#segments" title="Permalink to this headline">¶</a></h1>
+<p>All phases in Dymos are decomposed into one or more <em>segments</em> in time.  These segments
+serve the following purposes:</p>
+<ul class="simple">
+<li><p>Gauss-Lobatto collocation and the Radau Pseudospectral method model each state variable as a polynomial segment in nondimensional time within each segment.</p></li>
+<li><p>Each control is modeled as a polynomial in nondimensional time within each segment.</p></li>
+</ul>
+<p>The order of the <em>state</em> polynomial segment is given by the phase argument <cite>transcription_order</cite>.
+In Dymos the minimum supported transcription order is 3.</p>
+<p>State-time histories within a segment are modelled as a Lagrange polynomial.  Continuity in state
+value may be enforced via linear constraints at the segment boundaries (the default behavior) or
+by specifying a <em>compressed</em> transcription whereby the state value at a segment boundary
+is provided as a single value.  The default <em>compressed</em> transcription yields an optimization
+problem with fewer variables, but in some situations using uncompressed transcription can result
+in more robust convergence.</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="variables.html" title="Variables"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="phases.html" title="Phases of a Trajectory"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="phases.html" >Phases of a Trajectory</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

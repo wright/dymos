@@ -1,0 +1,916 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Double Integrator &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Two-Burn Orbit Raise" href="finite_burn_orbit_raise.html" />
+    <link rel="prev" title="Commercial Aircraft Range Maximization by Differential Inclusion" href="commercial_aircraft.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="finite_burn_orbit_raise.html" title="Two-Burn Orbit Raise"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="commercial_aircraft.html" title="Commercial Aircraft Range Maximization by Differential Inclusion"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" accesskey="U">Dymos by Example</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Double Integrator</a><ul>
+<li><a class="reference internal" href="#the-ode-system-double-integrator-ode-py">1. The ODE System: double_integrator_ode.py</a></li>
+<li><a class="reference internal" href="#building-and-running-the-problem">2. Building and running the problem</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="commercial_aircraft.html"
+                        title="previous chapter">Commercial Aircraft Range Maximization by Differential Inclusion</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="finite_burn_orbit_raise.html"
+                        title="next chapter">Two-Burn Orbit Raise</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/examples/double_integrator.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="double-integrator">
+<h1>Double Integrator<a class="headerlink" href="#double-integrator" title="Permalink to this headline">¶</a></h1>
+<p>In the double integrator problem, we seek to maximize the distance traveled by a block,
+sliding without friction along a horizontal surface, with acceleration as the control.</p>
+<p>We minimize the final time, <span class="math notranslate nohighlight">\(t_f\)</span>, by varying the dynamic control, <span class="math notranslate nohighlight">\(\theta\)</span>, subject to the dynamics:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{d x}{d t} &amp;= v \\
+\frac{d v}{d t} &amp;= u \\\end{split}\]</div>
+<p>The initial conditions are</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}x_0 &amp;= 0 \\
+v_0 &amp;= 0 \\\end{split}\]</div>
+<p>and the final conditions are</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}x_f &amp;= \mathrm{free} \\
+v_f &amp;= 0\end{split}\]</div>
+<p>The control <span class="math notranslate nohighlight">\(u\)</span> is constrained to fall between -1 and 1.  Due to the fact that the
+control appears linearly in the equations of motion, we should expect “bang-bang” behavior
+in the control.</p>
+<div class="section" id="the-ode-system-double-integrator-ode-py">
+<h2>1. The ODE System: double_integrator_ode.py<a class="headerlink" href="#the-ode-system-double-integrator-ode-py" title="Permalink to this headline">¶</a></h2>
+<p>This problem is unique in that we don’t actually have to calculate anything in the ODE.  For the
+sake of Dymos, we create an ExplicitComponent and provide it with the <cite>num_nodes</cite> option, but
+it has no inputs and no outputs.  The rates for the states are entirely provided by the other states
+and controls.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+
+<span class="k">class</span> <span class="nc">DoubleIntegratorODE</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    The double integrator is a special case where the state rates are all set to other states</span>
+<span class="sd">    or parameters.  Since we aren&#39;t computing any other outputs, the ODE doesn&#39;t actually</span>
+<span class="sd">    need to compute anything.  OpenMDAO will warn us that the component has no outputs, but</span>
+<span class="sd">    Dymos will solve the problem just fine.</span>
+
+<span class="sd">    Note we still have to declare the num_nodes option in initialize so that Dymos can instantiate</span>
+<span class="sd">    the ODE.</span>
+
+<span class="sd">    Also note that neither time, states, nor paramters have targets, since there are no inputs</span>
+<span class="sd">    in the ODE system.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-and-running-the-problem">
+<h2>2. Building and running the problem<a class="headerlink" href="#building-and-running-the-problem" title="Permalink to this headline">¶</a></h2>
+<p>In order to facilitate the bang-bang behavior in the control we disable continuity and rate continuity
+in the control value.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+<span class="kn">from</span> <span class="nn">openmdao.utils.assert_utils</span> <span class="kn">import</span> <span class="n">assert_rel_error</span>
+<span class="kn">import</span> <span class="nn">dymos</span> <span class="k">as</span> <span class="nn">dm</span>
+<span class="kn">from</span> <span class="nn">dymos.examples.plotting</span> <span class="kn">import</span> <span class="n">plot_results</span>
+<span class="kn">from</span> <span class="nn">dymos.examples.double_integrator.double_integrator_ode</span> <span class="kn">import</span> <span class="n">DoubleIntegratorODE</span>
+
+<span class="c1"># Initialize the problem and assign the driver</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">om</span><span class="o">.</span><span class="n">Group</span><span class="p">())</span>
+<span class="n">p</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">pyOptSparseDriver</span><span class="p">()</span>
+<span class="n">p</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SLSQP&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">declare_coloring</span><span class="p">()</span>
+
+<span class="c1"># Setup the trajectory and its phase</span>
+<span class="n">traj</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;traj&#39;</span><span class="p">,</span> <span class="n">dm</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">())</span>
+
+<span class="n">transcription</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Radau</span><span class="p">(</span><span class="n">num_segments</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">phase</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">add_phase</span><span class="p">(</span><span class="s1">&#39;phase0&#39;</span><span class="p">,</span>
+                       <span class="n">dm</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">ode_class</span><span class="o">=</span><span class="n">DoubleIntegratorODE</span><span class="p">,</span> <span class="n">transcription</span><span class="o">=</span><span class="n">transcription</span><span class="p">))</span>
+
+<span class="c1">#</span>
+<span class="c1"># Set the options for our variables.</span>
+<span class="c1">#</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">set_time_options</span><span class="p">(</span><span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_duration</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s&#39;</span><span class="p">)</span>
+
+<span class="n">phase</span><span class="o">.</span><span class="n">add_control</span><span class="p">(</span><span class="s1">&#39;u&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s**2&#39;</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">continuity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">rate_continuity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">rate2_continuity</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">lower</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+<span class="c1">#</span>
+<span class="c1"># Maximize distance travelled.</span>
+<span class="c1">#</span>
+<span class="n">phase</span><span class="o">.</span><span class="n">add_objective</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;final&#39;</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">linear_solver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">DirectSolver</span><span class="p">()</span>
+
+<span class="c1">#</span>
+<span class="c1"># Setup the problem and set our initial values.</span>
+<span class="c1">#</span>
+<span class="n">p</span><span class="o">.</span><span class="n">setup</span><span class="p">(</span><span class="n">check</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">p</span><span class="p">[</span><span class="s1">&#39;traj.phase0.t_initial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="n">p</span><span class="p">[</span><span class="s1">&#39;traj.phase0.t_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+<span class="n">p</span><span class="p">[</span><span class="s1">&#39;traj.phase0.states:x&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phase</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="p">[</span><span class="s1">&#39;traj.phase0.states:v&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phase</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="p">[</span><span class="s1">&#39;traj.phase0.controls:u&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">phase</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;control_input&#39;</span><span class="p">)</span>
+
+<span class="c1">#</span>
+<span class="c1"># Solve the problem.</span>
+<span class="c1">#</span>
+<span class="n">dm</span><span class="o">.</span><span class="n">run_problem</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+<span class="c1">#</span>
+<span class="c1"># Verify that the results are correct.</span>
+<span class="c1">#</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.phase0.timeseries.states:x&#39;</span><span class="p">)</span>
+<span class="n">v</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.phase0.timeseries.states:v&#39;</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">v</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="c1">#</span>
+<span class="c1"># Simulate the explicit solution and plot the results.</span>
+<span class="c1">#</span>
+<span class="n">exp_out</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
+
+<span class="n">plot_results</span><span class="p">([(</span><span class="s1">&#39;traj.phase0.timeseries.time&#39;</span><span class="p">,</span> <span class="s1">&#39;traj.phase0.timeseries.states:x&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;time (s)&#39;</span><span class="p">,</span> <span class="s1">&#39;x $(m)$&#39;</span><span class="p">),</span>
+              <span class="p">(</span><span class="s1">&#39;traj.phase0.timeseries.time&#39;</span><span class="p">,</span> <span class="s1">&#39;traj.phase0.timeseries.states:v&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;time (s)&#39;</span><span class="p">,</span> <span class="s1">&#39;v $(m/s)$&#39;</span><span class="p">),</span>
+              <span class="p">(</span><span class="s1">&#39;traj.phase0.timeseries.time&#39;</span><span class="p">,</span> <span class="s1">&#39;traj.phase0.timeseries.controls:u&#39;</span><span class="p">,</span>
+               <span class="s1">&#39;time (s)&#39;</span><span class="p">,</span> <span class="s1">&#39;u $(m/s^2)$&#39;</span><span class="p">)],</span>
+             <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Double Integrator Solution</span><span class="se">\n</span><span class="s1">Radau Pseudospectral Method&#39;</span><span class="p">,</span>
+             <span class="n">p_sol</span><span class="o">=</span><span class="n">p</span><span class="p">,</span> <span class="n">p_sim</span><span class="o">=</span><span class="n">exp_out</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="cell border-box-sizing code_cell rendered"><div class="output_area"><pre>--------------------------------------------------------------------------
+[[3512,1],0]: A high-performance Open MPI point-to-point messaging module
+was unable to find any relevant network interfaces:
+
+Module: OpenFabrics (openib)
+  Host: travis-job-137fcd62-bca7-4f70-92f5-29292b3975cd
+
+Another transport will be used instead, although this may result in
+lower performance.
+--------------------------------------------------------------------------
+INFO: checking out_of_order
+INFO: checking system
+INFO: checking solvers
+INFO: checking dup_inputs
+WARNING: The following components have multiple inputs connected to the same source, which can introduce unnecessary data transfer overhead:
+   traj.phases.phase0.timeseries has inputs [&#x27;input_values:controls:u&#x27;, &#x27;input_values:state_rates:v&#x27;] connected to traj.phases.phase0.control_group.control_interp_comp.control_values:u
+   traj.phases.phase0.timeseries has inputs [&#x27;input_values:state_rates:x&#x27;, &#x27;input_values:states:v&#x27;] connected to traj.phases.phase0.indep_states.states:v
+
+INFO: checking missing_recorders
+WARNING: The Problem has no recorder of any kind attached
+INFO: checking comp_has_no_outputs
+WARNING: The following Components do not have any outputs:
+   traj.phases.phase0.rhs_all
+
+Full total jacobian was computed 3 times, taking 0.190795 seconds.
+Total jacobian shape: (181, 327) 
+
+
+Jacobian shape: (181, 327)  ( 1.77% nonzero)
+FWD solves: 0   REV solves: 6
+Total colors vs. total size: 6 vs 181  (96.7% improvement)
+
+Sparsity computed using tolerance: 1e-25
+Most common number of nonzero entries (1049 of 59187) repeated 1 times out of 1 tolerances tested.
+
+Time to compute sparsity: 0.190795 sec.
+Time to compute coloring: 0.014701 sec.
+
+
+Optimization Problem -- Optimization using pyOpt_sparse
+================================================================================
+    Objective Function: _objfunc
+
+    Solution: 
+--------------------------------------------------------------------------------
+    Total Time:                    3.1414
+       User Objective Time :       0.0440
+       User Sensitivity Time :     0.1810
+       Interface Time :            0.3538
+       Opt Solver Time:            2.5627
+    Calls to Objective Function :      19
+    Calls to Sens Function :           19
+
+
+   Objectives
+      Index  Name                                                Value          Optimum
+          0  traj.phases.phase0.indep_states.states:x    -2.500000E-01     0.000000E+00
+
+   Variables (c - continuous, i - integer, d - discrete)
+      Index  Name                                                            Type      Lower Bound            Value      Upper Bound     Status
+          0  traj.phases.phase0.indep_states.states:x_0                         c    -1.000000E+21     7.003402E-05     1.000000E+21           
+          1  traj.phases.phase0.indep_states.states:x_1                         c    -1.000000E+21     3.966326E-04     1.000000E+21           
+          2  traj.phases.phase0.indep_states.states:x_2                         c    -1.000000E+21     5.555556E-04     1.000000E+21           
+          3  traj.phases.phase0.indep_states.states:x_3                         c    -1.000000E+21     5.555556E-04     1.000000E+21           
+          4  traj.phases.phase0.indep_states.states:x_4                         c    -1.000000E+21     1.020091E-03     1.000000E+21           
+          5  traj.phases.phase0.indep_states.states:x_5                         c    -1.000000E+21     1.891020E-03     1.000000E+21           
+          6  traj.phases.phase0.indep_states.states:x_6                         c    -1.000000E+21     2.222222E-03     1.000000E+21           
+          7  traj.phases.phase0.indep_states.states:x_7                         c    -1.000000E+21     2.222222E-03     1.000000E+21           
+          8  traj.phases.phase0.indep_states.states:x_8                         c    -1.000000E+21     3.081259E-03     1.000000E+21           
+          9  traj.phases.phase0.indep_states.states:x_9                         c    -1.000000E+21     4.496519E-03     1.000000E+21           
+         10  traj.phases.phase0.indep_states.states:x_10                        c    -1.000000E+21     5.000000E-03     1.000000E+21           
+         11  traj.phases.phase0.indep_states.states:x_11                        c    -1.000000E+21     5.000000E-03     1.000000E+21           
+         12  traj.phases.phase0.indep_states.states:x_12                        c    -1.000000E+21     6.253537E-03     1.000000E+21           
+         13  traj.phases.phase0.indep_states.states:x_13                        c    -1.000000E+21     8.213129E-03     1.000000E+21           
+         14  traj.phases.phase0.indep_states.states:x_14                        c    -1.000000E+21     8.888889E-03     1.000000E+21           
+         15  traj.phases.phase0.indep_states.states:x_15                        c    -1.000000E+21     8.888889E-03     1.000000E+21           
+         16  traj.phases.phase0.indep_states.states:x_16                        c    -1.000000E+21     1.053693E-02     1.000000E+21           
+         17  traj.phases.phase0.indep_states.states:x_17                        c    -1.000000E+21     1.304085E-02     1.000000E+21           
+         18  traj.phases.phase0.indep_states.states:x_18                        c    -1.000000E+21     1.388889E-02     1.000000E+21           
+         19  traj.phases.phase0.indep_states.states:x_19                        c    -1.000000E+21     1.388889E-02     1.000000E+21           
+         20  traj.phases.phase0.indep_states.states:x_20                        c    -1.000000E+21     1.593143E-02     1.000000E+21           
+         21  traj.phases.phase0.indep_states.states:x_21                        c    -1.000000E+21     1.897968E-02     1.000000E+21           
+         22  traj.phases.phase0.indep_states.states:x_22                        c    -1.000000E+21     2.000000E-02     1.000000E+21           
+         23  traj.phases.phase0.indep_states.states:x_23                        c    -1.000000E+21     2.000000E-02     1.000000E+21           
+         24  traj.phases.phase0.indep_states.states:x_24                        c    -1.000000E+21     2.243704E-02     1.000000E+21           
+         25  traj.phases.phase0.indep_states.states:x_25                        c    -1.000000E+21     2.602963E-02     1.000000E+21           
+         26  traj.phases.phase0.indep_states.states:x_26                        c    -1.000000E+21     2.722222E-02     1.000000E+21           
+         27  traj.phases.phase0.indep_states.states:x_27                        c    -1.000000E+21     2.722222E-02     1.000000E+21           
+         28  traj.phases.phase0.indep_states.states:x_28                        c    -1.000000E+21     3.005376E-02     1.000000E+21           
+         29  traj.phases.phase0.indep_states.states:x_29                        c    -1.000000E+21     3.419068E-02     1.000000E+21           
+         30  traj.phases.phase0.indep_states.states:x_30                        c    -1.000000E+21     3.555556E-02     1.000000E+21           
+         31  traj.phases.phase0.indep_states.states:x_31                        c    -1.000000E+21     3.555556E-02     1.000000E+21           
+         32  traj.phases.phase0.indep_states.states:x_32                        c    -1.000000E+21     3.878160E-02     1.000000E+21           
+         33  traj.phases.phase0.indep_states.states:x_33                        c    -1.000000E+21     4.346285E-02     1.000000E+21           
+         34  traj.phases.phase0.indep_states.states:x_34                        c    -1.000000E+21     4.500000E-02     1.000000E+21           
+         35  traj.phases.phase0.indep_states.states:x_35                        c    -1.000000E+21     4.500000E-02     1.000000E+21           
+         36  traj.phases.phase0.indep_states.states:x_36                        c    -1.000000E+21     4.862054E-02     1.000000E+21           
+         37  traj.phases.phase0.indep_states.states:x_37                        c    -1.000000E+21     5.384612E-02     1.000000E+21           
+         38  traj.phases.phase0.indep_states.states:x_38                        c    -1.000000E+21     5.555556E-02     1.000000E+21           
+         39  traj.phases.phase0.indep_states.states:x_39                        c    -1.000000E+21     5.555556E-02     1.000000E+21           
+         40  traj.phases.phase0.indep_states.states:x_40                        c    -1.000000E+21     5.957060E-02     1.000000E+21           
+         41  traj.phases.phase0.indep_states.states:x_41                        c    -1.000000E+21     6.534051E-02     1.000000E+21           
+         42  traj.phases.phase0.indep_states.states:x_42                        c    -1.000000E+21     6.722222E-02     1.000000E+21           
+         43  traj.phases.phase0.indep_states.states:x_43                        c    -1.000000E+21     6.722222E-02     1.000000E+21           
+         44  traj.phases.phase0.indep_states.states:x_44                        c    -1.000000E+21     7.163177E-02     1.000000E+21           
+         45  traj.phases.phase0.indep_states.states:x_45                        c    -1.000000E+21     7.794601E-02     1.000000E+21           
+         46  traj.phases.phase0.indep_states.states:x_46                        c    -1.000000E+21     8.000000E-02     1.000000E+21           
+         47  traj.phases.phase0.indep_states.states:x_47                        c    -1.000000E+21     8.000000E-02     1.000000E+21           
+         48  traj.phases.phase0.indep_states.states:x_48                        c    -1.000000E+21     8.480405E-02     1.000000E+21           
+         49  traj.phases.phase0.indep_states.states:x_49                        c    -1.000000E+21     9.166262E-02     1.000000E+21           
+         50  traj.phases.phase0.indep_states.states:x_50                        c    -1.000000E+21     9.388889E-02     1.000000E+21           
+         51  traj.phases.phase0.indep_states.states:x_51                        c    -1.000000E+21     9.388889E-02     1.000000E+21           
+         52  traj.phases.phase0.indep_states.states:x_52                        c    -1.000000E+21     9.908744E-02     1.000000E+21           
+         53  traj.phases.phase0.indep_states.states:x_53                        c    -1.000000E+21     1.064903E-01     1.000000E+21           
+         54  traj.phases.phase0.indep_states.states:x_54                        c    -1.000000E+21     1.088889E-01     1.000000E+21           
+         55  traj.phases.phase0.indep_states.states:x_55                        c    -1.000000E+21     1.088889E-01     1.000000E+21           
+         56  traj.phases.phase0.indep_states.states:x_56                        c    -1.000000E+21     1.144819E-01     1.000000E+21           
+         57  traj.phases.phase0.indep_states.states:x_57                        c    -1.000000E+21     1.224292E-01     1.000000E+21           
+         58  traj.phases.phase0.indep_states.states:x_58                        c    -1.000000E+21     1.250000E-01     1.000000E+21           
+         59  traj.phases.phase0.indep_states.states:x_59                        c    -1.000000E+21     1.250000E-01     1.000000E+21           
+         60  traj.phases.phase0.indep_states.states:x_60                        c    -1.000000E+21     1.308475E-01     1.000000E+21           
+         61  traj.phases.phase0.indep_states.states:x_61                        c    -1.000000E+21     1.386859E-01     1.000000E+21           
+         62  traj.phases.phase0.indep_states.states:x_62                        c    -1.000000E+21     1.411111E-01     1.000000E+21           
+         63  traj.phases.phase0.indep_states.states:x_63                        c    -1.000000E+21     1.411111E-01     1.000000E+21           
+         64  traj.phases.phase0.indep_states.states:x_64                        c    -1.000000E+21     1.465641E-01     1.000000E+21           
+         65  traj.phases.phase0.indep_states.states:x_65                        c    -1.000000E+21     1.538581E-01     1.000000E+21           
+         66  traj.phases.phase0.indep_states.states:x_66                        c    -1.000000E+21     1.561111E-01     1.000000E+21           
+         67  traj.phases.phase0.indep_states.states:x_67                        c    -1.000000E+21     1.561111E-01     1.000000E+21           
+         68  traj.phases.phase0.indep_states.states:x_68                        c    -1.000000E+21     1.611696E-01     1.000000E+21           
+         69  traj.phases.phase0.indep_states.states:x_69                        c    -1.000000E+21     1.679193E-01     1.000000E+21           
+         70  traj.phases.phase0.indep_states.states:x_70                        c    -1.000000E+21     1.700000E-01     1.000000E+21           
+         71  traj.phases.phase0.indep_states.states:x_71                        c    -1.000000E+21     1.700000E-01     1.000000E+21           
+         72  traj.phases.phase0.indep_states.states:x_72                        c    -1.000000E+21     1.746640E-01     1.000000E+21           
+         73  traj.phases.phase0.indep_states.states:x_73                        c    -1.000000E+21     1.808694E-01     1.000000E+21           
+         74  traj.phases.phase0.indep_states.states:x_74                        c    -1.000000E+21     1.827778E-01     1.000000E+21           
+         75  traj.phases.phase0.indep_states.states:x_75                        c    -1.000000E+21     1.827778E-01     1.000000E+21           
+         76  traj.phases.phase0.indep_states.states:x_76                        c    -1.000000E+21     1.870473E-01     1.000000E+21           
+         77  traj.phases.phase0.indep_states.states:x_77                        c    -1.000000E+21     1.927083E-01     1.000000E+21           
+         78  traj.phases.phase0.indep_states.states:x_78                        c    -1.000000E+21     1.944444E-01     1.000000E+21           
+         79  traj.phases.phase0.indep_states.states:x_79                        c    -1.000000E+21     1.944444E-01     1.000000E+21           
+         80  traj.phases.phase0.indep_states.states:x_80                        c    -1.000000E+21     1.983194E-01     1.000000E+21           
+         81  traj.phases.phase0.indep_states.states:x_81                        c    -1.000000E+21     2.034361E-01     1.000000E+21           
+         82  traj.phases.phase0.indep_states.states:x_82                        c    -1.000000E+21     2.050000E-01     1.000000E+21           
+         83  traj.phases.phase0.indep_states.states:x_83                        c    -1.000000E+21     2.050000E-01     1.000000E+21           
+         84  traj.phases.phase0.indep_states.states:x_84                        c    -1.000000E+21     2.084805E-01     1.000000E+21           
+         85  traj.phases.phase0.indep_states.states:x_85                        c    -1.000000E+21     2.130529E-01     1.000000E+21           
+         86  traj.phases.phase0.indep_states.states:x_86                        c    -1.000000E+21     2.144444E-01     1.000000E+21           
+         87  traj.phases.phase0.indep_states.states:x_87                        c    -1.000000E+21     2.144444E-01     1.000000E+21           
+         88  traj.phases.phase0.indep_states.states:x_88                        c    -1.000000E+21     2.175304E-01     1.000000E+21           
+         89  traj.phases.phase0.indep_states.states:x_89                        c    -1.000000E+21     2.215585E-01     1.000000E+21           
+         90  traj.phases.phase0.indep_states.states:x_90                        c    -1.000000E+21     2.227778E-01     1.000000E+21           
+         91  traj.phases.phase0.indep_states.states:x_91                        c    -1.000000E+21     2.227778E-01     1.000000E+21           
+         92  traj.phases.phase0.indep_states.states:x_92                        c    -1.000000E+21     2.254693E-01     1.000000E+21           
+         93  traj.phases.phase0.indep_states.states:x_93                        c    -1.000000E+21     2.289530E-01     1.000000E+21           
+         94  traj.phases.phase0.indep_states.states:x_94                        c    -1.000000E+21     2.300000E-01     1.000000E+21           
+         95  traj.phases.phase0.indep_states.states:x_95                        c    -1.000000E+21     2.300000E-01     1.000000E+21           
+         96  traj.phases.phase0.indep_states.states:x_96                        c    -1.000000E+21     2.322970E-01     1.000000E+21           
+         97  traj.phases.phase0.indep_states.states:x_97                        c    -1.000000E+21     2.352364E-01     1.000000E+21           
+         98  traj.phases.phase0.indep_states.states:x_98                        c    -1.000000E+21     2.361111E-01     1.000000E+21           
+         99  traj.phases.phase0.indep_states.states:x_99                        c    -1.000000E+21     2.361111E-01     1.000000E+21           
+        100  traj.phases.phase0.indep_states.states:x_100                       c    -1.000000E+21     2.380136E-01     1.000000E+21           
+        101  traj.phases.phase0.indep_states.states:x_101                       c    -1.000000E+21     2.404086E-01     1.000000E+21           
+        102  traj.phases.phase0.indep_states.states:x_102                       c    -1.000000E+21     2.411111E-01     1.000000E+21           
+        103  traj.phases.phase0.indep_states.states:x_103                       c    -1.000000E+21     2.411111E-01     1.000000E+21           
+        104  traj.phases.phase0.indep_states.states:x_104                       c    -1.000000E+21     2.426191E-01     1.000000E+21           
+        105  traj.phases.phase0.indep_states.states:x_105                       c    -1.000000E+21     2.444698E-01     1.000000E+21           
+        106  traj.phases.phase0.indep_states.states:x_106                       c    -1.000000E+21     2.450000E-01     1.000000E+21           
+        107  traj.phases.phase0.indep_states.states:x_107                       c    -1.000000E+21     2.450000E-01     1.000000E+21           
+        108  traj.phases.phase0.indep_states.states:x_108                       c    -1.000000E+21     2.461135E-01     1.000000E+21           
+        109  traj.phases.phase0.indep_states.states:x_109                       c    -1.000000E+21     2.474199E-01     1.000000E+21           
+        110  traj.phases.phase0.indep_states.states:x_110                       c    -1.000000E+21     2.477778E-01     1.000000E+21           
+        111  traj.phases.phase0.indep_states.states:x_111                       c    -1.000000E+21     2.477778E-01     1.000000E+21           
+        112  traj.phases.phase0.indep_states.states:x_112                       c    -1.000000E+21     2.484967E-01     1.000000E+21           
+        113  traj.phases.phase0.indep_states.states:x_113                       c    -1.000000E+21     2.492588E-01     1.000000E+21           
+        114  traj.phases.phase0.indep_states.states:x_114                       c    -1.000000E+21     2.494444E-01     1.000000E+21           
+        115  traj.phases.phase0.indep_states.states:x_115                       c    -1.000000E+21     2.494444E-01     1.000000E+21           
+        116  traj.phases.phase0.indep_states.states:x_116                       c    -1.000000E+21     2.497689E-01     1.000000E+21           
+        117  traj.phases.phase0.indep_states.states:x_117                       c    -1.000000E+21     2.499866E-01     1.000000E+21           
+        118  traj.phases.phase0.indep_states.states:x_118                       c    -1.000000E+21     2.500000E-01     1.000000E+21           
+        119  traj.phases.phase0.indep_states.states:v_0                         c    -1.000000E+21     1.183503E-02     1.000000E+21           
+        120  traj.phases.phase0.indep_states.states:v_1                         c    -1.000000E+21     2.816497E-02     1.000000E+21           
+        121  traj.phases.phase0.indep_states.states:v_2                         c    -1.000000E+21     3.333333E-02     1.000000E+21           
+        122  traj.phases.phase0.indep_states.states:v_3                         c    -1.000000E+21     3.333333E-02     1.000000E+21           
+        123  traj.phases.phase0.indep_states.states:v_4                         c    -1.000000E+21     4.516837E-02     1.000000E+21           
+        124  traj.phases.phase0.indep_states.states:v_5                         c    -1.000000E+21     6.149830E-02     1.000000E+21           
+        125  traj.phases.phase0.indep_states.states:v_6                         c    -1.000000E+21     6.666667E-02     1.000000E+21           
+        126  traj.phases.phase0.indep_states.states:v_7                         c    -1.000000E+21     6.666667E-02     1.000000E+21           
+        127  traj.phases.phase0.indep_states.states:v_8                         c    -1.000000E+21     7.850170E-02     1.000000E+21           
+        128  traj.phases.phase0.indep_states.states:v_9                         c    -1.000000E+21     9.483163E-02     1.000000E+21           
+        129  traj.phases.phase0.indep_states.states:v_10                        c    -1.000000E+21     1.000000E-01     1.000000E+21           
+        130  traj.phases.phase0.indep_states.states:v_11                        c    -1.000000E+21     1.000000E-01     1.000000E+21           
+        131  traj.phases.phase0.indep_states.states:v_12                        c    -1.000000E+21     1.118350E-01     1.000000E+21           
+        132  traj.phases.phase0.indep_states.states:v_13                        c    -1.000000E+21     1.281650E-01     1.000000E+21           
+        133  traj.phases.phase0.indep_states.states:v_14                        c    -1.000000E+21     1.333333E-01     1.000000E+21           
+        134  traj.phases.phase0.indep_states.states:v_15                        c    -1.000000E+21     1.333333E-01     1.000000E+21           
+        135  traj.phases.phase0.indep_states.states:v_16                        c    -1.000000E+21     1.451684E-01     1.000000E+21           
+        136  traj.phases.phase0.indep_states.states:v_17                        c    -1.000000E+21     1.614983E-01     1.000000E+21           
+        137  traj.phases.phase0.indep_states.states:v_18                        c    -1.000000E+21     1.666667E-01     1.000000E+21           
+        138  traj.phases.phase0.indep_states.states:v_19                        c    -1.000000E+21     1.666667E-01     1.000000E+21           
+        139  traj.phases.phase0.indep_states.states:v_20                        c    -1.000000E+21     1.785017E-01     1.000000E+21           
+        140  traj.phases.phase0.indep_states.states:v_21                        c    -1.000000E+21     1.948316E-01     1.000000E+21           
+        141  traj.phases.phase0.indep_states.states:v_22                        c    -1.000000E+21     2.000000E-01     1.000000E+21           
+        142  traj.phases.phase0.indep_states.states:v_23                        c    -1.000000E+21     2.000000E-01     1.000000E+21           
+        143  traj.phases.phase0.indep_states.states:v_24                        c    -1.000000E+21     2.118350E-01     1.000000E+21           
+        144  traj.phases.phase0.indep_states.states:v_25                        c    -1.000000E+21     2.281650E-01     1.000000E+21           
+        145  traj.phases.phase0.indep_states.states:v_26                        c    -1.000000E+21     2.333333E-01     1.000000E+21           
+        146  traj.phases.phase0.indep_states.states:v_27                        c    -1.000000E+21     2.333333E-01     1.000000E+21           
+        147  traj.phases.phase0.indep_states.states:v_28                        c    -1.000000E+21     2.451684E-01     1.000000E+21           
+        148  traj.phases.phase0.indep_states.states:v_29                        c    -1.000000E+21     2.614983E-01     1.000000E+21           
+        149  traj.phases.phase0.indep_states.states:v_30                        c    -1.000000E+21     2.666667E-01     1.000000E+21           
+        150  traj.phases.phase0.indep_states.states:v_31                        c    -1.000000E+21     2.666667E-01     1.000000E+21           
+        151  traj.phases.phase0.indep_states.states:v_32                        c    -1.000000E+21     2.785017E-01     1.000000E+21           
+        152  traj.phases.phase0.indep_states.states:v_33                        c    -1.000000E+21     2.948316E-01     1.000000E+21           
+        153  traj.phases.phase0.indep_states.states:v_34                        c    -1.000000E+21     3.000000E-01     1.000000E+21           
+        154  traj.phases.phase0.indep_states.states:v_35                        c    -1.000000E+21     3.000000E-01     1.000000E+21           
+        155  traj.phases.phase0.indep_states.states:v_36                        c    -1.000000E+21     3.118350E-01     1.000000E+21           
+        156  traj.phases.phase0.indep_states.states:v_37                        c    -1.000000E+21     3.281650E-01     1.000000E+21           
+        157  traj.phases.phase0.indep_states.states:v_38                        c    -1.000000E+21     3.333333E-01     1.000000E+21           
+        158  traj.phases.phase0.indep_states.states:v_39                        c    -1.000000E+21     3.333333E-01     1.000000E+21           
+        159  traj.phases.phase0.indep_states.states:v_40                        c    -1.000000E+21     3.451684E-01     1.000000E+21           
+        160  traj.phases.phase0.indep_states.states:v_41                        c    -1.000000E+21     3.614983E-01     1.000000E+21           
+        161  traj.phases.phase0.indep_states.states:v_42                        c    -1.000000E+21     3.666667E-01     1.000000E+21           
+        162  traj.phases.phase0.indep_states.states:v_43                        c    -1.000000E+21     3.666667E-01     1.000000E+21           
+        163  traj.phases.phase0.indep_states.states:v_44                        c    -1.000000E+21     3.785017E-01     1.000000E+21           
+        164  traj.phases.phase0.indep_states.states:v_45                        c    -1.000000E+21     3.948316E-01     1.000000E+21           
+        165  traj.phases.phase0.indep_states.states:v_46                        c    -1.000000E+21     4.000000E-01     1.000000E+21           
+        166  traj.phases.phase0.indep_states.states:v_47                        c    -1.000000E+21     4.000000E-01     1.000000E+21           
+        167  traj.phases.phase0.indep_states.states:v_48                        c    -1.000000E+21     4.118350E-01     1.000000E+21           
+        168  traj.phases.phase0.indep_states.states:v_49                        c    -1.000000E+21     4.281650E-01     1.000000E+21           
+        169  traj.phases.phase0.indep_states.states:v_50                        c    -1.000000E+21     4.333333E-01     1.000000E+21           
+        170  traj.phases.phase0.indep_states.states:v_51                        c    -1.000000E+21     4.333333E-01     1.000000E+21           
+        171  traj.phases.phase0.indep_states.states:v_52                        c    -1.000000E+21     4.451684E-01     1.000000E+21           
+        172  traj.phases.phase0.indep_states.states:v_53                        c    -1.000000E+21     4.614983E-01     1.000000E+21           
+        173  traj.phases.phase0.indep_states.states:v_54                        c    -1.000000E+21     4.666667E-01     1.000000E+21           
+        174  traj.phases.phase0.indep_states.states:v_55                        c    -1.000000E+21     4.666667E-01     1.000000E+21           
+        175  traj.phases.phase0.indep_states.states:v_56                        c    -1.000000E+21     4.785017E-01     1.000000E+21           
+        176  traj.phases.phase0.indep_states.states:v_57                        c    -1.000000E+21     4.948316E-01     1.000000E+21           
+        177  traj.phases.phase0.indep_states.states:v_58                        c    -1.000000E+21     5.000000E-01     1.000000E+21           
+        178  traj.phases.phase0.indep_states.states:v_59                        c    -1.000000E+21     5.000000E-01     1.000000E+21           
+        179  traj.phases.phase0.indep_states.states:v_60                        c    -1.000000E+21     4.881650E-01     1.000000E+21           
+        180  traj.phases.phase0.indep_states.states:v_61                        c    -1.000000E+21     4.718350E-01     1.000000E+21           
+        181  traj.phases.phase0.indep_states.states:v_62                        c    -1.000000E+21     4.666667E-01     1.000000E+21           
+        182  traj.phases.phase0.indep_states.states:v_63                        c    -1.000000E+21     4.666667E-01     1.000000E+21           
+        183  traj.phases.phase0.indep_states.states:v_64                        c    -1.000000E+21     4.548316E-01     1.000000E+21           
+        184  traj.phases.phase0.indep_states.states:v_65                        c    -1.000000E+21     4.385017E-01     1.000000E+21           
+        185  traj.phases.phase0.indep_states.states:v_66                        c    -1.000000E+21     4.333333E-01     1.000000E+21           
+        186  traj.phases.phase0.indep_states.states:v_67                        c    -1.000000E+21     4.333333E-01     1.000000E+21           
+        187  traj.phases.phase0.indep_states.states:v_68                        c    -1.000000E+21     4.214983E-01     1.000000E+21           
+        188  traj.phases.phase0.indep_states.states:v_69                        c    -1.000000E+21     4.051684E-01     1.000000E+21           
+        189  traj.phases.phase0.indep_states.states:v_70                        c    -1.000000E+21     4.000000E-01     1.000000E+21           
+        190  traj.phases.phase0.indep_states.states:v_71                        c    -1.000000E+21     4.000000E-01     1.000000E+21           
+        191  traj.phases.phase0.indep_states.states:v_72                        c    -1.000000E+21     3.881650E-01     1.000000E+21           
+        192  traj.phases.phase0.indep_states.states:v_73                        c    -1.000000E+21     3.718350E-01     1.000000E+21           
+        193  traj.phases.phase0.indep_states.states:v_74                        c    -1.000000E+21     3.666667E-01     1.000000E+21           
+        194  traj.phases.phase0.indep_states.states:v_75                        c    -1.000000E+21     3.666667E-01     1.000000E+21           
+        195  traj.phases.phase0.indep_states.states:v_76                        c    -1.000000E+21     3.548316E-01     1.000000E+21           
+        196  traj.phases.phase0.indep_states.states:v_77                        c    -1.000000E+21     3.385017E-01     1.000000E+21           
+        197  traj.phases.phase0.indep_states.states:v_78                        c    -1.000000E+21     3.333333E-01     1.000000E+21           
+        198  traj.phases.phase0.indep_states.states:v_79                        c    -1.000000E+21     3.333333E-01     1.000000E+21           
+        199  traj.phases.phase0.indep_states.states:v_80                        c    -1.000000E+21     3.214983E-01     1.000000E+21           
+        200  traj.phases.phase0.indep_states.states:v_81                        c    -1.000000E+21     3.051684E-01     1.000000E+21           
+        201  traj.phases.phase0.indep_states.states:v_82                        c    -1.000000E+21     3.000000E-01     1.000000E+21           
+        202  traj.phases.phase0.indep_states.states:v_83                        c    -1.000000E+21     3.000000E-01     1.000000E+21           
+        203  traj.phases.phase0.indep_states.states:v_84                        c    -1.000000E+21     2.881650E-01     1.000000E+21           
+        204  traj.phases.phase0.indep_states.states:v_85                        c    -1.000000E+21     2.718350E-01     1.000000E+21           
+        205  traj.phases.phase0.indep_states.states:v_86                        c    -1.000000E+21     2.666667E-01     1.000000E+21           
+        206  traj.phases.phase0.indep_states.states:v_87                        c    -1.000000E+21     2.666667E-01     1.000000E+21           
+        207  traj.phases.phase0.indep_states.states:v_88                        c    -1.000000E+21     2.548316E-01     1.000000E+21           
+        208  traj.phases.phase0.indep_states.states:v_89                        c    -1.000000E+21     2.385017E-01     1.000000E+21           
+        209  traj.phases.phase0.indep_states.states:v_90                        c    -1.000000E+21     2.333333E-01     1.000000E+21           
+        210  traj.phases.phase0.indep_states.states:v_91                        c    -1.000000E+21     2.333333E-01     1.000000E+21           
+        211  traj.phases.phase0.indep_states.states:v_92                        c    -1.000000E+21     2.214983E-01     1.000000E+21           
+        212  traj.phases.phase0.indep_states.states:v_93                        c    -1.000000E+21     2.051684E-01     1.000000E+21           
+        213  traj.phases.phase0.indep_states.states:v_94                        c    -1.000000E+21     2.000000E-01     1.000000E+21           
+        214  traj.phases.phase0.indep_states.states:v_95                        c    -1.000000E+21     2.000000E-01     1.000000E+21           
+        215  traj.phases.phase0.indep_states.states:v_96                        c    -1.000000E+21     1.881650E-01     1.000000E+21           
+        216  traj.phases.phase0.indep_states.states:v_97                        c    -1.000000E+21     1.718350E-01     1.000000E+21           
+        217  traj.phases.phase0.indep_states.states:v_98                        c    -1.000000E+21     1.666667E-01     1.000000E+21           
+        218  traj.phases.phase0.indep_states.states:v_99                        c    -1.000000E+21     1.666667E-01     1.000000E+21           
+        219  traj.phases.phase0.indep_states.states:v_100                       c    -1.000000E+21     1.548316E-01     1.000000E+21           
+        220  traj.phases.phase0.indep_states.states:v_101                       c    -1.000000E+21     1.385017E-01     1.000000E+21           
+        221  traj.phases.phase0.indep_states.states:v_102                       c    -1.000000E+21     1.333333E-01     1.000000E+21           
+        222  traj.phases.phase0.indep_states.states:v_103                       c    -1.000000E+21     1.333333E-01     1.000000E+21           
+        223  traj.phases.phase0.indep_states.states:v_104                       c    -1.000000E+21     1.214983E-01     1.000000E+21           
+        224  traj.phases.phase0.indep_states.states:v_105                       c    -1.000000E+21     1.051684E-01     1.000000E+21           
+        225  traj.phases.phase0.indep_states.states:v_106                       c    -1.000000E+21     1.000000E-01     1.000000E+21           
+        226  traj.phases.phase0.indep_states.states:v_107                       c    -1.000000E+21     1.000000E-01     1.000000E+21           
+        227  traj.phases.phase0.indep_states.states:v_108                       c    -1.000000E+21     8.816497E-02     1.000000E+21           
+        228  traj.phases.phase0.indep_states.states:v_109                       c    -1.000000E+21     7.183503E-02     1.000000E+21           
+        229  traj.phases.phase0.indep_states.states:v_110                       c    -1.000000E+21     6.666667E-02     1.000000E+21           
+        230  traj.phases.phase0.indep_states.states:v_111                       c    -1.000000E+21     6.666667E-02     1.000000E+21           
+        231  traj.phases.phase0.indep_states.states:v_112                       c    -1.000000E+21     5.483163E-02     1.000000E+21           
+        232  traj.phases.phase0.indep_states.states:v_113                       c    -1.000000E+21     3.850170E-02     1.000000E+21           
+        233  traj.phases.phase0.indep_states.states:v_114                       c    -1.000000E+21     3.333333E-02     1.000000E+21           
+        234  traj.phases.phase0.indep_states.states:v_115                       c    -1.000000E+21     3.333333E-02     1.000000E+21           
+        235  traj.phases.phase0.indep_states.states:v_116                       c    -1.000000E+21     2.149830E-02     1.000000E+21           
+        236  traj.phases.phase0.indep_states.states:v_117                       c    -1.000000E+21     5.168368E-03     1.000000E+21           
+        237  traj.phases.phase0.control_group.indep_controls.controls:u_0       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        238  traj.phases.phase0.control_group.indep_controls.controls:u_1       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        239  traj.phases.phase0.control_group.indep_controls.controls:u_2       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        240  traj.phases.phase0.control_group.indep_controls.controls:u_3       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        241  traj.phases.phase0.control_group.indep_controls.controls:u_4       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        242  traj.phases.phase0.control_group.indep_controls.controls:u_5       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        243  traj.phases.phase0.control_group.indep_controls.controls:u_6       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        244  traj.phases.phase0.control_group.indep_controls.controls:u_7       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        245  traj.phases.phase0.control_group.indep_controls.controls:u_8       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        246  traj.phases.phase0.control_group.indep_controls.controls:u_9       c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        247  traj.phases.phase0.control_group.indep_controls.controls:u_10      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        248  traj.phases.phase0.control_group.indep_controls.controls:u_11      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        249  traj.phases.phase0.control_group.indep_controls.controls:u_12      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        250  traj.phases.phase0.control_group.indep_controls.controls:u_13      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        251  traj.phases.phase0.control_group.indep_controls.controls:u_14      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        252  traj.phases.phase0.control_group.indep_controls.controls:u_15      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        253  traj.phases.phase0.control_group.indep_controls.controls:u_16      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        254  traj.phases.phase0.control_group.indep_controls.controls:u_17      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        255  traj.phases.phase0.control_group.indep_controls.controls:u_18      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        256  traj.phases.phase0.control_group.indep_controls.controls:u_19      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        257  traj.phases.phase0.control_group.indep_controls.controls:u_20      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        258  traj.phases.phase0.control_group.indep_controls.controls:u_21      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        259  traj.phases.phase0.control_group.indep_controls.controls:u_22      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        260  traj.phases.phase0.control_group.indep_controls.controls:u_23      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        261  traj.phases.phase0.control_group.indep_controls.controls:u_24      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        262  traj.phases.phase0.control_group.indep_controls.controls:u_25      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        263  traj.phases.phase0.control_group.indep_controls.controls:u_26      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        264  traj.phases.phase0.control_group.indep_controls.controls:u_27      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        265  traj.phases.phase0.control_group.indep_controls.controls:u_28      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        266  traj.phases.phase0.control_group.indep_controls.controls:u_29      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        267  traj.phases.phase0.control_group.indep_controls.controls:u_30      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        268  traj.phases.phase0.control_group.indep_controls.controls:u_31      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        269  traj.phases.phase0.control_group.indep_controls.controls:u_32      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        270  traj.phases.phase0.control_group.indep_controls.controls:u_33      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        271  traj.phases.phase0.control_group.indep_controls.controls:u_34      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        272  traj.phases.phase0.control_group.indep_controls.controls:u_35      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        273  traj.phases.phase0.control_group.indep_controls.controls:u_36      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        274  traj.phases.phase0.control_group.indep_controls.controls:u_37      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        275  traj.phases.phase0.control_group.indep_controls.controls:u_38      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        276  traj.phases.phase0.control_group.indep_controls.controls:u_39      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        277  traj.phases.phase0.control_group.indep_controls.controls:u_40      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        278  traj.phases.phase0.control_group.indep_controls.controls:u_41      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        279  traj.phases.phase0.control_group.indep_controls.controls:u_42      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        280  traj.phases.phase0.control_group.indep_controls.controls:u_43      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        281  traj.phases.phase0.control_group.indep_controls.controls:u_44      c    -1.000000E-02     1.000000E-02     1.000000E-02          u
+        282  traj.phases.phase0.control_group.indep_controls.controls:u_45      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        283  traj.phases.phase0.control_group.indep_controls.controls:u_46      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        284  traj.phases.phase0.control_group.indep_controls.controls:u_47      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        285  traj.phases.phase0.control_group.indep_controls.controls:u_48      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        286  traj.phases.phase0.control_group.indep_controls.controls:u_49      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        287  traj.phases.phase0.control_group.indep_controls.controls:u_50      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        288  traj.phases.phase0.control_group.indep_controls.controls:u_51      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        289  traj.phases.phase0.control_group.indep_controls.controls:u_52      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        290  traj.phases.phase0.control_group.indep_controls.controls:u_53      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        291  traj.phases.phase0.control_group.indep_controls.controls:u_54      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        292  traj.phases.phase0.control_group.indep_controls.controls:u_55      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        293  traj.phases.phase0.control_group.indep_controls.controls:u_56      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        294  traj.phases.phase0.control_group.indep_controls.controls:u_57      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        295  traj.phases.phase0.control_group.indep_controls.controls:u_58      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        296  traj.phases.phase0.control_group.indep_controls.controls:u_59      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        297  traj.phases.phase0.control_group.indep_controls.controls:u_60      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        298  traj.phases.phase0.control_group.indep_controls.controls:u_61      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        299  traj.phases.phase0.control_group.indep_controls.controls:u_62      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        300  traj.phases.phase0.control_group.indep_controls.controls:u_63      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        301  traj.phases.phase0.control_group.indep_controls.controls:u_64      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        302  traj.phases.phase0.control_group.indep_controls.controls:u_65      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        303  traj.phases.phase0.control_group.indep_controls.controls:u_66      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        304  traj.phases.phase0.control_group.indep_controls.controls:u_67      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        305  traj.phases.phase0.control_group.indep_controls.controls:u_68      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        306  traj.phases.phase0.control_group.indep_controls.controls:u_69      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        307  traj.phases.phase0.control_group.indep_controls.controls:u_70      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        308  traj.phases.phase0.control_group.indep_controls.controls:u_71      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        309  traj.phases.phase0.control_group.indep_controls.controls:u_72      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        310  traj.phases.phase0.control_group.indep_controls.controls:u_73      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        311  traj.phases.phase0.control_group.indep_controls.controls:u_74      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        312  traj.phases.phase0.control_group.indep_controls.controls:u_75      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        313  traj.phases.phase0.control_group.indep_controls.controls:u_76      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        314  traj.phases.phase0.control_group.indep_controls.controls:u_77      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        315  traj.phases.phase0.control_group.indep_controls.controls:u_78      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        316  traj.phases.phase0.control_group.indep_controls.controls:u_79      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        317  traj.phases.phase0.control_group.indep_controls.controls:u_80      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        318  traj.phases.phase0.control_group.indep_controls.controls:u_81      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        319  traj.phases.phase0.control_group.indep_controls.controls:u_82      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        320  traj.phases.phase0.control_group.indep_controls.controls:u_83      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        321  traj.phases.phase0.control_group.indep_controls.controls:u_84      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        322  traj.phases.phase0.control_group.indep_controls.controls:u_85      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        323  traj.phases.phase0.control_group.indep_controls.controls:u_86      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        324  traj.phases.phase0.control_group.indep_controls.controls:u_87      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        325  traj.phases.phase0.control_group.indep_controls.controls:u_88      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+        326  traj.phases.phase0.control_group.indep_controls.controls:u_89      c    -1.000000E-02    -1.000000E-02     1.000000E-02          l
+
+   Constraints (i - inequality, e - equality)
+      Index  Name                                                Type          Lower           Value           Upper    Status        Pi
+          0  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.168404E-19    0.000000E+00               2.22241E-01
+          1  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.445603E-19    0.000000E+00               7.52868E-01
+          2  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    5.782412E-20    0.000000E+00               1.02506E+00
+          3  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    5.782412E-19    0.000000E+00               2.22241E-01
+          4  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.312965E-19    0.000000E+00               7.52869E-01
+          5  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.156482E-19    0.000000E+00               1.02506E+00
+          6  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.775558E-18    0.000000E+00               2.22241E-01
+          7  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -4.625929E-19    0.000000E+00               7.52869E-01
+          8  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.312965E-19    0.000000E+00               1.02506E+00
+          9  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.133353E-17    0.000000E+00               2.22241E-01
+         10  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.850372E-18    0.000000E+00               7.52870E-01
+         11  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    5.088522E-18    0.000000E+00               1.02506E+00
+         12  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    8.326673E-18    0.000000E+00               2.22241E-01
+         13  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.775558E-18    0.000000E+00               7.52870E-01
+         14  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -2.775558E-18    0.000000E+00               1.02506E+00
+         15  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -9.251859E-18    0.000000E+00               2.22241E-01
+         16  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -5.088522E-18    0.000000E+00               7.52869E-01
+         17  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    6.938894E-18    0.000000E+00               1.02506E+00
+         18  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.312965E-18    0.000000E+00               2.22242E-01
+         19  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    9.714451E-18    0.000000E+00               7.52873E-01
+         20  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.387779E-18    0.000000E+00               1.02507E+00
+         21  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.156482E-17    0.000000E+00               2.22243E-01
+         22  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -4.625929E-19    0.000000E+00               7.52874E-01
+         23  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -5.551115E-18    0.000000E+00               1.02506E+00
+         24  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.017704E-17    0.000000E+00               2.22240E-01
+         25  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.202742E-17    0.000000E+00               7.52862E-01
+         26  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    8.326673E-18    0.000000E+00               1.02504E+00
+         27  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -3.145632E-17    0.000000E+00               2.22237E-01
+         28  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -6.476301E-18    0.000000E+00               7.52855E-01
+         29  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.202742E-17    0.000000E+00               1.02504E+00
+         30  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -9.251859E-19    0.000000E+00               2.22235E-01
+         31  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.017704E-17    0.000000E+00               7.52849E-01
+         32  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -3.700743E-17    0.000000E+00               1.02503E+00
+         33  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -3.053113E-17    0.000000E+00               2.22233E-01
+         34  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -5.551115E-18    0.000000E+00               7.52841E-01
+         35  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.387779E-17    0.000000E+00               1.02501E+00
+         36  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.572816E-17    0.000000E+00               2.22230E-01
+         37  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.850372E-18    0.000000E+00               7.52831E-01
+         38  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -5.088522E-17    0.000000E+00               1.02500E+00
+         39  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    4.996004E-17    0.000000E+00               2.22227E-01
+         40  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.850372E-17    0.000000E+00               7.52822E-01
+         41  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -2.127927E-17    0.000000E+00               1.02499E+00
+         42  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -9.066821E-17    0.000000E+00               2.22225E-01
+         43  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.850372E-17    0.000000E+00               7.52812E-01
+         44  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    6.106227E-17    0.000000E+00               1.02498E+00
+         45  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.202742E-17    0.000000E+00               1.11111E-01
+         46  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    5.366078E-17    0.000000E+00               3.55200E-01
+         47  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.110223E-17    0.000000E+00               4.66190E-01
+         48  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.378527E-16    0.000000E+00               9.62963E-02
+         49  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.683039E-17    0.000000E+00               3.05013E-01
+         50  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.850372E-17    0.000000E+00               3.97858E-01
+         51  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.683039E-16    0.000000E+00               8.14815E-02
+         52  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.110223E-17    0.000000E+00               2.54826E-01
+         53  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    5.921189E-17    0.000000E+00               3.29527E-01
+         54  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    6.661338E-17    0.000000E+00               6.66667E-02
+         55  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.295260E-17    0.000000E+00               2.04639E-01
+         56  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -3.053113E-17    0.000000E+00               2.61195E-01
+         57  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -2.220446E-17    0.000000E+00               5.18519E-02
+         58  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    7.401487E-18    0.000000E+00               1.54452E-01
+         59  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -6.383782E-17    0.000000E+00               1.92864E-01
+         60  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    0.000000E+00    0.000000E+00               3.70370E-02
+         61  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    0.000000E+00    0.000000E+00               1.04265E-01
+         62  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -4.348374E-17    0.000000E+00               1.24532E-01
+         63  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.323016E-16    0.000000E+00               2.22222E-02
+         64  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -8.789266E-17    0.000000E+00               5.40779E-02
+         65  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    3.330669E-17    0.000000E+00               5.62009E-02
+         66  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.804112E-16    0.000000E+00               7.40741E-03
+         67  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    4.718448E-17    0.000000E+00               3.89078E-03
+         68  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -5.504856E-17    0.000000E+00               1.37087E-02
+         69  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -5.921189E-17    0.000000E+00               7.75789E-03
+         70  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -5.504856E-17    0.000000E+00               4.74850E-02
+         71  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    6.800116E-17    0.000000E+00               8.20833E-02
+         72  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    8.789266E-17    0.000000E+00               2.25736E-02
+         73  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    3.608225E-17    0.000000E+00               9.76739E-02
+         74  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -6.661338E-17    0.000000E+00               1.50414E-01
+         75  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -3.700743E-18    0.000000E+00               3.73882E-02
+         76  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.110223E-16    0.000000E+00               1.47860E-01
+         77  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    6.800116E-17    0.000000E+00               2.18744E-01
+         78  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -8.881784E-17    0.000000E+00               5.22028E-02
+         79  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.521131E-17    0.000000E+00               1.98046E-01
+         80  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    9.020562E-17    0.000000E+00               2.87075E-01
+         81  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    4.487151E-17    0.000000E+00               6.70173E-02
+         82  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -9.483155E-18    0.000000E+00               2.48233E-01
+         83  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    5.504856E-17    0.000000E+00               3.55405E-01
+         84  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.767105E-16    0.000000E+00               8.18318E-02
+         85  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    1.318390E-17    0.000000E+00               2.98418E-01
+         86  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    2.220446E-17    0.000000E+00               4.23735E-01
+         87  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    8.985868E-17    0.000000E+00               9.66464E-02
+         88  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00    3.735438E-17    0.000000E+00               3.48605E-01
+         89  traj.phases.phase0.collocation_constraint.defects:x    e   0.000000E+00   -1.022041E-17    0.000000E+00               4.92065E-01
+         90  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -5.551115E-18    0.000000E+00               1.00008E+00
+         91  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -3.700743E-18    0.000000E+00               1.00008E+00
+         92  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -3.700743E-18    0.000000E+00               1.00008E+00
+         93  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.145632E-17    0.000000E+00               1.00008E+00
+         94  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.035409E-17    0.000000E+00               1.00008E+00
+         95  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    0.000000E+00    0.000000E+00               1.00008E+00
+         96  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.405483E-17    0.000000E+00               1.00009E+00
+         97  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.220446E-17    0.000000E+00               1.00009E+00
+         98  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.885781E-17    0.000000E+00               1.00007E+00
+         99  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    8.326673E-17    0.000000E+00               1.00006E+00
+        100  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -7.401487E-18    0.000000E+00               1.00006E+00
+        101  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.515706E-17    0.000000E+00               1.00004E+00
+        102  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -9.992007E-17    0.000000E+00               1.00003E+00
+        103  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.850372E-18    0.000000E+00               1.00002E+00
+        104  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -4.440892E-17    0.000000E+00               1.00001E+00
+        105  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -6.661338E-17    0.000000E+00               4.33333E-01
+        106  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    2.960595E-17    0.000000E+00               3.66667E-01
+        107  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -3.330669E-17    0.000000E+00               3.00000E-01
+        108  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -9.251859E-17    0.000000E+00               2.33333E-01
+        109  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -6.476301E-17    0.000000E+00               1.66667E-01
+        110  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.295260E-17    0.000000E+00               1.00000E-01
+        111  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    4.033810E-16    0.000000E+00               3.33333E-02
+        112  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    0.000000E+00    0.000000E+00               3.48991E-02
+        113  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.221245E-16    0.000000E+00               1.01582E-01
+        114  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.295260E-17    0.000000E+00               1.68247E-01
+        115  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.128727E-16    0.000000E+00               2.34913E-01
+        116  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -8.141636E-17    0.000000E+00               3.01578E-01
+        117  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.369275E-16    0.000000E+00               3.68244E-01
+        118  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    4.625929E-17    0.000000E+00               4.34909E-01
+        119  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.628327E-16    0.000000E+00               9.99996E-01
+        120  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.516506E-16    0.000000E+00              -1.00306E-05
+        121  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.145632E-17    0.000000E+00              -1.32473E-05
+        122  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.535809E-16    0.000000E+00              -1.86283E-05
+        123  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.146431E-16    0.000000E+00              -2.13153E-05
+        124  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.443290E-16    0.000000E+00              -2.59620E-05
+        125  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.515706E-17    0.000000E+00              -2.85261E-05
+        126  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    7.956598E-17    0.000000E+00              -3.29622E-05
+        127  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.110223E-17    0.000000E+00              -3.54408E-05
+        128  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.035409E-17    0.000000E+00              -3.97990E-05
+        129  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.554312E-16    0.000000E+00              -4.22530E-05
+        130  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -9.992007E-17    0.000000E+00              -4.66510E-05
+        131  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -7.401487E-17    0.000000E+00              -4.91233E-05
+        132  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.813364E-16    0.000000E+00              -5.35557E-05
+        133  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    5.921189E-17    0.000000E+00              -5.60486E-05
+        134  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.776357E-16    0.000000E+00              -6.05218E-05
+        135  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -3.811766E-16    0.000000E+00              -6.30378E-05
+        136  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -7.771561E-17    0.000000E+00              -6.75564E-05
+        137  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.480297E-17    0.000000E+00              -7.00981E-05
+        138  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.794061E-16    0.000000E+00              -7.46668E-05
+        139  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.960595E-17    0.000000E+00              -7.72372E-05
+        140  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.053913E-16    0.000000E+00              -8.18606E-05
+        141  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    8.696747E-16    0.000000E+00              -8.44611E-05
+        142  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    9.621933E-17    0.000000E+00              -8.91448E-05
+        143  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -5.551115E-17    0.000000E+00              -9.17823E-05
+        144  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.887379E-16    0.000000E+00              -9.65332E-05
+        145  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -5.551115E-18    0.000000E+00              -9.92033E-05
+        146  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.405483E-17    0.000000E+00              -1.04015E-04
+        147  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.036208E-16    0.000000E+00              -1.06710E-04
+        148  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.700743E-17    0.000000E+00              -1.11695E-04
+        149  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    7.401487E-17    0.000000E+00              -1.14571E-04
+        150  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.127128E-16    0.000000E+00              -1.19591E-04
+        151  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -7.216450E-17    0.000000E+00              -1.22390E-04
+        152  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.850372E-17    0.000000E+00              -1.27444E-04
+        153  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -5.551115E-18    0.000000E+00              -1.30293E-04
+        154  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    9.066821E-17    0.000000E+00              -1.35452E-04
+        155  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    5.736152E-17    0.000000E+00              -1.38354E-04
+        156  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.997602E-16    0.000000E+00              -1.43608E-04
+        157  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.110223E-17    0.000000E+00              -1.46564E-04
+        158  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    9.806970E-17    0.000000E+00              -1.51922E-04
+        159  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.295260E-17    0.000000E+00              -1.54937E-04
+        160  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -3.700743E-17    0.000000E+00              -1.60405E-04
+        161  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    5.551115E-17    0.000000E+00              -1.63481E-04
+        162  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.887379E-16    0.000000E+00              -1.69064E-04
+        163  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    2.775558E-17    0.000000E+00              -1.72205E-04
+        164  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    4.440892E-17    0.000000E+00              -1.77908E-04
+        165  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.480297E-17    0.000000E+00              -1.81121E-04
+        166  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    2.590520E-17    0.000000E+00              -1.86952E-04
+        167  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.700743E-17    0.000000E+00              -1.90241E-04
+        168  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.942890E-16    0.000000E+00              -1.96209E-04
+        169  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    9.251859E-18    0.000000E+00              -1.99579E-04
+        170  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -4.810966E-17    0.000000E+00              -2.05689E-04
+        171  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    1.110223E-17    0.000000E+00              -2.09139E-04
+        172  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.110223E-17    0.000000E+00              -2.15364E-04
+        173  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.700743E-18    0.000000E+00              -2.18876E-04
+        174  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -2.960595E-17    0.000000E+00              -2.25206E-04
+        175  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    9.251859E-18    0.000000E+00              -2.28781E-04
+        176  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -7.401487E-18    0.000000E+00              -2.35219E-04
+        177  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    7.401487E-18    0.000000E+00              -2.38878E-04
+        178  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00   -1.850372E-18    0.000000E+00              -2.45571E-04
+        179  traj.phases.phase0.collocation_constraint.defects:v    e   0.000000E+00    3.700743E-18    0.000000E+00               3.63229E-05
+        180  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    1.084202E-19    0.000000E+00               4.29883E-05
+        181  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    4.336809E-19    0.000000E+00               7.93112E-05
+        182  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               8.59766E-05
+        183  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00   -1.734723E-18    0.000000E+00               1.06698E-04
+        184  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               9.62649E-05
+        185  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.16113E-04
+        186  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.04723E-04
+        187  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.18514E-04
+        188  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.08255E-04
+        189  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.15367E-04
+        190  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.06708E-04
+        191  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.13743E-04
+        192  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.05022E-04
+        193  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.11785E-04
+        194  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.03117E-04
+        195  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.09627E-04
+        196  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.00993E-04
+        197  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.07233E-04
+        198  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               9.86216E-05
+        199  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.04651E-04
+        200  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               9.61194E-05
+        201  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               1.01725E-04
+        202  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               9.30729E-05
+        203  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               9.86562E-05
+        204  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               9.03315E-05
+        205  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               9.57579E-05
+        206  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               8.73783E-05
+        207  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               8.39802E-05
+        208  traj.phases.phase0.continuity_comp.defect_states:x     e   0.000000E+00    0.000000E+00    0.000000E+00               6.63574E-05
+        209  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               8.64604E-05
+        210  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               7.80151E-05
+        211  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               8.34466E-05
+        212  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               7.55921E-05
+        213  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               7.93493E-05
+        214  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               7.09810E-05
+        215  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               7.48436E-05
+        216  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               6.65133E-05
+        217  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               6.98750E-05
+        218  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               6.16148E-05
+        219  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               6.47265E-05
+        220  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               5.64812E-05
+        221  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               5.92958E-05
+        222  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               5.10914E-05
+        223  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               5.37951E-05
+        224  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               4.55715E-05
+        225  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               4.82292E-05
+        226  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               3.97403E-05
+        227  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               4.22868E-05
+        228  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               3.35473E-05
+        229  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               3.60980E-05
+        230  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               2.70727E-05
+        231  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               3.16108E-05
+        232  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               2.20761E-05
+        233  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               2.70510E-05
+        234  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               1.73306E-05
+        235  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               2.24993E-05
+        236  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               1.24869E-05
+        237  traj.phases.phase0.continuity_comp.defect_states:v     e   0.000000E+00    0.000000E+00    0.000000E+00               9.41906E-06
+
+--------------------------------------------------------------------------------
+
+[0.]
+[0.25]
+[0.]
+[0.]
+
+Simulating trajectory traj
+INFO: checking out_of_order
+INFO: checking system
+INFO: checking solvers
+INFO: checking dup_inputs
+INFO: checking missing_recorders
+WARNING: The Problem has no recorder of any kind attached
+INFO: checking comp_has_no_outputs
+WARNING: The following Components do not have any outputs:
+   traj.phases.phase0.ode
+
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+  return f(*args, **kwds)
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/site-packages/petsc4py/lib/__init__.py:47: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#x27;s documentation for alternative uses
+  import sys, os, imp, warnings
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+  return f(*args, **kwds)
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/site-packages/numpy/lib/type_check.py:546: DeprecationWarning: np.asscalar(a) is deprecated since NumPy v1.16, use a.item() instead
+  &#x27;a.item() instead&#x27;, DeprecationWarning, stacklevel=1)
+Done simulating trajectory traj
+</pre></div></div><div class="figure align-default">
+<img alt="../_images/doc_plot_5.png" src="../_images/doc_plot_5.png" />
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="finite_burn_orbit_raise.html" title="Two-Burn Orbit Raise"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="commercial_aircraft.html" title="Commercial Aircraft Range Maximization by Differential Inclusion"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" >Dymos by Example</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

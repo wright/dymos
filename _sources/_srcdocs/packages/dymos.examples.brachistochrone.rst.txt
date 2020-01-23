@@ -1,0 +1,8 @@
+dymos.examples.brachistochrone
+------------------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    examples.brachistochrone/brachistochrone_ode
+    examples.brachistochrone/brachistochrone_vector_states_ode

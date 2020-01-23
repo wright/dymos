@@ -1,0 +1,151 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Error Estimation &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="ph-Refinement" href="ph_adaptive.html" />
+    <link rel="prev" title="Grid Refinement" href="grid_refinement.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ph_adaptive.html" title="ph-Refinement"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="grid_refinement.html" title="Grid Refinement"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grid_refinement.html" accesskey="U">Grid Refinement</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="grid_refinement.html"
+                        title="previous chapter">Grid Refinement</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="ph_adaptive.html"
+                        title="next chapter">ph-Refinement</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/feature_reference/grid_refinement/error_estimate.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="error-estimation">
+<h1>Error Estimation<a class="headerlink" href="#error-estimation" title="Permalink to this headline">¶</a></h1>
+<p>The error is computed by comparing two approximations of the solutions</p>
+<p>Each phase in the solved problem is evaluated individually. Assume that the problem was solved on the interval
+[<span class="math notranslate nohighlight">\(t_{0}\)</span>, <span class="math notranslate nohighlight">\(t_{f}\)</span>] which is divided into <span class="math notranslate nohighlight">\(K\)</span> segments as [<span class="math notranslate nohighlight">\(t_{k-1}, t_{k}\)</span>],
+<span class="math notranslate nohighlight">\(k = 0, 1,..., K-1\)</span>. Each segments is contains <span class="math notranslate nohighlight">\(n\)</span> nodes (<span class="math notranslate nohighlight">\(\tau_0\)</span>,…, <span class="math notranslate nohighlight">\(\tau_{n-1}\)</span>). A new
+grid on which the error is to be evaluated is created. The new grid has order <span class="math notranslate nohighlight">\(m\)</span> such that <span class="math notranslate nohighlight">\(m &gt; n\)</span> with
+nodes (<span class="math notranslate nohighlight">\(\widehat{\tau}_{0}\)</span>,…, <span class="math notranslate nohighlight">\(\widehat{\tau}_{m-1}\)</span>). For the Radau method <span class="math notranslate nohighlight">\(m = n + 1\)</span> and for the
+Gauss-Lobatto method <span class="math notranslate nohighlight">\(m = n + 2\)</span>. This difference is due to the fact that the implementation of Gauss-Lobatto
+transcription requires an odd order.</p>
+<p>The Lagrange interpolating polynomial <span class="math notranslate nohighlight">\(\ell\)</span> is used to obtain values for the state and control on the new grid</p>
+<div class="math notranslate nohighlight">
+\[\widehat{\ell}_j(\tau) = \prod_{{l=0, l \neq j}}_^{n-1}\,\frac{\tau - \tau_l^{(k)}}{\tau_j^{(k)} - \tau_l^{(k)}}\]</div>
+<p>The state and control are then interpolated as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}x^{(k)}(\widehat{\tau}) = \sum_{j=0}^{n-1}x_j^{(k)}\widehat{l}_j(\widehat{\tau}),\\
+u^{(k)}(\widehat{\tau}) = \sum_{j=0}^{n-1}u_j^{(k)}\widehat{l}_j(\widehat{\tau}),\:\end{split}\]</div>
+<p>Quadrature integration is then performed on the grid for each of the segments as</p>
+<div class="math notranslate nohighlight">
+\[\widehat{x}^{(k)}(\widehat{\tau}_j^{(k)}) = \widehat{x}^{(k)}(\tau_{0}) + \frac{t_f - t_0}{2}\sum_{l=1}^{m-1}
+\widehat{I}_{jl}\,f_{ode}(x^{(k)}(\widehat{\tau}_l^{(k)}), u^{(k)}(\widehat{\tau}_l^{(k)}), \widehat{\tau}_l^{(k)}),
+\: j = 1, ..., m\]</div>
+<p>where <span class="math notranslate nohighlight">\(\widehat{I}_{jl}^{(k)}\)</span> is the <span class="math notranslate nohighlight">\(m \times m\)</span> integration matrix corresponding the collocation points
+of the transcription.</p>
+<p>The absolute and relative errors are then computed as</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}E_i^{(k)}(\widehat{\tau}_l^{(k)}) = |\widehat{x}_i^{(k)}(\widehat{\tau}_l^{(k)}) - x(\widehat{\tau}_l^{(k)})|, \\
+e_i^{(k)}(\widehat{\tau}_l^{(k)}) = \frac{E_i^{(k)}(\widehat{\tau}_l^{(k)})}{1 + \max_{j \in [0, m]}
+|x_i(\widehat{\tau}_j^{(k)})|}, \\
+l = 0,..., m,\:i = 1,..., N\end{split}\]</div>
+<p>where <span class="math notranslate nohighlight">\(N\)</span> is the number of states. Then the maximum relative error is computed as</p>
+<div class="math notranslate nohighlight">
+\[e_{max}^{(k)} = \max_{i, l} \, e_i^{(k)}(\widehat{\tau}_l^{(k)})\]</div>
+<p>The maximum relative error of each phase is checked against the tolerance.</p>
+<p>This approach assumes the solution for the given problem to be smooth. In this case, increasing the number of nodes should cause
+the numerical solution to more accurately reflect the system dynamics. So comparing these two solutions is a a good
+estimate for the error in the numerical solution</p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="ph_adaptive.html" title="ph-Refinement"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="grid_refinement.html" title="Grid Refinement"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grid_refinement.html" >Grid Refinement</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

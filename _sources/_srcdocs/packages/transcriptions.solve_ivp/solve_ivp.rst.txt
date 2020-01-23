@@ -1,0 +1,16 @@
+.. index:: solve_ivp.py
+
+.. _dymos.transcriptions.solve_ivp.solve_ivp.py:
+
+solve_ivp.py
+------------
+
+.. automodule:: dymos.transcriptions.solve_ivp.solve_ivp
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

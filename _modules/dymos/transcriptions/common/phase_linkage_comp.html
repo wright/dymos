@@ -1,0 +1,237 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.transcriptions.common.phase_linkage_comp &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.transcriptions.common.phase_linkage_comp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+
+<div class="viewcode-block" id="PhaseLinkageComp"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/phase_linkage_comp.html#dymos.transcriptions.common.phase_linkage_comp.PhaseLinkageComp">[docs]</a><span class="k">class</span> <span class="nc">PhaseLinkageComp</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides a &#39;linkage&#39; capability between two phases to provide</span>
+<span class="sd">    continuity in states, time, and other variables between two</span>
+<span class="sd">    phases.</span>
+
+<span class="sd">    Conceptually, each linkage can be thought of as a set of compatibility constraints involving</span>
+<span class="sd">    one or more variables.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="PhaseLinkageComp.initialize"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/phase_linkage_comp.html#dymos.transcriptions.common.phase_linkage_comp.PhaseLinkageComp.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;linkages&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[])</span></div>
+
+<div class="viewcode-block" id="PhaseLinkageComp.setup"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/phase_linkage_comp.html#dymos.transcriptions.common.phase_linkage_comp.PhaseLinkageComp.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">lnk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;linkages&#39;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond0_name&#39;</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                           <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond1_name&#39;</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                           <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                            <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]),</span> <span class="n">units</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">equals</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;equals&#39;</span><span class="p">],</span>
+                                <span class="n">lower</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;lower&#39;</span><span class="p">],</span> <span class="n">upper</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;upper&#39;</span><span class="p">],</span>
+                                <span class="n">ref</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">],</span> <span class="n">ref0</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;ref0&#39;</span><span class="p">],</span>
+                                <span class="n">scaler</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;scaler&#39;</span><span class="p">],</span> <span class="n">adder</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;adder&#39;</span><span class="p">],</span>
+                                <span class="n">linear</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;linear&#39;</span><span class="p">])</span>
+
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="n">ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">wrt</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond1_name&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">],</span> <span class="n">wrt</span><span class="o">=</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond0_name&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">val</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PhaseLinkageComp.add_linkage"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/phase_linkage_comp.html#dymos.transcriptions.common.phase_linkage_comp.PhaseLinkageComp.add_linkage">[docs]</a>    <span class="k">def</span> <span class="nf">add_linkage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="nb">vars</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">equals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                    <span class="n">scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">adder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linear</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a linkage constraint to be managed by this component.</span>
+
+<span class="sd">        .. math ::</span>
+
+<span class="sd">            C_n = y_{n1} - y_{n0}</span>
+
+<span class="sd">        where :math:`y_1` is the value of the variable at the beginning or end of phase 1,</span>
+<span class="sd">        and :math:`y_0` is the value of the variable at the beginning or end of phase 0.</span>
+<span class="sd">        The location of the source of the constraint can be set by the user based on</span>
+<span class="sd">        connected indices.</span>
+
+<span class="sd">        The name of each linkage constraint will be LNK_var where LNK is the name of the linkage</span>
+<span class="sd">        and var are the vars in that linkage.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str.</span>
+<span class="sd">            The name of one or more linkage constraints to be added.</span>
+<span class="sd">        vars : str or iterable</span>
+<span class="sd">            The name of one or more linked variables to be added.</span>
+<span class="sd">        shape : tuple or dict</span>
+<span class="sd">            The shape of the constraint being formed.  Must be compliant with the shape</span>
+<span class="sd">            of the variable.  If given as a dict, it should be keyed</span>
+<span class="sd">            with variables in var, and the associated value being the corresponding units.</span>
+<span class="sd">        units : str, dict, or None</span>
+<span class="sd">            The units of the linkage constraint.  If given as a string, the units will</span>
+<span class="sd">            apply to each variable in vars.  If given as a dict, it should be keyed</span>
+<span class="sd">            with variables in var, and the associated value being the corresponding units.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        lower : float or ndarray</span>
+<span class="sd">            The minimum allowable difference of y_1 - y_0, enforced by the optimizer.</span>
+<span class="sd">        upper : float or ndarray</span>
+<span class="sd">            The minimum allowable difference of y_1 - y_0, enforced by the optimizer.</span>
+<span class="sd">        equals : float or ndarray</span>
+<span class="sd">            The prescribed difference of y_1 - y_0, enforced bt the optimizer.</span>
+<span class="sd">        scaler : float, ndarray, or None</span>
+<span class="sd">            The scalar applied to this constraint by the driver.</span>
+<span class="sd">        adder : float, ndarray, or None</span>
+<span class="sd">            The adder applied to this constraint by the driver.</span>
+<span class="sd">        ref0 : float, ndarray, or None</span>
+<span class="sd">            The zero-reference value of this constraint, used for scaling by the driver.</span>
+<span class="sd">        ref : float, ndarray, or None</span>
+<span class="sd">            The one-reference value of this constraint, used for scaling by the driver.</span>
+<span class="sd">        linear : bool</span>
+<span class="sd">            If True, this constraint will be treated as a linear constraint by the optimizer.</span>
+<span class="sd">            This should only be done if the *total derivative* of the constraint is linear.</span>
+<span class="sd">            That is, the affected variables in each phase are design</span>
+<span class="sd">            variables or linear functions of design variables.  Default is False.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">equals</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lower</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">upper</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">equals</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">vars</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="n">_vars</span> <span class="o">=</span> <span class="p">(</span><span class="nb">vars</span><span class="p">,)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_vars</span> <span class="o">=</span> <span class="nb">vars</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="n">units</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">_units</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">_vars</span><span class="p">:</span>
+                <span class="n">_units</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">units</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_units</span> <span class="o">=</span> <span class="n">units</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+            <span class="n">_shapes</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">_vars</span><span class="p">:</span>
+                <span class="n">_shapes</span><span class="p">[</span><span class="n">var</span><span class="p">]</span> <span class="o">=</span> <span class="n">shape</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">_shapes</span> <span class="o">=</span> <span class="n">shape</span>
+
+        <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">_vars</span><span class="p">:</span>
+
+            <span class="n">lnk</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">()</span>
+
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">str</span><span class="p">,))</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;equals&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;adder&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;ref0&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">float</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">tuple</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;cond0_name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;cond1_name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">)</span>
+
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">var</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;equals&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">equals</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;lower&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">lower</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;upper&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">upper</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;scaler&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scaler</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;adder&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">adder</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;ref0&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref0</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;ref&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ref</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_shapes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;linear&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">linear</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">_units</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond0_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">:lhs&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond1_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">:rhs&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;linkages&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lnk</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PhaseLinkageComp.compute"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/phase_linkage_comp.html#dymos.transcriptions.common.phase_linkage_comp.PhaseLinkageComp.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+
+        <span class="k">for</span> <span class="n">lnk</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;linkages&#39;</span><span class="p">]:</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond1_name&#39;</span><span class="p">]]</span> <span class="o">-</span> <span class="n">inputs</span><span class="p">[</span><span class="n">lnk</span><span class="p">[</span><span class="s1">&#39;cond0_name&#39;</span><span class="p">]]</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

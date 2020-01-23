@@ -1,0 +1,158 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>misc.py &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="rk_methods.py" href="rk_methods.html" />
+    <link rel="prev" title="lgr.py" href="lgr.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rk_methods.html" title="rk_methods.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="lgr.html" title="lgr.py"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" accesskey="U">dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="lgr.html"
+                        title="previous chapter">lgr.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="rk_methods.html"
+                        title="next chapter">rk_methods.py</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/_srcdocs/packages/utils/misc.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dymos.utils.misc">
+<span id="misc-py"></span><span id="dymos-utils-misc-py"></span><span id="index-0"></span><h1>misc.py<a class="headerlink" href="#module-dymos.utils.misc" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dymos.utils.misc.CoerceDesvar">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.utils.misc.</code><code class="sig-name descname">CoerceDesvar</code><span class="sig-paren">(</span><em class="sig-param">num_input_nodes</em>, <em class="sig-param">desvar_indices</em>, <em class="sig-param">options</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/misc.html#CoerceDesvar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.misc.CoerceDesvar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Check the desvar options for the appropriate shape and resize
+accordingly with options.</p>
+<dl class="method">
+<dt id="dymos.utils.misc.CoerceDesvar.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">num_input_nodes</em>, <em class="sig-param">desvar_indices</em>, <em class="sig-param">options</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/misc.html#CoerceDesvar.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.misc.CoerceDesvar.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.utils.misc.get_rate_units">
+<code class="sig-prename descclassname">dymos.utils.misc.</code><code class="sig-name descname">get_rate_units</code><span class="sig-paren">(</span><em class="sig-param">units</em>, <em class="sig-param">time_units</em>, <em class="sig-param">deriv=1</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/misc.html#get_rate_units"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.misc.get_rate_units" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string for rate units given units for the variable
+and time units.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>units</strong><span class="classifier">str</span></dt><dd><p>Units of a given variable.</p>
+</dd>
+<dt><strong>time_units</strong><span class="classifier">str</span></dt><dd><p>Time units.</p>
+</dd>
+<dt><strong>deriv</strong><span class="classifier">int</span></dt><dd><p>If 1, provide the units of the first derivative.  If 2,
+provide the units of the second derivative.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>str</strong><span class="classifier"></span></dt><dd><p>Corresponding rate units for the given variable.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="rk_methods.html" title="rk_methods.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="lgr.html" title="lgr.py"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" >dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

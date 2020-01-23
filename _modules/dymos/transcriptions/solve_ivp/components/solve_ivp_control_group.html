@@ -1,0 +1,314 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.transcriptions.solve_ivp.components.solve_ivp_control_group &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.transcriptions.solve_ivp.components.solve_ivp_control_group</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">block_diag</span>
+
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+<span class="kn">from</span> <span class="nn">...grid_data</span> <span class="kn">import</span> <span class="n">GridData</span>
+<span class="kn">from</span> <span class="nn">dymos.utils.misc</span> <span class="kn">import</span> <span class="n">get_rate_units</span>
+<span class="kn">from</span> <span class="nn">....utils.lagrange</span> <span class="kn">import</span> <span class="n">lagrange_matrices</span>
+
+
+<div class="viewcode-block" id="SolveIVPControlInterpComp"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_control_group.SolveIVPControlInterpComp">[docs]</a><span class="k">class</span> <span class="nc">SolveIVPControlInterpComp</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Compute the approximated control values and rates given the values of a control at output nodes</span>
+<span class="sd">    and the approximated values at output nodes, given values at the control input nodes.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    .. math::</span>
+
+<span class="sd">        u = \\left[ L \\right] u_d</span>
+
+<span class="sd">        \\dot{u} = \\frac{d\\tau_s}{dt} \\left[ D \\right] u_d</span>
+
+<span class="sd">        \\ddot{u} = \\left( \\frac{d\\tau_s}{dt} \\right)^2 \\left[ D_2 \\right] u_d</span>
+
+<span class="sd">    where</span>
+<span class="sd">    :math:`u_d` are the values of the control at the control discretization nodes,</span>
+<span class="sd">    :math:`u` are the values of the control at all nodes,</span>
+<span class="sd">    :math:`\\dot{u}` are the time-derivatives of the control at all nodes,</span>
+<span class="sd">    :math:`\\ddot{u}` are the second time-derivatives of the control at all nodes,</span>
+<span class="sd">    :math:`L` is the Lagrange interpolation matrix,</span>
+<span class="sd">    :math:`D` is the Lagrange differentiation matrix,</span>
+<span class="sd">    and :math:`\\frac{d\\tau_s}{dt}` is the ratio of segment duration in segment tau space</span>
+<span class="sd">    [-1 1] to segment duration in time.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SolveIVPControlInterpComp.initialize"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_control_group.SolveIVPControlInterpComp.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;control_options&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Dictionary of options for the dynamic controls&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;time_units&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Units of time&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;grid_data&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">GridData</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Container object for grid info&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If None, results are provided at the all nodes within each&#39;</span>
+                                  <span class="s1">&#39;segment.  If an int (n) then results are provided at n &#39;</span>
+                                  <span class="s1">&#39;equally distributed points in time within each segment.&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Save the names of the dynamic controls/parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_names</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_val_all_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_controls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">control_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;control_options&#39;</span><span class="p">]</span>
+        <span class="n">num_nodes_all</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes_all</span>
+        <span class="n">num_nodes_output</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes_output</span>
+        <span class="n">num_control_input_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;grid_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">]</span>
+        <span class="n">time_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;time_units&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="n">control_options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_val_all_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;control_values_all:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;control_values:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;control_rates:</span><span class="si">{0}</span><span class="s1">_rate&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;control_rates:</span><span class="si">{0}</span><span class="s1">_rate2&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_control_input_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span>
+            <span class="n">all_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_nodes_all</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_nodes_output</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span>
+
+            <span class="n">units</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+            <span class="n">rate_units</span> <span class="o">=</span> <span class="n">get_rate_units</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">time_units</span><span class="p">)</span>
+            <span class="n">rate2_units</span> <span class="o">=</span> <span class="n">get_rate_units</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="n">time_units</span><span class="p">,</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dynamic_names</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">input_shape</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_val_all_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">all_shape</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">rate_units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span>
+                            <span class="n">units</span><span class="o">=</span><span class="n">rate2_units</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SolveIVPControlInterpComp.setup"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_control_group.SolveIVPControlInterpComp.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">output_nodes_per_seg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">]</span>
+        <span class="n">time_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;time_units&#39;</span><span class="p">]</span>
+        <span class="n">gd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;grid_data&#39;</span><span class="p">]</span>
+        <span class="n">num_seg</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">num_segments</span>
+        <span class="n">num_nodes_all</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">output_nodes_per_seg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">num_nodes_output</span> <span class="o">=</span> <span class="n">num_nodes_all</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">num_nodes_output</span> <span class="o">=</span> <span class="n">num_seg</span> <span class="o">*</span> <span class="n">output_nodes_per_seg</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;dt_dstau&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">num_nodes_output</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">time_units</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes_all</span> <span class="o">=</span> <span class="n">num_nodes_all</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes_output</span> <span class="o">=</span> <span class="n">num_nodes_output</span>
+
+        <span class="n">num_disc_nodes</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="s1">&#39;control_disc&#39;</span><span class="p">]</span>
+        <span class="n">num_input_nodes</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Find the indexing matrix that, multiplied by the values at the input nodes,</span>
+        <span class="c1"># gives the values at the discretization nodes</span>
+        <span class="n">L_id</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_disc_nodes</span><span class="p">,</span> <span class="n">num_input_nodes</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">L_id</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_disc_nodes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+             <span class="n">gd</span><span class="o">.</span><span class="n">input_maps</span><span class="p">[</span><span class="s1">&#39;dynamic_control_input_to_disc&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mf">1.0</span>
+
+        <span class="c1"># Matrices L_do and D_do interpolate values and rates (respectively) at output nodes from</span>
+        <span class="c1"># values specified at control discretization nodes.</span>
+        <span class="n">L_da</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">phase_lagrange_matrices</span><span class="p">(</span><span class="s1">&#39;control_disc&#39;</span><span class="p">,</span> <span class="s1">&#39;all&#39;</span><span class="p">)</span>
+
+        <span class="n">L_do_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">D_do_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">iseg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_seg</span><span class="p">):</span>
+            <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="s1">&#39;control_disc&#39;</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="s1">&#39;control_disc&#39;</span><span class="p">][</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
+            <span class="n">nodes_given</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">node_stau</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">output_nodes_per_seg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="p">:]</span>
+                <span class="n">indices</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">][</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
+                <span class="n">nodes_eval</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">node_stau</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">nodes_eval</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">output_nodes_per_seg</span><span class="p">)</span>
+
+            <span class="n">L_block</span><span class="p">,</span> <span class="n">D_block</span> <span class="o">=</span> <span class="n">lagrange_matrices</span><span class="p">(</span><span class="n">nodes_given</span><span class="p">,</span> <span class="n">nodes_eval</span><span class="p">)</span>
+
+            <span class="n">L_do_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L_block</span><span class="p">)</span>
+            <span class="n">D_do_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">D_block</span><span class="p">)</span>
+
+        <span class="n">L_do</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">L_do_blocks</span><span class="p">)</span>
+        <span class="n">D_do</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">D_do_blocks</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">L_do</span><span class="p">,</span> <span class="n">L_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">L_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">L_da</span><span class="p">,</span> <span class="n">L_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">D_do</span><span class="p">,</span> <span class="n">L_id</span><span class="p">)</span>
+
+        <span class="c1"># Matrix D_dd interpolates rates at discretization nodes from values given at control</span>
+        <span class="c1"># discretization nodes.</span>
+        <span class="n">_</span><span class="p">,</span> <span class="n">D_dd</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">phase_lagrange_matrices</span><span class="p">(</span><span class="s1">&#39;control_disc&#39;</span><span class="p">,</span> <span class="s1">&#39;control_disc&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Matrix D2 provides second derivatives at output nodes given values at input nodes.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">D2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">D_do</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">D_dd</span><span class="p">,</span> <span class="n">L_id</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_controls</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_check_partial_options</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">&#39;cs&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SolveIVPControlInterpComp.compute"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_control_group.SolveIVPControlInterpComp.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+        <span class="n">control_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;control_options&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="n">control_options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="n">u</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
+
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">D2</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="c1"># divide each &quot;row&quot; by dt_dstau or dt_dstau**2</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_val_all_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">L_all</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;dt_dstau&#39;</span><span class="p">])</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;dt_dstau&#39;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div></div>
+
+
+<div class="viewcode-block" id="SolveIVPControlGroup"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_control_group.SolveIVPControlGroup">[docs]</a><span class="k">class</span> <span class="nc">SolveIVPControlGroup</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SolveIVPControlGroup.initialize"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_control_group.SolveIVPControlGroup.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;control_options&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Dictionary of options for the dynamic controls&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;time_units&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Units of time&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;grid_data&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">GridData</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Container object for grid info&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If None, results are provided at the all nodes within each&#39;</span>
+                                  <span class="s1">&#39;segment.  If an int (n) then results are provided at n &#39;</span>
+                                  <span class="s1">&#39;equally distributed points in time within each segment.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SolveIVPControlGroup.setup"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_control_group.SolveIVPControlGroup.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">gd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;grid_data&#39;</span><span class="p">]</span>
+        <span class="n">control_options</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;control_options&#39;</span><span class="p">]</span>
+        <span class="n">time_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;time_units&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">control_options</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="n">opt_controls</span> <span class="o">=</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">opts</span><span class="p">)</span> <span class="ow">in</span> <span class="n">control_options</span><span class="o">.</span><span class="n">items</span><span class="p">()</span> <span class="k">if</span> <span class="n">opts</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">opt_controls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ivc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;indep_controls&#39;</span><span class="p">,</span> <span class="n">subsys</span><span class="o">=</span><span class="n">om</span><span class="o">.</span><span class="n">IndepVarComp</span><span class="p">(),</span>
+                                     <span class="n">promotes_outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span>
+            <span class="s1">&#39;control_interp_comp&#39;</span><span class="p">,</span>
+            <span class="n">subsys</span><span class="o">=</span><span class="n">SolveIVPControlInterpComp</span><span class="p">(</span><span class="n">time_units</span><span class="o">=</span><span class="n">time_units</span><span class="p">,</span> <span class="n">grid_data</span><span class="o">=</span><span class="n">gd</span><span class="p">,</span>
+                                             <span class="n">control_options</span><span class="o">=</span><span class="n">control_options</span><span class="p">,</span>
+                                             <span class="n">output_nodes_per_seg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">]),</span>
+            <span class="n">promotes_inputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">],</span>
+            <span class="n">promotes_outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">])</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="n">control_options</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]:</span>
+                <span class="n">num_input_nodes</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">]</span>
+
+                <span class="n">ivc</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                               <span class="n">val</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;val&#39;</span><span class="p">],</span>
+                               <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">num_input_nodes</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">])),</span>
+                               <span class="n">units</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

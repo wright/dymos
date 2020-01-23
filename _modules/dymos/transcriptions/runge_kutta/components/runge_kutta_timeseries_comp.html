@@ -1,0 +1,178 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.transcriptions.runge_kutta.components.runge_kutta_timeseries_comp &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.transcriptions.runge_kutta.components.runge_kutta_timeseries_comp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">block_diag</span>
+
+<span class="kn">from</span> <span class="nn">...common.timeseries_output_comp</span> <span class="kn">import</span> <span class="n">TimeseriesOutputCompBase</span>
+<span class="kn">from</span> <span class="nn">....transcriptions.grid_data</span> <span class="kn">import</span> <span class="n">GridData</span>
+<span class="kn">from</span> <span class="nn">dymos.utils.lagrange</span> <span class="kn">import</span> <span class="n">lagrange_matrices</span>
+
+
+<div class="viewcode-block" id="RungeKuttaTimeseriesOutputComp"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.runge_kutta.components/runge_kutta_timeseries_comp.html#dymos.transcriptions.runge_kutta.components.runge_kutta_timeseries_comp.RungeKuttaTimeseriesOutputComp">[docs]</a><span class="k">class</span> <span class="nc">RungeKuttaTimeseriesOutputComp</span><span class="p">(</span><span class="n">TimeseriesOutputCompBase</span><span class="p">):</span>
+
+<div class="viewcode-block" id="RungeKuttaTimeseriesOutputComp.setup"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.runge_kutta.components/runge_kutta_timeseries_comp.html#dymos.transcriptions.runge_kutta.components.runge_kutta_timeseries_comp.RungeKuttaTimeseriesOutputComp.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define the independent variables as output variables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">igd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;input_grid_data&#39;</span><span class="p">]</span>
+        <span class="n">ogd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_grid_data&#39;</span><span class="p">]</span>
+        <span class="n">output_subset</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_subset&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">ogd</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">ogd</span> <span class="o">=</span> <span class="n">igd</span>
+
+        <span class="c1"># Build the interpolation matrix which maps from the input grid to the output grid.</span>
+        <span class="c1"># Rather than a single phase-wide interpolating polynomial, map each segment.</span>
+        <span class="c1"># To do this, find the nodes in the output grid which fall in each segment of the input</span>
+        <span class="c1"># grid.  Then build a Lagrange interpolating polynomial for that segment</span>
+        <span class="n">L_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">output_nodes_ptau</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">ogd</span><span class="o">.</span><span class="n">node_ptau</span><span class="p">[</span><span class="n">ogd</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">output_subset</span><span class="p">]])</span>
+
+        <span class="k">for</span> <span class="n">iseg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">igd</span><span class="o">.</span><span class="n">num_segments</span><span class="p">):</span>
+            <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">igd</span><span class="o">.</span><span class="n">segment_indices</span><span class="p">[</span><span class="n">iseg</span><span class="p">]</span>
+            <span class="n">iptau_segi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">igd</span><span class="o">.</span><span class="n">node_ptau</span><span class="p">,</span> <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+            <span class="n">istau_segi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">take</span><span class="p">(</span><span class="n">igd</span><span class="o">.</span><span class="n">node_stau</span><span class="p">,</span> <span class="p">(</span><span class="n">i1</span><span class="p">,</span> <span class="n">i2</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+            <span class="c1"># The indices of the output grid that fall within this segment of the input grid</span>
+            <span class="k">if</span> <span class="n">ogd</span> <span class="ow">is</span> <span class="n">igd</span><span class="p">:</span>
+                <span class="n">optau_segi</span> <span class="o">=</span> <span class="n">iptau_segi</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ptau_hi</span> <span class="o">=</span> <span class="n">igd</span><span class="o">.</span><span class="n">segment_ends</span><span class="p">[</span><span class="n">iseg</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">iseg</span> <span class="o">&lt;</span> <span class="n">igd</span><span class="o">.</span><span class="n">num_segments</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">idxs_in_iseg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">output_nodes_ptau</span> <span class="o">&lt;=</span> <span class="n">ptau_hi</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">idxs_in_iseg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_nodes_ptau</span><span class="p">))</span>
+                <span class="n">optau_segi</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">output_nodes_ptau</span><span class="p">)[</span><span class="n">idxs_in_iseg</span><span class="p">]</span>
+                <span class="c1"># Remove the captured nodes so we don&#39;t accidentally include them again</span>
+                <span class="n">output_nodes_ptau</span> <span class="o">=</span> <span class="n">output_nodes_ptau</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">idxs_in_iseg</span><span class="p">):]</span>
+
+            <span class="c1"># Now get the output nodes which fall in iseg in iseg&#39;s segment tau space.</span>
+            <span class="n">ostau_segi</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">optau_segi</span> <span class="o">-</span> <span class="n">iptau_segi</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">/</span> <span class="p">(</span><span class="n">iptau_segi</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">iptau_segi</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">1</span>
+
+            <span class="c1"># Create the interpolation matrix and add it to the blocks</span>
+            <span class="n">L</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lagrange_matrices</span><span class="p">(</span><span class="n">istau_segi</span><span class="p">,</span> <span class="n">ostau_segi</span><span class="p">)</span>
+            <span class="n">L_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">interpolation_matrix</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">L_blocks</span><span class="p">)</span>
+        <span class="n">r</span><span class="p">,</span> <span class="n">c</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation_matrix</span><span class="p">)</span>
+
+        <span class="n">output_num_nodes</span><span class="p">,</span> <span class="n">input_num_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolation_matrix</span><span class="o">.</span><span class="n">shape</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_timeseries_outputs</span><span class="p">:</span>
+
+            <span class="n">input_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">)}</span>
+            <span class="n">input_name</span> <span class="o">=</span> <span class="s1">&#39;input_values:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span>
+                           <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">input_num_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                           <span class="o">**</span><span class="n">input_kwargs</span><span class="p">)</span>
+
+            <span class="n">output_name</span> <span class="o">=</span> <span class="n">name</span>
+            <span class="n">output_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">)}</span>
+            <span class="n">output_kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">output_num_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="o">**</span><span class="n">output_kwargs</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">input_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]))</span>
+
+            <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">])</span>
+            <span class="n">val_jac</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">output_num_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">input_num_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+                <span class="n">val_jac</span><span class="p">[:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">interpolation_matrix</span>
+
+            <span class="n">val_jac</span> <span class="o">=</span> <span class="n">val_jac</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">output_num_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span> <span class="n">input_num_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">),</span>
+                                      <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+
+            <span class="n">val_jac_rows</span><span class="p">,</span> <span class="n">val_jac_cols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">val_jac</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="n">rs</span><span class="p">,</span> <span class="n">cs</span> <span class="o">=</span> <span class="n">val_jac_rows</span><span class="p">,</span> <span class="n">val_jac_cols</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="n">output_name</span><span class="p">,</span>
+                                  <span class="n">wrt</span><span class="o">=</span><span class="n">input_name</span><span class="p">,</span>
+                                  <span class="n">rows</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">cs</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">val_jac</span><span class="p">[</span><span class="n">rs</span><span class="p">,</span> <span class="n">cs</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="RungeKuttaTimeseriesOutputComp.compute"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.runge_kutta.components/runge_kutta_timeseries_comp.html#dymos.transcriptions.runge_kutta.components.runge_kutta_timeseries_comp.RungeKuttaTimeseriesOutputComp.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">discrete_inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">discrete_outputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">:</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="n">output_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">interpolation_matrix</span><span class="p">,</span> <span class="n">inputs</span><span class="p">[</span><span class="n">input_name</span><span class="p">],</span>
+                                                <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

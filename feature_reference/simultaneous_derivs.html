@@ -1,0 +1,252 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Brachistochrone with Simultaneous Derivatives &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Dymos by Example" href="../examples/examples.html" />
+    <link rel="prev" title="Tandem Phases: Using different ODE simultaneously in time" href="tandem_phases.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../examples/examples.html" title="Dymos by Example"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tandem_phases.html" title="Tandem Phases: Using different ODE simultaneously in time"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" accesskey="U">Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Brachistochrone with Simultaneous Derivatives</a><ul>
+<li><a class="reference internal" href="#step-1-using-openmdao-s-simul-coloring-capability">Step 1: Using OpenMDAO’s Simul-Coloring Capability</a></li>
+<li><a class="reference internal" href="#running-the-coloring-algorithm-separately">Running the coloring algorithm separately</a></li>
+<li><a class="reference internal" href="#performance-comparison-with-and-without-simultaneous-derivatives">Performance comparison with and without simultaneous derivatives</a></li>
+<li><a class="reference internal" href="#general-performance-tips-using-dymos">General Performance Tips Using Dymos</a><ul>
+<li><a class="reference internal" href="#use-the-cscjacobian-as-the-top-level-jacobian-where-possible">1. Use the CSCJacobian as the top-level Jacobian where possible</a></li>
+<li><a class="reference internal" href="#use-directsolver-as-the-top-level-linear-solver-where-possible">2. Use DirectSolver as the top-level linear solver where possible</a></li>
+<li><a class="reference internal" href="#use-simultaneous-derivatives">3. Use simultaneous derivatives</a></li>
+<li><a class="reference internal" href="#use-compressed-transcription-when-parallelization-is-not-a-concern">4. Use “compressed” transcription when parallelization is not a concern</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tandem_phases.html"
+                        title="previous chapter">Tandem Phases:  Using different ODE simultaneously in time</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../examples/examples.html"
+                        title="next chapter">Dymos by Example</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/feature_reference/simultaneous_derivs.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="brachistochrone-with-simultaneous-derivatives">
+<h1>Brachistochrone with Simultaneous Derivatives<a class="headerlink" href="#brachistochrone-with-simultaneous-derivatives" title="Permalink to this headline">¶</a></h1>
+<p>A key feature of collocation algorithms such as high-order Gauss-Lobatto collocation or the
+Radau pseudospectral method is that they exhibit a large degree of <em>sparsity</em> in the total
+Jacobian.  By modeling the state-time histories as a series of polynomial segments, the collocation
+defect constraints within each segment are largely dependent only on the state and control values
+within the same segment.  State-of-the-art pseudospectral optimization tools such as SOCS, OTIS,
+and GPOPS-II use the notion of <em>sparse finite differences</em> to perturb multiple independent variables
+simultaneously when approximating the constraint Jacobian.  This can significantly reduce the
+computational effort required to approximate the entire Jacobian via finite difference.</p>
+<p>The unique way in which OpenMDAO assembles analytic derivatives across the problem allows us to
+use a similar approach to provide the analytic constraint Jacobian.  This approach can reduce the time
+required to solve moderately-sized optimal control problems by orders of magnitude and make the
+convergence more robust.</p>
+<p>OpenMDAO uses a simultaneous “coloring” algorithm to determine which variables can be perturbed
+simultaneously to determine the total constraint Jacobian.  Variables in the same “color” each
+impact a unique constraint, such that when all the variables are perturbed we can be assured that
+any change in the constraint vector is due to at most one scalar variable.  Since OpenMDAO uses
+a linear solver to assemble to total derivative Jacobian, coloring reduces the number of linear
+solves from one per variable in forward mode to one per <em>color</em>. In the brachistochrone example
+below this reduces the number of linear solves from 1001 to 9.  This capability makes problems
+of moderate size run orders of magnitude faster, and can make intractably large problems tractable.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>While some optimizers (SNOPT and IPOPT) are particularly adept at dealing with large, sparse
+nonlinear programming problems, coloring can still benefit drivers which do not account for
+sparsity (such as SLSQP) since it significantly reduces the cost of computing the Jacobian.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Currently OpenMDAO’s coloring algorithm requires that problems be setup using “forward” mode.</p>
+</div>
+<div class="section" id="step-1-using-openmdao-s-simul-coloring-capability">
+<h2>Step 1: Using OpenMDAO’s Simul-Coloring Capability<a class="headerlink" href="#step-1-using-openmdao-s-simul-coloring-capability" title="Permalink to this headline">¶</a></h2>
+<p>OpenMDAO supports dynamic simul-coloring, meaning it can automatically run the Jacobian coloring
+algorithm before handing the problem to the optimizer.  To enable this capability, simply
+add the following line to the driver.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span><span class="o">.</span><span class="n">declare_coloring</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>By default the coloring algorithm will attempt to determine the sparsity pattern of the total jacobian
+by filling the partial jacobian matrices with random noise and searching for nonzeros in the resulting
+total jacobian.  At times this might report that it failed to converge on a number of nonzero entries.
+This is due to the introduction of noise during the matrix inversion by the system’s linear solver.
+This can be remedied by using a different linear solver, such as PETScKrylov, or by telling the
+coloring algorithm to accept a given tolerance on the nonzero elements rather than trying to determine
+it automatically.  This can be accomplished with the following options to declare coloring:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">driver</span><span class="o">.</span><span class="n">declare_coloring</span><span class="p">(</span><span class="n">tol</span><span class="o">=</span><span class="mf">1.0E-12</span><span class="p">,</span> <span class="n">orders</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Setting <cite>orders</cite> to None prevents the automatic tolerance detection.  The value of <cite>tol</cite> is up to
+the user.  If it is too large, then some nonzero values will erroneously be determined to be zeros
+and the total derivative will be incorrect.  If <cite>tol</cite> is too small then the sparsity pattern may be
+overly conservative and degrade performance somewhat.  We recommend letting the coloring algorithm
+detect the sparsity automatically and only resorting to a fixed tolerance if necessary.</p>
+<p>The simul_coloring script outputs the following information about our problem:</p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>1 uncolored columns
+5 columns in color 1
+100 columns in color 2
+100 columns in color 3
+101 columns in color 4
+101 columns in color 5
+195 columns in color 6
+197 columns in color 7
+201 columns in color 8
+
+Total colors vs. total size: 9 vs 1001  (99.1% improvement)
+</pre></div>
+</div>
+</div>
+<div class="section" id="running-the-coloring-algorithm-separately">
+<h2>Running the coloring algorithm separately<a class="headerlink" href="#running-the-coloring-algorithm-separately" title="Permalink to this headline">¶</a></h2>
+<p>OpenMDAO supports the ability to run the coloring algorithm “offline” and then provide the
+data to the driver via a saved file.  This is potentially useful to users whose model is particularly
+expensive to color, and whom aren’t changing the problem significantly between runs.  Consult
+OpenMDAO’s documentation for more information on this feature.</p>
+</div>
+<div class="section" id="performance-comparison-with-and-without-simultaneous-derivatives">
+<h2>Performance comparison with and without simultaneous derivatives<a class="headerlink" href="#performance-comparison-with-and-without-simultaneous-derivatives" title="Permalink to this headline">¶</a></h2>
+<p>The following chart demonstrates the difference in timing that is achieved by
+using simultaneous derivatives.  In this case the time required to solve the problem
+dropped by over an order of magnitude.  For comparison, the performance of the
+legacy optimal control software OTIS4 is also shown.  When using simul-derivs, the
+performance of Dymos comes well within an order of magnitude (about 1.1x in this case) of
+the performance of OTIS. This is despite the fact that Dymos supports analytic derivatives,
+parallelization, and a non-conservative sparsity pattern which should close the gap further as
+problem size grows.</p>
+<p>This case has 600 constraints and 1001 variables, giving a total constraint Jaobian size of 600600.
+Using a conservative sparsity pattern (assuming any variable in a segment can impact any constraint
+in the same segment), OTIS computes that there are 7794 nonzero elements in the Jacobian.  The
+non-conservative sparsity pattern calculated by OpenMDAO gives 4393 nonzero elements.</p>
+<img alt="Performance of Dymos vs. OTIS in solving the brachistochrone problem." class="align-center" src="../_images/simul_derivs_perf_chart.png" />
+</div>
+<div class="section" id="general-performance-tips-using-dymos">
+<h2>General Performance Tips Using Dymos<a class="headerlink" href="#general-performance-tips-using-dymos" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="use-the-cscjacobian-as-the-top-level-jacobian-where-possible">
+<h3>1. Use the CSCJacobian as the top-level Jacobian where possible<a class="headerlink" href="#use-the-cscjacobian-as-the-top-level-jacobian-where-possible" title="Permalink to this headline">¶</a></h3>
+<p>The CSCJacobian is a sparse Jacobian format used internally by OpenMDAO that can significantly
+reduce memory requirements and signficantly improve performance of the Jacobian calculation.</p>
+</div>
+<div class="section" id="use-directsolver-as-the-top-level-linear-solver-where-possible">
+<h3>2. Use DirectSolver as the top-level linear solver where possible<a class="headerlink" href="#use-directsolver-as-the-top-level-linear-solver-where-possible" title="Permalink to this headline">¶</a></h3>
+<p>Unless the problem grows extremely large, using DirectSolver to solve the linear system which
+computes the Jacobian can yield significant performance improvements.</p>
+</div>
+<div class="section" id="use-simultaneous-derivatives">
+<h3>3. Use simultaneous derivatives<a class="headerlink" href="#use-simultaneous-derivatives" title="Permalink to this headline">¶</a></h3>
+<p>As we’ve shown above, handling sparsity and simultaneous derivatives can significantly
+improve performance.</p>
+</div>
+<div class="section" id="use-compressed-transcription-when-parallelization-is-not-a-concern">
+<h3>4. Use “compressed” transcription when parallelization is not a concern<a class="headerlink" href="#use-compressed-transcription-when-parallelization-is-not-a-concern" title="Permalink to this headline">¶</a></h3>
+<p>When providing the state and control values at segment boundaries, there are two options.
+If a phase is declared with <cite>compressed=True</cite> (the default), the one value for the state/control
+will be provided at the boundary, and used at the shared endpoint by both segments.
+If <cite>compressed=False</cite>, then then two unique values are provided as design variables, with
+state and control value continuity at the segment bound being enforced via a linear constraint.
+Experience has shown that using compressed transcription signficantly improves performance by
+reducing the number of variables and constraints given to the optimizer.  On the other hand,
+when attempting to distribute the analysis across more than one processor using the separable
+uncompressed transcription may give better performance.</p>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../examples/examples.html" title="Dymos by Example"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tandem_phases.html" title="Tandem Phases: Using different ODE simultaneously in time"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" >Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

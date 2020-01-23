@@ -1,0 +1,451 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>grid_data.py &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="transcription_base.py" href="transcription_base.html" />
+    <link rel="prev" title="dymos.transcriptions" href="../dymos.transcriptions.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transcription_base.html" title="transcription_base.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../dymos.transcriptions.html" title="dymos.transcriptions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.transcriptions.html" accesskey="U">dymos.transcriptions</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../dymos.transcriptions.html"
+                        title="previous chapter">dymos.transcriptions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="transcription_base.html"
+                        title="next chapter">transcription_base.py</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/_srcdocs/packages/transcriptions/grid_data.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dymos.transcriptions.grid_data">
+<span id="grid-data-py"></span><span id="dymos-transcriptions-grid-data-py"></span><span id="index-0"></span><h1>grid_data.py<a class="headerlink" href="#module-dymos.transcriptions.grid_data" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dymos.transcriptions.grid_data.GridData">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.transcriptions.grid_data.</code><code class="sig-name descname">GridData</code><span class="sig-paren">(</span><em class="sig-param">num_segments</em>, <em class="sig-param">transcription</em>, <em class="sig-param">transcription_order=None</em>, <em class="sig-param">segment_ends=None</em>, <em class="sig-param">compressed=False</em>, <em class="sig-param">num_steps_per_segment=1</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#GridData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.GridData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Properties associated with the GridData of a phase.</p>
+<p>GridData contains properties associated
+with the “grid” or “mesh” of a phase - the number of segments, the
+polynomial order of each segment, and the relative lengths of the segments.
+In turn, these three defining properties determine various other properties,
+such as indexing arrays used to extract the discretization or collocation
+nodes from a list of all nodes within the phase.</p>
+<dl class="method">
+<dt id="dymos.transcriptions.grid_data.GridData.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">num_segments</em>, <em class="sig-param">transcription</em>, <em class="sig-param">transcription_order=None</em>, <em class="sig-param">segment_ends=None</em>, <em class="sig-param">compressed=False</em>, <em class="sig-param">num_steps_per_segment=1</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#GridData.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.GridData.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize and compute all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>num_segments</strong><span class="classifier">int</span></dt><dd><p>The number of segments in the phase.</p>
+</dd>
+<dt><strong>transcription</strong><span class="classifier">str</span></dt><dd><p>Case-insensitive transcription scheme (e.g., (‘gauss-lobatto’, ‘radau-ps’, ‘explicit’)).</p>
+</dd>
+<dt><strong>transcription_order</strong><span class="classifier">int or int ndarray[:] or str</span></dt><dd><p>The order of the state transcription in each segment, as a scalar or a vector.  For
+Runge-Kutta phases, this is the RK method used</p>
+</dd>
+<dt><strong>segment_ends</strong><span class="classifier">Iterable[num_segments + 1] or None</span></dt><dd><p>The segments nodes on some arbitrary interval.
+This will be normalized to the interval [-1, 1].</p>
+</dd>
+<dt><strong>compressed</strong><span class="classifier">bool</span></dt><dd><p>If the transcription is compressed, then states and controls at shared
+nodes of adjacent segments are only specified once, and then broadcast
+to the appropriate indices.</p>
+</dd>
+<dt><strong>num_steps_per_segment</strong><span class="classifier">int or None</span></dt><dd><p>The number of steps to take in each segment, for explicitly integrated phases.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Attributes</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 20%" />
+<col style="width: 80%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>transcription</strong></p></td>
+<td><p>(str) The transcription to which this GridData instance applies.  One of ‘gauss-lobatto’ or ‘radau-ps’.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>num_segments</strong></p></td>
+<td><p>(int) The number of segments in the phase</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>segment_ends</strong></p></td>
+<td><p>(ndarray or None) The segment boundaries in non-dimensional phase time (phase tau space). If given as a Iterable, it must be of length (num_segments+1) and it must be monotonically increasing. If None, then the segments are equally spaced.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>num_steps_per_segment</strong></p></td>
+<td><p>(int) The number of steps to take in each segment of the phase, for explicit phases.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>num_nodes</strong></p></td>
+<td><p>(int) The total number of nodes in the phase</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>node_stau</strong></p></td>
+<td><p>(ndarray) The locations of each node in non-dimensional segment time (segment tau space).</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>node_ptau</strong></p></td>
+<td><p>(ndarray) The locations of each node in non-dimensional phase time (phase tau space).</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>node_dptau_dstau</strong></p></td>
+<td><p>(ndarray) The ratio of phase tau to segment tau at each node.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>segment_indices</strong></p></td>
+<td><p>(int ndarray[:,2]) Array where each row contains the start and end indices into the nodes.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>subset_node_indices</strong></p></td>
+<td><p>(dict of int ndarray[:]) Dict keyed by subset name where each entry are the indices of the nodes belonging to that given subset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>subset_segment_indices: dict of int ndarray[num_seg,:]</strong></p></td>
+<td><p>Dict keyed by subset name where each entry are the indices of the nodes belonging to the given subset, indexed into subset_node_indices!</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>subset_num_nodes: dict of int</strong></p></td>
+<td><p>A dict keyed by subset name that provides the total number of nodes in the phase which belong to the given subset.</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>subset_num_nodes_per_segment: dict of list</strong></p></td>
+<td><p>A dict keyed by subset name that provides a list of ints giving the number of nodes which belong to the given subset in each segment.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>compressed: bool</strong></p></td>
+<td><p>True if the transcription is compressed (connecting nodes of adjacent segments are not duplicated in the inputs).</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>input_maps: dict of int ndarray[:]</strong></p></td>
+<td><p>Dict keyed by the map name that provides a mapping for src_indices to and from “compressed” form.</p></td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.transcriptions.grid_data.GridData.phase_hermite_matrices">
+<code class="sig-name descname">phase_hermite_matrices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">given_set_name</em>, <em class="sig-param">eval_set_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#GridData.phase_hermite_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.GridData.phase_hermite_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the matrices mapping values at some nodes to values and derivatives at new nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>given_set_name</strong><span class="classifier">str</span></dt><dd><p>Name of the set of nodes with which to perform the interpolation.</p>
+</dd>
+<dt><strong>eval_set_name</strong><span class="classifier">str</span></dt><dd><p>Name of the set of nodes at which to evaluate the values and derivatives.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>ndarray[num_eval_set, num_given_set]</strong><span class="classifier"></span></dt><dd><p>Matrix that maps values at given nodes to values at eval nodes.
+This is A_i in the equations above.</p>
+</dd>
+<dt><strong>ndarray[num_eval_set, num_given_set]</strong><span class="classifier"></span></dt><dd><p>Matrix that maps derivatives at given nodes to values at eval nodes.
+This is B_i in the equations above.</p>
+</dd>
+<dt><strong>ndarray[num_eval_set, num_given_set]</strong><span class="classifier"></span></dt><dd><p>Matrix that maps values at given nodes to derivatives at eval nodes.
+This is A_d in the equations above.</p>
+</dd>
+<dt><strong>ndarray[num_eval_set, num_given_set]</strong><span class="classifier"></span></dt><dd><p>Matrix that maps derivatives at given nodes to derivatives at eval nodes.
+This is A_d in the equations above.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The equation for Hermite interpolation of the values is:</p>
+<div class="math notranslate nohighlight">
+\[x_{eval} = \left[ A_i \right] x_{given}
+                 + \frac{dt}{d\tau} \left[ B_i \right] \dot{x}_{given}\]</div>
+<p>Hermite interpolation of the derivatives is performed as:</p>
+<div class="math notranslate nohighlight">
+\[\dot{x}_{eval} = \frac{d\tau}{dt} \left[ A_d \right] x_{given}
+                       + \left[ B_d \right] \dot{x}_{given}\]</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.transcriptions.grid_data.GridData.phase_lagrange_matrices">
+<code class="sig-name descname">phase_lagrange_matrices</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">given_set_name</em>, <em class="sig-param">eval_set_name</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#GridData.phase_lagrange_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.GridData.phase_lagrange_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the matrices mapping values at some nodes to values and derivatives at new nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>given_set_name</strong><span class="classifier">str</span></dt><dd><p>Name of the set of nodes with which to perform the interpolation.</p>
+</dd>
+<dt><strong>eval_set_name</strong><span class="classifier">str</span></dt><dd><p>Name of the set of nodes at which to evaluate the values and derivatives.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>ndarray[num_eval_set, num_given_set]</strong><span class="classifier"></span></dt><dd><p>Matrix that yields the values at the new nodes.</p>
+</dd>
+<dt><strong>ndarray[num_eval_set, num_given_set]</strong><span class="classifier"></span></dt><dd><p>Matrix that yields the time derivatives at the new nodes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The values are mapped using the equation:</p>
+<div class="math notranslate nohighlight">
+\[x_{eval} = \left[ L \right] x_{given}\]</div>
+<p>And the derivatives are mapped with the equation:</p>
+<div class="math notranslate nohighlight">
+\[\dot{x}_{eval} = \left[ D \right] x_{given} \frac{d \tau}{dt}\]</div>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.transcriptions.grid_data.explicit_subsets_and_nodes">
+<code class="sig-prename descclassname">dymos.transcriptions.grid_data.</code><code class="sig-name descname">explicit_subsets_and_nodes</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">seg_idx</em>, <em class="sig-param">compressed=False</em>, <em class="sig-param">shooting='single'</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#explicit_subsets_and_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.explicit_subsets_and_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the subset dictionary corresponding to the Runge-Kutta transcription.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>The total number of control discretization nodes in the Runge-Kutta segment.</p>
+</dd>
+<dt><strong>seg_idx</strong><span class="classifier">int</span></dt><dd><p>The index of this segment within its phase.</p>
+</dd>
+<dt><strong>compressed</strong><span class="classifier">bool</span></dt><dd><p>True if the subset requested is for a phase with compressed transcription.</p>
+</dd>
+<dt><strong>shooting</strong><span class="classifier">str</span></dt><dd><p>One of the shooting method types for explicit phases (‘single’, ‘hybrid’, or ‘multiple’)</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>subsets</strong><span class="classifier">dict of {str: np.ndarray}</span></dt><dd><p>‘state_disc’ gives the indices of the state discretization nodes
+‘state_input’ gives the indices of the state input nodes
+‘control_disc’ gives the indices of the control discretization nodes
+‘control_input’ gives the indices of the control input nodes
+‘segment_ends’ gives the indices of the nodes at the start (even) and end (odd) of a segment
+‘step’ gives the indices of the nodes at step boundaries
+‘all’ gives all node indices</p>
+</dd>
+<dt><strong>nodes</strong><span class="classifier">np.ndarray</span></dt><dd><p>The location of all nodes on the interval -1, 1.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>(subsets, nodes)
+Subset ‘state_input’ is the same as subset ‘state_disc’.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.transcriptions.grid_data.gauss_lobatto_subsets_and_nodes">
+<code class="sig-prename descclassname">dymos.transcriptions.grid_data.</code><code class="sig-name descname">gauss_lobatto_subsets_and_nodes</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">seg_idx</em>, <em class="sig-param">compressed=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#gauss_lobatto_subsets_and_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.gauss_lobatto_subsets_and_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the subset dictionary corresponding to the Gauss-Lobatto transcription.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>The total number of nodes in the Gauss-Lobatto segment.  Must be
+an odd number.</p>
+</dd>
+<dt><strong>seg_idx</strong><span class="classifier">int</span></dt><dd><p>The index of this segment within its phase.</p>
+</dd>
+<dt><strong>compressed</strong><span class="classifier">bool</span></dt><dd><p>True if the subset requested is for a phase with compressed transcription.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>subsets</strong><span class="classifier">A dictionary with the following keys:</span></dt><dd><p>‘disc’ gives the indices of the state discretization nodes (deprecated)
+‘state_disc’ gives the indices of the state discretization nodes
+‘state_input’ gives the indices of the state input nodes
+‘control_disc’ gives the indices of the control discretization nodes
+‘control_input’ gives the indices of the control input nodes
+‘segment_ends’ gives the indices of the nodes at the start (even) and end (odd) of a segment
+‘col’ gives the indices of the collocation nodes
+‘all’ gives all node indices</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Subset ‘state_input’ is the same as subset ‘state_disc’ if <cite>compressed == False</cite> or
+<cite>first_seg == True</cite>.  The same is true of subsets ‘control_input’ and ‘control_disc’.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.transcriptions.grid_data.make_subset_map">
+<code class="sig-prename descclassname">dymos.transcriptions.grid_data.</code><code class="sig-name descname">make_subset_map</code><span class="sig-paren">(</span><em class="sig-param">from_subset_idxs</em>, <em class="sig-param">to_subset_idxs</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#make_subset_map"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.make_subset_map" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a map from one subset to another using the indices of each subset within all nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>from_subset_idxs</strong><span class="classifier">iterable of int</span></dt><dd><p>Subset indices for the subset from which we are mapping values.</p>
+</dd>
+<dt><strong>to_subset_idxs</strong><span class="classifier">iterable of int</span></dt><dd><p>Subset indices for the subset to which we are mapping values.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>numpy.array of int</strong><span class="classifier"></span></dt><dd><p>An index map which, when applied to values in the from_subset, will provide values
+in the to_subset.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.transcriptions.grid_data.radau_pseudospectral_subsets_and_nodes">
+<code class="sig-prename descclassname">dymos.transcriptions.grid_data.</code><code class="sig-name descname">radau_pseudospectral_subsets_and_nodes</code><span class="sig-paren">(</span><em class="sig-param">n</em>, <em class="sig-param">seg_idx</em>, <em class="sig-param">compressed=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#radau_pseudospectral_subsets_and_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.radau_pseudospectral_subsets_and_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the subset dictionary corresponding to the Radau Pseudospectral
+transcription.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>n</strong><span class="classifier">int</span></dt><dd><p>The total number of nodes in the Radau Pseudospectral segment (including right endpoint).</p>
+</dd>
+<dt><strong>seg_idx</strong><span class="classifier">int</span></dt><dd><p>The index of this segment within its phase.</p>
+</dd>
+<dt><strong>compressed</strong><span class="classifier">bool</span></dt><dd><p>True if the subset requested is for a phase with compressed transcription.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>subsets</strong><span class="classifier">A dictionary with the following keys:</span></dt><dd><p>‘disc’ gives the indices of the state discretization nodes (deprecated)
+‘state_disc’ gives the indices of the state discretization nodes
+‘state_input’ gives the indices of the state input nodes
+‘control_disc’ gives the indices of the control discretization nodes
+‘control_input’ gives the indices of the control input nodes
+‘segment_ends’ gives the indices of the nodes at the start (even) and end (odd) of a segment
+‘col’ gives the indices of the collocation nodes
+‘all’ gives all node indices</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Subset ‘state_input’ is the same as subset ‘state_disc’ if <cite>compressed == False</cite> or
+<cite>first_seg == True</cite>.  For Radau-Pseudospectral transcription, subset ‘control_input’ is always
+the same as subset ‘control_disc’.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.transcriptions.grid_data.rk_subsets_and_nodes">
+<code class="sig-prename descclassname">dymos.transcriptions.grid_data.</code><code class="sig-name descname">rk_subsets_and_nodes</code><span class="sig-paren">(</span><em class="sig-param">method</em>, <em class="sig-param">seg_idx</em>, <em class="sig-param">compressed=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/grid_data.html#rk_subsets_and_nodes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.grid_data.rk_subsets_and_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the subset dictionary corresponding to the Runge-Kutta transcription.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>method</strong><span class="classifier">str</span></dt><dd><p>One of the available RK methods in dymos.utils.rk_methods</p>
+</dd>
+<dt><strong>seg_idx</strong><span class="classifier">int</span></dt><dd><p>The index of this segment within its phase.</p>
+</dd>
+<dt><strong>compressed</strong><span class="classifier">bool</span></dt><dd><p>True if the subset requested is for a phase with compressed transcription.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>subsets</strong><span class="classifier">dict of {str: np.ndarray}</span></dt><dd><p>‘state_disc’ gives the indices of the state discretization nodes
+‘state_input’ gives the indices of the state input nodes
+‘control_disc’ gives the indices of the control discretization nodes
+‘control_input’ gives the indices of the control input nodes
+‘segment_ends’ gives the indices of the nodes at the start (even) and end (odd) of a segment
+‘step’ gives the indices of the nodes at step boundaries
+‘all’ gives all node indices</p>
+</dd>
+<dt><strong>nodes</strong><span class="classifier">np.ndarray</span></dt><dd><p>The location of all nodes on the interval -1, 1.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>(subsets, nodes)
+Subset ‘state_input’ is the same as subset ‘state_disc’.</p>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="transcription_base.html" title="transcription_base.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../dymos.transcriptions.html" title="dymos.transcriptions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.transcriptions.html" >dymos.transcriptions</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

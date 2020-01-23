@@ -1,0 +1,12 @@
+dymos.examples.aircraft_steady_flight
+-------------------------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    examples.aircraft_steady_flight/aircraft_ode
+    examples.aircraft_steady_flight/dynamic_pressure_comp
+    examples.aircraft_steady_flight/mass_comp
+    examples.aircraft_steady_flight/range_rate_comp
+    examples.aircraft_steady_flight/steady_flight_path_angle_comp
+    examples.aircraft_steady_flight/true_airspeed_comp

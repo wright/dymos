@@ -1,0 +1,16 @@
+.. index:: continuity_comp.py
+
+.. _dymos.transcriptions.common.continuity_comp.py:
+
+continuity_comp.py
+------------------
+
+.. automodule:: dymos.transcriptions.common.continuity_comp
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

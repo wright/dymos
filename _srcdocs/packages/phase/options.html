@@ -1,0 +1,1374 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>options.py &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="phase.py" href="phase.html" />
+    <link rel="prev" title="dymos.phase" href="../dymos.phase.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="phase.html" title="phase.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../dymos.phase.html" title="dymos.phase"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.phase.html" accesskey="U">dymos.phase</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../dymos.phase.html"
+                        title="previous chapter">dymos.phase</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="phase.html"
+                        title="next chapter">phase.py</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/_srcdocs/packages/phase/options.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dymos.phase.options">
+<span id="options-py"></span><span id="dymos-phase-options-py"></span><span id="index-0"></span><h1>options.py<a class="headerlink" href="#module-dymos.phase.options" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dymos.phase.options.ControlOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">ControlOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#ControlOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">openmdao.utils.options_dictionary.OptionsDictionary</span></code></p>
+<p>An OptionsDictionary specific to controls.</p>
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#ControlOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.ControlOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.ControlOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">DesignParameterOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#DesignParameterOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">openmdao.utils.options_dictionary.OptionsDictionary</span></code></p>
+<p>An OptionsDictionary specific to design parameters.</p>
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#DesignParameterOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.DesignParameterOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.DesignParameterOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">InputParameterOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#InputParameterOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">openmdao.utils.options_dictionary.OptionsDictionary</span></code></p>
+<p>An OptionsDictionary specific to input parameters.</p>
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#InputParameterOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.InputParameterOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.InputParameterOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">PolynomialControlOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#PolynomialControlOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">openmdao.utils.options_dictionary.OptionsDictionary</span></code></p>
+<p>An OptionsDictionary specific to controls.</p>
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#PolynomialControlOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.PolynomialControlOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.PolynomialControlOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dymos.phase.options.StateOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">StateOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#StateOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">openmdao.utils.options_dictionary.OptionsDictionary</span></code></p>
+<p>An OptionsDictionary specific to controls.</p>
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#StateOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.StateOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.StateOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dymos.phase.options.TimeOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">TimeOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#TimeOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">openmdao.utils.options_dictionary.OptionsDictionary</span></code></p>
+<p>An OptionsDictionary for time options</p>
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#TimeOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TimeOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TimeOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">TrajDesignParameterOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#TrajDesignParameterOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dymos.phase.options.DesignParameterOptionsDictionary" title="dymos.phase.options.DesignParameterOptionsDictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">dymos.phase.options.DesignParameterOptionsDictionary</span></code></a></p>
+<p>An OptionsDictionary specific to trajectory design parameters.</p>
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#TrajDesignParameterOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajDesignParameterOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajDesignParameterOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.phase.options.</code><code class="sig-name descname">TrajInputParameterOptionsDictionary</code><span class="sig-paren">(</span><em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#TrajInputParameterOptionsDictionary"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#dymos.phase.options.InputParameterOptionsDictionary" title="dymos.phase.options.InputParameterOptionsDictionary"><code class="xref py py-class docutils literal notranslate"><span class="pre">dymos.phase.options.InputParameterOptionsDictionary</span></code></a></p>
+<p>An OptionsDictionary specific to trajectory input parameters.</p>
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.__contains__">
+<code class="sig-name descname">__contains__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">key</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.__contains__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if the key is in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>key</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>boolean</strong><span class="classifier"></span></dt><dd><p>whether key is in the local dict.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.__getitem__">
+<code class="sig-name descname">__getitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.__getitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get an option from the dict or declared default.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">read_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/options.html#TrajInputParameterOptionsDictionary.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize all attributes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>parent_name</strong><span class="classifier">str</span></dt><dd><p>Name or class name of System that owns this OptionsDictionary</p>
+</dd>
+<dt><strong>read_only</strong><span class="classifier">bool</span></dt><dd><p>If True, setting (via __setitem__ or update) is not permitted.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.__iter__">
+<code class="sig-name descname">__iter__</code><span class="sig-paren">(</span><em class="sig-param">self</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.__iter__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Provide an iterator.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>iterable</strong><span class="classifier"></span></dt><dd><p>iterator over the keys in the dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.__setitem__">
+<code class="sig-name descname">__setitem__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">value</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.__setitem__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set an option in the local dictionary.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>name of the option.</p>
+</dd>
+<dt><strong>value</strong><span class="classifier">-</span></dt><dd><p>value of the option to be value- and type-checked if declared.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.declare">
+<code class="sig-name descname">declare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">default=&lt;object object at 0x7f47e2f2b270&gt;</em>, <em class="sig-param">values=None</em>, <em class="sig-param">types=None</em>, <em class="sig-param">type_=None</em>, <em class="sig-param">desc=''</em>, <em class="sig-param">upper=None</em>, <em class="sig-param">lower=None</em>, <em class="sig-param">check_valid=None</em>, <em class="sig-param">allow_none=False</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.declare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Declare an option.</p>
+<p>The value of the option must satisfy the following:
+1. If values only was given when declaring, value must be in values.
+2. If types only was given when declaring, value must satisfy isinstance(value, types).
+3. It is an error if both values and types are given.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>Name of the option.</p>
+</dd>
+<dt><strong>default</strong><span class="classifier">object or Null</span></dt><dd><p>Optional default value that must be valid under the above 3 conditions.</p>
+</dd>
+<dt><strong>values</strong><span class="classifier">set or list or tuple or None</span></dt><dd><p>Optional list of acceptable option values.</p>
+</dd>
+<dt><strong>types</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Optional type or list of acceptable option types.</p>
+</dd>
+<dt><strong>type_</strong><span class="classifier">type or tuple of types or None</span></dt><dd><p>Deprecated.  Use types instead.</p>
+</dd>
+<dt><strong>desc</strong><span class="classifier">str</span></dt><dd><p>Optional description of the option.</p>
+</dd>
+<dt><strong>upper</strong><span class="classifier">float or None</span></dt><dd><p>Maximum allowable value.</p>
+</dd>
+<dt><strong>lower</strong><span class="classifier">float or None</span></dt><dd><p>Minimum allowable value.</p>
+</dd>
+<dt><strong>check_valid</strong><span class="classifier">function or None</span></dt><dd><p>General check function that raises an exception if value is not valid.</p>
+</dd>
+<dt><strong>allow_none</strong><span class="classifier">bool</span></dt><dd><p>If True, allow None as a value regardless of values or types.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.undeclare">
+<code class="sig-name descname">undeclare</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.undeclare" title="Permalink to this definition">¶</a></dt>
+<dd><p>Remove entry from the OptionsDictionary, for classes that don’t use that option.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>The name of a key, the entry of which will be removed from the internal dictionary.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.phase.options.TrajInputParameterOptionsDictionary.update">
+<code class="sig-name descname">update</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">in_dict</em><span class="sig-paren">)</span><a class="headerlink" href="#dymos.phase.options.TrajInputParameterOptionsDictionary.update" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update the internal dictionary with the given one.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>in_dict</strong><span class="classifier">dict</span></dt><dd><p>The incoming dictionary to add to the internal one.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="phase.html" title="phase.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../dymos.phase.html" title="dymos.phase"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.phase.html" >dymos.phase</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

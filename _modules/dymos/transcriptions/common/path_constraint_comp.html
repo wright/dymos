@@ -1,0 +1,225 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.transcriptions.common.path_constraint_comp &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.transcriptions.common.path_constraint_comp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+<span class="kn">from</span> <span class="nn">dymos.utils.constants</span> <span class="kn">import</span> <span class="n">INF_BOUND</span>
+
+
+<div class="viewcode-block" id="PathConstraintComp"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/path_constraint_comp.html#dymos.transcriptions.common.path_constraint_comp.PathConstraintComp">[docs]</a><span class="k">class</span> <span class="nc">PathConstraintComp</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+
+<div class="viewcode-block" id="PathConstraintComp.initialize"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/path_constraint_comp.html#dymos.transcriptions.common.path_constraint_comp.PathConstraintComp.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path_constraints</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,),</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The number of nodes in the phase &#39;</span>
+                                                             <span class="s1">&#39;at which the path constraint is to &#39;</span>
+                                                             <span class="s1">&#39;be evaluated&#39;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_add_path_constraint</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">var_class</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">res_units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                             <span class="n">indices</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">equals</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">adder</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">ref0</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">linear</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">res_ref</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">type_</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">distributed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Add a final constraint to this component</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name : str</span>
+<span class="sd">            name of the variable in this component&#39;s namespace.</span>
+<span class="sd">        var_class : str</span>
+<span class="sd">            The &#39;class&#39; of the variable as given by phase.classify_var.  One of &#39;time&#39;, &#39;state&#39;,</span>
+<span class="sd">            &#39;indep_control&#39;, &#39;input_control&#39;, &#39;design_parameter&#39;, &#39;input_parameter&#39;,</span>
+<span class="sd">            &#39;control_rate&#39;, &#39;control_rate2&#39;, or &#39;ode&#39;.</span>
+<span class="sd">        shape : int or tuple or list or None</span>
+<span class="sd">            Shape of this variable, only required if val is not an array.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        indices : tuple or list or ndarray or None</span>
+<span class="sd">            Indices that specify which elements in shape are to be path constrained.  If None,</span>
+<span class="sd">            then the constraint will apply to all values and lower/upper/equals must be scalar</span>
+<span class="sd">            or of the same shape.  Indices assumes C-order flattening.  For instance, if</span>
+<span class="sd">            constraining element [0, 1] of a variable with shape [2, 2], indices=[3].</span>
+<span class="sd">        units : str or None</span>
+<span class="sd">            Units in which the output variables will be provided to the component during execution.</span>
+<span class="sd">            Default is None, which means it has no units.</span>
+<span class="sd">        res_units : str or None</span>
+<span class="sd">            Units in which the residuals of this output will be given to the user when requested.</span>
+<span class="sd">            Default is None, which means it has no units.</span>
+<span class="sd">        desc : str</span>
+<span class="sd">            description of the variable</span>
+<span class="sd">        lower : float or list or tuple or ndarray or None</span>
+<span class="sd">            lower bound(s) in user-defined units. It can be (1) a float, (2) an array_like</span>
+<span class="sd">            consistent with the shape arg (if given), or (3) an array_like matching the shape of</span>
+<span class="sd">            val, if val is array_like. A value of None means this output has no lower bound.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        upper : float or list or tuple or ndarray or None</span>
+<span class="sd">            upper bound(s) in user-defined units. It can be (1) a float, (2) an array_like</span>
+<span class="sd">            consistent with the shape arg (if given), or (3) an array_like matching the shape of</span>
+<span class="sd">            val, if val is array_like. A value of None means this output has no upper bound.</span>
+<span class="sd">            Default is None.</span>
+<span class="sd">        ref : float</span>
+<span class="sd">            Scaling parameter. The value in the user-defined units of this output variable when</span>
+<span class="sd">            the scaled value is 1. Default is 1.</span>
+<span class="sd">        ref0 : float</span>
+<span class="sd">            Scaling parameter. The value in the user-defined units of this output variable when</span>
+<span class="sd">            the scaled value is 0. Default is 0.</span>
+<span class="sd">        linear : bool</span>
+<span class="sd">            True if the *total* derivative of the constrained variable is linear, otherwise False.</span>
+<span class="sd">        res_ref : float</span>
+<span class="sd">            Scaling parameter. The value in the user-defined res_units of this output&#39;s residual</span>
+<span class="sd">            when the scaled value is 1. Default is 1.</span>
+<span class="sd">        type_ : str</span>
+<span class="sd">            The kind of variable be constrained, as returned by classify_var.</span>
+<span class="sd">        distributed : bool</span>
+<span class="sd">            If True, this variable is distributed across multiple processes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">src_all</span> <span class="o">=</span> <span class="n">var_class</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="s1">&#39;time_phase&#39;</span><span class="p">,</span> <span class="s1">&#39;indep_control&#39;</span><span class="p">,</span> <span class="s1">&#39;input_control&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;control_rate&#39;</span><span class="p">,</span> <span class="s1">&#39;control_rate2&#39;</span><span class="p">,</span> <span class="s1">&#39;indep_polynomial_control&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;input_polynomial_control&#39;</span><span class="p">,</span> <span class="s1">&#39;polynomial_control_rate&#39;</span><span class="p">,</span>
+                                <span class="s1">&#39;polynomial_control_rate2&#39;</span><span class="p">,</span> <span class="s1">&#39;design_parameter&#39;</span><span class="p">,</span> <span class="s1">&#39;input_parameter&#39;</span><span class="p">]</span>
+
+        <span class="n">lower</span> <span class="o">=</span> <span class="o">-</span><span class="n">INF_BOUND</span> <span class="k">if</span> <span class="n">upper</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">lower</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">lower</span>
+        <span class="n">upper</span> <span class="o">=</span> <span class="n">INF_BOUND</span> <span class="k">if</span> <span class="n">lower</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">upper</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">upper</span>
+        <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;shape&#39;</span><span class="p">:</span> <span class="n">shape</span><span class="p">,</span> <span class="s1">&#39;units&#39;</span><span class="p">:</span> <span class="n">units</span><span class="p">,</span> <span class="s1">&#39;res_units&#39;</span><span class="p">:</span> <span class="n">res_units</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="n">desc</span><span class="p">,</span>
+                  <span class="s1">&#39;indices&#39;</span><span class="p">:</span> <span class="n">indices</span><span class="p">,</span> <span class="s1">&#39;lower&#39;</span><span class="p">:</span> <span class="n">lower</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">:</span> <span class="n">upper</span><span class="p">,</span> <span class="s1">&#39;equals&#39;</span><span class="p">:</span> <span class="n">equals</span><span class="p">,</span>
+                  <span class="s1">&#39;scaler&#39;</span><span class="p">:</span> <span class="n">scaler</span><span class="p">,</span> <span class="s1">&#39;adder&#39;</span><span class="p">:</span> <span class="n">adder</span><span class="p">,</span> <span class="s1">&#39;ref&#39;</span><span class="p">:</span> <span class="n">ref</span><span class="p">,</span> <span class="s1">&#39;ref0&#39;</span><span class="p">:</span> <span class="n">ref0</span><span class="p">,</span> <span class="s1">&#39;linear&#39;</span><span class="p">:</span> <span class="n">linear</span><span class="p">,</span>
+                  <span class="s1">&#39;src_all&#39;</span><span class="p">:</span> <span class="n">src_all</span><span class="p">,</span> <span class="s1">&#39;res_ref&#39;</span><span class="p">:</span> <span class="n">res_ref</span><span class="p">,</span> <span class="s1">&#39;distributed&#39;</span><span class="p">:</span> <span class="n">distributed</span><span class="p">,</span>
+                  <span class="s1">&#39;type_&#39;</span><span class="p">:</span> <span class="n">type_</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_path_constraints</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">))</span>
+
+<div class="viewcode-block" id="PathConstraintComp.setup"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/path_constraint_comp.html#dymos.transcriptions.common.path_constraint_comp.PathConstraintComp.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Define the independent variables as output variables.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">num_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_path_constraints</span><span class="p">:</span>
+            <span class="n">input_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">)}</span>
+            <span class="n">input_name</span> <span class="o">=</span> <span class="s1">&#39;all_values:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span>
+                           <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">],</span>
+                           <span class="o">**</span><span class="n">input_kwargs</span><span class="p">)</span>
+
+            <span class="n">output_name</span> <span class="o">=</span> <span class="s1">&#39;path:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">output_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">)}</span>
+            <span class="n">output_kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="o">**</span><span class="n">output_kwargs</span><span class="p">)</span>
+
+            <span class="n">constraint_kwargs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+                                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="s1">&#39;equals&#39;</span><span class="p">,</span> <span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="s1">&#39;ref0&#39;</span><span class="p">,</span> <span class="s1">&#39;adder&#39;</span><span class="p">,</span>
+                                           <span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="s1">&#39;indices&#39;</span><span class="p">,</span> <span class="s1">&#39;linear&#39;</span><span class="p">)}</span>
+
+            <span class="c1"># Convert indices from those in one time instance to those in all time instances</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="n">template</span><span class="p">[</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;indices&#39;</span><span class="p">]]</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="n">template</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">template</span><span class="p">,</span> <span class="n">num_nodes</span><span class="p">)</span>
+            <span class="n">constraint_kwargs</span><span class="p">[</span><span class="s1">&#39;indices&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">template</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_constraint</span><span class="p">(</span><span class="n">output_name</span><span class="p">,</span> <span class="o">**</span><span class="n">constraint_kwargs</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">input_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]))</span>
+
+            <span class="c1"># Setup partials</span>
+            <span class="n">all_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="n">var_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">])</span>
+            <span class="n">all_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">all_shape</span><span class="p">)</span>
+
+            <span class="n">all_row_starts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="n">var_size</span>
+            <span class="n">all_rows</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">all_row_starts</span><span class="p">:</span>
+                <span class="n">all_rows</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="n">var_size</span><span class="p">))</span>
+            <span class="n">all_rows</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">all_rows</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span>
+                <span class="n">of</span><span class="o">=</span><span class="n">output_name</span><span class="p">,</span>
+                <span class="n">wrt</span><span class="o">=</span><span class="n">input_name</span><span class="p">,</span>
+                <span class="n">dependent</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">rows</span><span class="o">=</span><span class="n">all_rows</span><span class="p">,</span>
+                <span class="n">cols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">all_size</span><span class="p">),</span>
+                <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PathConstraintComp.compute"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/path_constraint_comp.html#dymos.transcriptions.common.path_constraint_comp.PathConstraintComp.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">discrete_inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">discrete_outputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">output_name</span><span class="p">,</span> <span class="n">_</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_vars</span><span class="p">:</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="n">output_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="n">input_name</span><span class="p">]</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

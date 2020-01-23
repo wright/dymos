@@ -1,0 +1,16 @@
+.. index:: gauss_lobatto.py
+
+.. _dymos.transcriptions.pseudospectral.gauss_lobatto.py:
+
+gauss_lobatto.py
+----------------
+
+.. automodule:: dymos.transcriptions.pseudospectral.gauss_lobatto
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

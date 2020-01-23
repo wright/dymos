@@ -1,0 +1,16 @@
+.. index:: path_constraint_comp.py
+
+.. _dymos.transcriptions.common.path_constraint_comp.py:
+
+path_constraint_comp.py
+-----------------------
+
+.. automodule:: dymos.transcriptions.common.path_constraint_comp
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

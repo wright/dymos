@@ -1,0 +1,206 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>hermite.py &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="indexing.py" href="indexing.html" />
+    <link rel="prev" title="constants.py" href="constants.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="indexing.html" title="indexing.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="constants.html" title="constants.py"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" accesskey="U">dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="constants.html"
+                        title="previous chapter">constants.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="indexing.html"
+                        title="next chapter">indexing.py</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/_srcdocs/packages/utils/hermite.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dymos.utils.hermite">
+<span id="hermite-py"></span><span id="dymos-utils-hermite-py"></span><span id="index-0"></span><h1>hermite.py<a class="headerlink" href="#module-dymos.utils.hermite" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="dymos.utils.hermite.heriwd">
+<code class="sig-prename descclassname">dymos.utils.hermite.</code><code class="sig-name descname">heriwd</code><span class="sig-paren">(</span><em class="sig-param">tau</em>, <em class="sig-param">taus</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/hermite.html#heriwd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.hermite.heriwd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the weights for computing the derivatives of a polynomial with hermite interpolation.
+Based off of the ACM211 algorithm</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>tau</strong><span class="classifier">float</span></dt><dd><p>Value at which the Hermite polynomial weights are desired</p>
+</dd>
+<dt><strong>taus</strong><span class="classifier">np.array</span></dt><dd><p>Array of points at which the values and derivatives which
+define the Hermite polynomial are provided.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>u</strong><span class="classifier">np.array</span></dt><dd><p>Weights for function values.</p>
+</dd>
+<dt><strong>v</strong><span class="classifier">np.array</span></dt><dd><p>Weights for derivative values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.utils.hermite.heriwi">
+<code class="sig-prename descclassname">dymos.utils.hermite.</code><code class="sig-name descname">heriwi</code><span class="sig-paren">(</span><em class="sig-param">tau</em>, <em class="sig-param">taus</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/hermite.html#heriwi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.hermite.heriwi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the weights for computing the values of polynomial with hermite interpolation.
+Based off of the ACM211 algorithm.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>tau</strong><span class="classifier">float</span></dt><dd><p>Value at which the Hermite polynomial weights are desired</p>
+</dd>
+<dt><strong>taus</strong><span class="classifier">np.array</span></dt><dd><p>Array of points at which the values and derivatives which
+define the Hermite polynomial are provided.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>u</strong><span class="classifier">np.array</span></dt><dd><p>Weights for function values.</p>
+</dd>
+<dt><strong>v</strong><span class="classifier">np.array</span></dt><dd><p>Weights for derivative values.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="dymos.utils.hermite.hermite_matrices">
+<code class="sig-prename descclassname">dymos.utils.hermite.</code><code class="sig-name descname">hermite_matrices</code><span class="sig-paren">(</span><em class="sig-param">x_given</em>, <em class="sig-param">x_eval</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/hermite.html#hermite_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.hermite.hermite_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the interpolation matrices (A_i and B_i) and differentiation matrices (A_d and B_d)
+for a Hermite polynomial at the given nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x_given</strong><span class="classifier">ndarray[:]</span></dt><dd><p>Vector of given nodes in the polynomial.</p>
+</dd>
+<dt><strong>x_eval</strong><span class="classifier">ndarray[:]</span></dt><dd><p>Vector of nodes at which the polynomial is evaluated.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>A_i</strong><span class="classifier">np.array</span></dt><dd><p>An num_disc_nodes-1 x num_disc_nodes matrix used for the interpolation of state values
+at the interior LGL nodes.</p>
+</dd>
+<dt><strong>B_i</strong><span class="classifier">np.array</span></dt><dd><p>An num_disc_nodes-1 x num_disc_nodes matrix used for the interpolation of state values
+at the interior LGL nodes.</p>
+</dd>
+<dt><strong>A_d</strong><span class="classifier">np.array</span></dt><dd><p>An num_disc_nodes-1 x num_disc_nodes matrix used for the differentiation of state values
+at the collocation LGL nodes.</p>
+</dd>
+<dt><strong>B_d</strong><span class="classifier">np.array</span></dt><dd><p>An num_disc_nodes-1 x num_disc_nodes matrix used for the differentiation of state values
+at the collocation LGL nodes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<div class="math notranslate nohighlight">
+\[x_i = \left[ A_i\right] x_c + \frac{dt}{dtau} \left[ B_i \right] f_c\]</div>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="indexing.html" title="indexing.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="constants.html" title="constants.py"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" >dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

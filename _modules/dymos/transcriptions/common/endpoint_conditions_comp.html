@@ -1,0 +1,384 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.transcriptions.common.endpoint_conditions_comp &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../" src="../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.transcriptions.common.endpoint_conditions_comp</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+
+<div class="viewcode-block" id="EndpointConditionsComp"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/endpoint_conditions_comp.html#dymos.transcriptions.common.endpoint_conditions_comp.EndpointConditionsComp">[docs]</a><span class="k">class</span> <span class="nc">EndpointConditionsComp</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Provides values of time, states, and controls at the start/end of each</span>
+<span class="sd">    phase to make it simpler to link phases together.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+<div class="viewcode-block" id="EndpointConditionsComp.initialize"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/endpoint_conditions_comp.html#dymos.transcriptions.common.endpoint_conditions_comp.EndpointConditionsComp.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;loc&#39;</span><span class="p">,</span> <span class="n">values</span><span class="o">=</span><span class="p">(</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="s1">&#39;final&#39;</span><span class="p">),</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Whether the instance of the component provides conditions at &#39;</span>
+                                  <span class="s1">&#39;the start (initial) or end (final) of the phase&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;time_options&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;state_options&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;control_options&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_states</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;loc&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;state_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+            <span class="n">ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+                <span class="n">src_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">src_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">src_idxs</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> values of state </span><span class="si">{1}</span><span class="s1"> in the phase&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">src_indices</span><span class="o">=</span><span class="n">src_idxs</span><span class="p">,</span>
+                <span class="n">flat_src_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_jump:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> discontinuity in state </span><span class="si">{1}</span><span class="s1"> at the start of the phase&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+            <span class="c1"># self.add_input(</span>
+            <span class="c1">#     name=&#39;final_jump:{0}&#39;.format(name),</span>
+            <span class="c1">#     val=np.zeros(shape),</span>
+            <span class="c1">#     desc=&#39;The discontinuity in state {0} at the end of the phase&#39;.format(name),</span>
+            <span class="c1">#     units=units)</span>
+
+            <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> before the initial jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">-+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> after the initial jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;initial_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">val</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">-+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> after the final jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">+-&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> before the final jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">+-&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;final_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_setup_controls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;loc&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;control_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">))</span>
+            <span class="n">ar</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">size</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+                <span class="n">src_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">src_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="o">-</span><span class="n">size</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">src_idxs</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> values of state </span><span class="si">{1}</span><span class="s1"> in the phase&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">,</span>
+                <span class="n">src_indices</span><span class="o">=</span><span class="n">src_idxs</span><span class="p">,</span>
+                <span class="n">flat_src_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span>
+                <span class="n">name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_jump:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> discontinuity in state </span><span class="si">{1}</span><span class="s1"> at the start of the phase&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span>
+                <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+            <span class="c1"># self.add_input(</span>
+            <span class="c1">#     name=&#39;values:{0}&#39;.format(name),</span>
+            <span class="c1">#     val=np.zeros_like(src_idxs),</span>
+            <span class="c1">#     desc=&#39;Values of control {0} at the phase endpoints&#39;.format(name),</span>
+            <span class="c1">#     units=units,</span>
+            <span class="c1">#     src_indices=src_idxs,</span>
+            <span class="c1">#     flat_src_indices=True)</span>
+            <span class="c1">#</span>
+            <span class="c1"># self.add_input(</span>
+            <span class="c1">#     name=&#39;initial_jump:{0}&#39;.format(name),</span>
+            <span class="c1">#     val=np.zeros(shape),</span>
+            <span class="c1">#     desc=&#39;The discontinuity in state {0} at the start of the phase&#39;.format(name),</span>
+            <span class="c1">#     units=units)</span>
+            <span class="c1">#</span>
+            <span class="c1"># self.add_input(</span>
+            <span class="c1">#     name=&#39;final_jump:{0}&#39;.format(name),</span>
+            <span class="c1">#     val=np.zeros(shape),</span>
+            <span class="c1">#     desc=&#39;The discontinuity in state {0} at the end of the phase&#39;.format(name),</span>
+            <span class="c1">#     units=units)</span>
+
+            <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> before the initial jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">-+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> after the initial jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;initial_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">val</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">-+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> after the final jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span>
+                    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">+-&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">shape</span><span class="p">),</span>
+                    <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The value of state </span><span class="si">{0}</span><span class="s1"> before the final jump&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                    <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">+-&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:</span><span class="si">{1}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">,</span> <span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                                      <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;final_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span> <span class="n">rows</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span>
+                                      <span class="n">cols</span><span class="o">=</span><span class="n">ar</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_setup_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;loc&#39;</span><span class="p">]</span>
+        <span class="n">time_units</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;time_options&#39;</span><span class="p">][</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+
+        <span class="n">src_idxs</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span> <span class="k">else</span> <span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:time&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> value of time in the phase&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span>
+                       <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                       <span class="n">units</span><span class="o">=</span><span class="n">time_units</span><span class="p">,</span>
+                       <span class="n">src_indices</span><span class="o">=</span><span class="n">src_idxs</span><span class="p">,</span>
+                       <span class="n">flat_src_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_jump:time&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1"> discontinuity in time for the phase&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span>
+                       <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                       <span class="n">units</span><span class="o">=</span><span class="n">time_units</span><span class="p">)</span>
+
+        <span class="c1"># self.add_input(name=&#39;final_jump:time&#39;,</span>
+        <span class="c1">#                desc=&#39;discontinuity in time at the end of the phase&#39;,</span>
+        <span class="c1">#                val=np.zeros(1),</span>
+        <span class="c1">#                units=time_units)</span>
+
+        <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;time--&#39;</span><span class="p">,</span>
+                            <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;value of time before the initial jump&#39;</span><span class="p">,</span>
+                            <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                            <span class="n">units</span><span class="o">=</span><span class="n">time_units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;time-+&#39;</span><span class="p">,</span>
+                            <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;the value of time at the beginning of integration&#39;</span><span class="p">,</span>
+                            <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                            <span class="n">units</span><span class="o">=</span><span class="n">time_units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;time--&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:time&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;time--&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;initial_jump:time&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;time-+&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:time&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;time++&#39;</span><span class="p">,</span>
+                            <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;value of time after the final jump&#39;</span><span class="p">,</span>
+                            <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                            <span class="n">units</span><span class="o">=</span><span class="n">time_units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;time+-&#39;</span><span class="p">,</span>
+                            <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;the value of time at the end of integration&#39;</span><span class="p">,</span>
+                            <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                            <span class="n">units</span><span class="o">=</span><span class="n">time_units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;time+-&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:time&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;time++&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;</span><span class="si">{0}</span><span class="s1">_value:time&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">loc</span><span class="p">),</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;time++&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;final_jump:time&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+
+<div class="viewcode-block" id="EndpointConditionsComp.setup"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/endpoint_conditions_comp.html#dymos.transcriptions.common.endpoint_conditions_comp.EndpointConditionsComp.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_time</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_states</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_controls</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="EndpointConditionsComp.compute"><a class="viewcode-back" href="../../../../_srcdocs/packages/transcriptions.common/endpoint_conditions_comp.html#dymos.transcriptions.common.endpoint_conditions_comp.EndpointConditionsComp.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+        <span class="n">loc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;loc&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;time--&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_value:time&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_jump:time&#39;</span><span class="p">]</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;time-+&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_value:time&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;time+-&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_value:time&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;time++&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_value:time&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_jump:time&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">state_name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;state_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span> <span class="o">-</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span>
+
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">-+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">+-&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span>
+
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;states:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span> <span class="o">+</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state_name</span><span class="p">)]</span>
+
+        <span class="k">for</span> <span class="n">control_name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;control_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">loc</span> <span class="o">==</span> <span class="s1">&#39;initial&#39;</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">--&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span> <span class="o">-</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span>
+
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">-+&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;initial_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span>
+
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">+-&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span>
+
+                <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;controls:</span><span class="si">{0}</span><span class="s1">++&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span> <span class="o">=</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_value:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span> <span class="o">+</span> \
+                    <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;final_jump:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">control_name</span><span class="p">)]</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

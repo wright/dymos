@@ -1,0 +1,150 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>lagrange.py &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="lg.py" href="lg.html" />
+    <link rel="prev" title="interpolate.py" href="interpolate.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lg.html" title="lg.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="interpolate.html" title="interpolate.py"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" accesskey="U">dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="interpolate.html"
+                        title="previous chapter">interpolate.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lg.html"
+                        title="next chapter">lg.py</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/_srcdocs/packages/utils/lagrange.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dymos.utils.lagrange">
+<span id="lagrange-py"></span><span id="dymos-utils-lagrange-py"></span><span id="index-0"></span><h1>lagrange.py<a class="headerlink" href="#module-dymos.utils.lagrange" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="dymos.utils.lagrange.lagrange_matrices">
+<code class="sig-prename descclassname">dymos.utils.lagrange.</code><code class="sig-name descname">lagrange_matrices</code><span class="sig-paren">(</span><em class="sig-param">x_disc</em>, <em class="sig-param">x_interp</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/lagrange.html#lagrange_matrices"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.lagrange.lagrange_matrices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the lagrange matrices which, given ‘cardinal’ nodes at which
+values are specified and ‘interior’ nodes at which values will be desired,
+returns interpolation and differentiation matrices which provide polynomial
+values and derivatives</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x_disc</strong><span class="classifier">np.array</span></dt><dd><p>The cardinal nodes at which values of the variable are specified.</p>
+</dd>
+<dt><strong>x_interp</strong><span class="classifier">np.array</span></dt><dd><p>The interior nodes at which interpolated values of the variable or its derivative
+are desired.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>Li</strong><span class="classifier">np.array</span></dt><dd><p>A num_i x num_c matrix which, when post-multiplied by values specified
+at the cardinal nodes, yields the intepolated values at the interior
+nodes.</p>
+</dd>
+<dt><strong>Di</strong><span class="classifier">np.array</span></dt><dd><p>A num_i x num_c matrix which, when post-multiplied by values specified
+at the cardinal nodes, yields the intepolated derivatives at the interior
+nodes.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lg.html" title="lg.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="interpolate.html" title="interpolate.py"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" >dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

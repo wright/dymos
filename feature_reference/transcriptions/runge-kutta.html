@@ -1,0 +1,151 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Runge-Kutta Shooting Method &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Phases of a Trajectory" href="../phases/phases.html" />
+    <link rel="prev" title="Radau Pseudospectral Method" href="radau-pseudospectral.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../phases/phases.html" title="Phases of a Trajectory"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="radau-pseudospectral.html" title="Radau Pseudospectral Method"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="transcriptions.html" accesskey="U">Transcriptions</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Runge-Kutta Shooting Method</a><ul>
+<li><a class="reference internal" href="#advantages-of-the-runge-kutta-method">Advantages of the Runge-Kutta Method</a></li>
+<li><a class="reference internal" href="#disdvantages-of-the-runge-kutta-method">Disdvantages of the Runge-Kutta Method</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="radau-pseudospectral.html"
+                        title="previous chapter">Radau Pseudospectral Method</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../phases/phases.html"
+                        title="next chapter">Phases of a Trajectory</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/feature_reference/transcriptions/runge-kutta.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="runge-kutta-shooting-method">
+<h1>Runge-Kutta Shooting Method<a class="headerlink" href="#runge-kutta-shooting-method" title="Permalink to this headline">¶</a></h1>
+<p>Dymos implements a Runge-Kutta method that allows optimal control problems to be solved
+via a shooting method.  Perhaps the key feature of the Runge-Kutta method in Dymos is that, unlike
+the pseudospectral methods which require the optimizer to satisfy constraints in order for the
+trajectory to be physically realizable, the Runge-Kutta method provides a physically realizable
+trajectory without the involvement of the optimizer.</p>
+<div class="section" id="advantages-of-the-runge-kutta-method">
+<h2>Advantages of the Runge-Kutta Method<a class="headerlink" href="#advantages-of-the-runge-kutta-method" title="Permalink to this headline">¶</a></h2>
+<p>The Runge-Kutta transcription is useful for pure analysis of a dynamical system where
+no control is involved.  If the user simply wants to track some integrated state over some
+given amount of time, the Runge-Kutta transcription (or alternatively a pseudospecral transcription
+with solved segments) would be a good choice.</p>
+</div>
+<div class="section" id="disdvantages-of-the-runge-kutta-method">
+<h2>Disdvantages of the Runge-Kutta Method<a class="headerlink" href="#disdvantages-of-the-runge-kutta-method" title="Permalink to this headline">¶</a></h2>
+<p>when solving an optimal control problem with Runge-Kutta transcription, each iteration
+of the trajectory is physically realizable.  While this is useful when trying to parse what is
+happening from a physical perspective in each iteration, this can be problematic.  The Runge-Kutta
+method is effectively a “single shooting” method in which the states are propagated across the entire
+duration of the phase.  This can lead the optimizer to get stuck in local optima more easily since
+the optimizer may be unable to traverse an infeasible region on the way to a better solution.</p>
+<p>Furthermore, demanding physicality at each iteration can lead to numerical issues.  Consider the
+single-stage-to-orbit example.  In this problem the vehicle reaches its terminal condition with
+just a small fraction of its initial mass remaining.  If the optimizer happens to attempt a time
+duration that causes the entirety of the initial mass to be expelled as propellant, the equations
+of motion will become <em>singular</em> and in all likelihood the optimization will fail.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../phases/phases.html" title="Phases of a Trajectory"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="radau-pseudospectral.html" title="Radau Pseudospectral Method"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="transcriptions.html" >Transcriptions</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

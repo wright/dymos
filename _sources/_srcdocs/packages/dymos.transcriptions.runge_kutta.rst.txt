@@ -1,0 +1,7 @@
+dymos.transcriptions.runge_kutta
+--------------------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    transcriptions.runge_kutta/runge_kutta

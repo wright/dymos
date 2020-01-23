@@ -1,0 +1,16 @@
+.. index:: mass_comp.py
+
+.. _dymos.examples.aircraft_steady_flight.mass_comp.py:
+
+mass_comp.py
+------------
+
+.. automodule:: dymos.examples.aircraft_steady_flight.mass_comp
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

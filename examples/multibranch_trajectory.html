@@ -1,0 +1,649 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Multibranch Trajectory &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Single-Phase Space Shuttle Reentry" href="reentry.html" />
+    <link rel="prev" title="Multi-Phase Cannonball" href="multi_phase_cannonball.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reentry.html" title="Single-Phase Space Shuttle Reentry"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="multi_phase_cannonball.html" title="Multi-Phase Cannonball"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" accesskey="U">Dymos by Example</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Multibranch Trajectory</a><ul>
+<li><a class="reference internal" href="#overview">Overview</a></li>
+<li><a class="reference internal" href="#battery-and-motor-models">Battery and Motor models</a></li>
+<li><a class="reference internal" href="#building-and-running-the-problem">Building and running the problem</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="multi_phase_cannonball.html"
+                        title="previous chapter">Multi-Phase Cannonball</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="reentry.html"
+                        title="next chapter">Single-Phase Space Shuttle Reentry</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/examples/multibranch_trajectory.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="multibranch-trajectory">
+<h1>Multibranch Trajectory<a class="headerlink" href="#multibranch-trajectory" title="Permalink to this headline">¶</a></h1>
+<p>This example demonstrates the use of a Trajectory to encapsulate a series of branching phases.</p>
+<div class="section" id="overview">
+<h2>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h2>
+<p>For this example, we build a system that contains two components: the first component represents a
+battery pack that contains multiple cells in parallel, and the second component represents a
+bank of DC electric motors (also in parallel) driving a gearbox to achieve a desired power
+output. The battery cells have a state of charge that decays as current is drawn from the
+battery. The open circuit voltage of the battery is a function of the state of charge.  At
+any point in time, the coupling between the battery and the motor component is solved with
+a Newton solver in the containing group for a line current that satisfies the equations.</p>
+<p>Both the battery and the motor models allow the number of cells and the number of motors to
+be modified by setting the “n_parallel” option in their respective options dictionaries. For
+this model, we start with 3 cells and 3 motors. We will simulate failure of a cell or battery by
+setting “n_parallel” to 2.</p>
+<p>Branching phases are a set of linked phases in a trajectory where the input ends of multiple
+phases are connected to the output of a single phase.  This way you can simulate alternative
+trajectory paths in the same model. For this example, we will start with a single phase (“phase0”)
+that simulates the model for one hour. Three follow-on phases will be linked to the output of the
+first phase: “phase1” will run as normal, “phase1_bfail” will fail one of the battery cells, and
+“phase1_mfail” will fail a motor. All three of these phases start where “phase0” leaves off, so
+they share the same initial time and state of charge.</p>
+</div>
+<div class="section" id="battery-and-motor-models">
+<h2>Battery and Motor models<a class="headerlink" href="#battery-and-motor-models" title="Permalink to this headline">¶</a></h2>
+<p>The models are loosely based on the work done in <a class="reference internal" href="#chin2019" id="id1"><span>[Chin2019]</span></a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple dynamic model of a LI battery.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">scipy.interpolate</span> <span class="kn">import</span> <span class="n">Akima1DInterpolator</span>
+
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+<span class="c1"># Data for open circuit voltage model.</span>
+<span class="n">train_SOC</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.25</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">,</span> <span class="mf">0.75</span><span class="p">,</span> <span class="mf">0.9</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">])</span>
+<span class="n">train_V_oc</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">3.5</span><span class="p">,</span> <span class="mf">3.55</span><span class="p">,</span> <span class="mf">3.65</span><span class="p">,</span> <span class="mf">3.75</span><span class="p">,</span> <span class="mf">3.9</span><span class="p">,</span> <span class="mf">4.1</span><span class="p">,</span> <span class="mf">4.2</span><span class="p">])</span>
+
+
+<span class="k">class</span> <span class="nc">Battery</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model of a Lithium Ion battery.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;n_series&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;number of cells in series&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;number of cells in parallel&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;Q_max&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.05</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Max Energy Capacity of a battery cell in A*h&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;R_0&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=.</span><span class="mi">025</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Internal resistance of the battery (ohms)&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;I_Li&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Current demanded per cell&#39;</span><span class="p">)</span>
+
+        <span class="c1"># State Variables</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;SOC&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;State of charge&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;V_L&#39;</span><span class="p">,</span>
+                        <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span>
+                        <span class="n">units</span><span class="o">=</span><span class="s1">&#39;V&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Terminal voltage of the battery&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">,</span>
+                        <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span>
+                        <span class="n">units</span><span class="o">=</span><span class="s1">&#39;1/s&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Time derivative of state of charge&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;V_oc&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;V&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Open Circuit Voltage&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;I_pack&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.1</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Total Pack Current&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;V_pack&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">9.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;V&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Total Pack Voltage&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;P_pack&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;W&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Total Pack Power&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Derivatives</span>
+        <span class="n">row_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;V_oc&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;V_L&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;V_L&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;I_Li&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;I_Li&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;I_pack&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;I_Li&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;V_pack&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">,</span> <span class="s1">&#39;I_Li&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;P_pack&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">,</span> <span class="s1">&#39;I_Li&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage_model</span> <span class="o">=</span> <span class="n">Akima1DInterpolator</span><span class="p">(</span><span class="n">train_SOC</span><span class="p">,</span> <span class="n">train_V_oc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">voltage_model_derivative</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_model</span><span class="o">.</span><span class="n">derivative</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span>
+        <span class="n">I_Li</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;I_Li&#39;</span><span class="p">]</span>
+        <span class="n">SOC</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">]</span>
+
+        <span class="n">V_oc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_model</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="n">extrapolate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;V_oc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">V_oc</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;V_L&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">V_oc</span> <span class="o">-</span> <span class="p">(</span><span class="n">I_Li</span> <span class="o">*</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;R_0&#39;</span><span class="p">])</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">I_Li</span> <span class="o">/</span> <span class="p">(</span><span class="mf">3600.0</span> <span class="o">*</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;Q_max&#39;</span><span class="p">])</span>
+
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;I_pack&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">I_Li</span> <span class="o">*</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">]</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;V_pack&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;V_L&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;n_series&#39;</span><span class="p">]</span>
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;P_pack&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;I_pack&#39;</span><span class="p">]</span> <span class="o">*</span> <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;V_pack&#39;</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">compute_partials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+        <span class="n">opt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span>
+        <span class="n">I_Li</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;I_Li&#39;</span><span class="p">]</span>
+        <span class="n">SOC</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">]</span>
+
+        <span class="n">dV_dSOC</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_model_derivative</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="n">extrapolate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;V_oc&#39;</span><span class="p">,</span> <span class="s1">&#39;SOC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dV_dSOC</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;V_L&#39;</span><span class="p">,</span> <span class="s1">&#39;SOC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dV_dSOC</span>
+
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;V_L&#39;</span><span class="p">,</span> <span class="s1">&#39;I_Li&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">opt</span><span class="p">[</span><span class="s1">&#39;R_0&#39;</span><span class="p">]</span>
+
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">,</span> <span class="s1">&#39;I_Li&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span><span class="o">/</span><span class="p">(</span><span class="mf">3600.0</span><span class="o">*</span><span class="n">opt</span><span class="p">[</span><span class="s1">&#39;Q_max&#39;</span><span class="p">])</span>
+
+        <span class="n">n_parallel</span> <span class="o">=</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">]</span>
+        <span class="n">n_series</span> <span class="o">=</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;n_series&#39;</span><span class="p">]</span>
+        <span class="n">V_oc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">voltage_model</span><span class="p">(</span><span class="n">SOC</span><span class="p">,</span> <span class="n">extrapolate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">V_L</span> <span class="o">=</span> <span class="n">V_oc</span> <span class="o">-</span> <span class="p">(</span><span class="n">I_Li</span> <span class="o">*</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;R_0&#39;</span><span class="p">])</span>
+
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;I_pack&#39;</span><span class="p">,</span> <span class="s1">&#39;I_Li&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_parallel</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;V_pack&#39;</span><span class="p">,</span> <span class="s1">&#39;I_Li&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="n">opt</span><span class="p">[</span><span class="s1">&#39;R_0&#39;</span><span class="p">]</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;V_pack&#39;</span><span class="p">,</span> <span class="s1">&#39;SOC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_series</span> <span class="o">*</span> <span class="n">dV_dSOC</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;P_pack&#39;</span><span class="p">,</span> <span class="s1">&#39;I_Li&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_parallel</span> <span class="o">*</span> <span class="n">n_series</span> <span class="o">*</span> <span class="p">(</span><span class="n">V_L</span> <span class="o">-</span> <span class="n">I_Li</span> <span class="o">*</span> <span class="n">opt</span><span class="p">[</span><span class="s1">&#39;R_0&#39;</span><span class="p">])</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;P_pack&#39;</span><span class="p">,</span> <span class="s1">&#39;SOC&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">n_parallel</span> <span class="o">*</span> <span class="n">I_Li</span> <span class="o">*</span> <span class="n">n_series</span> <span class="o">*</span> <span class="n">dV_dSOC</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+    <span class="n">num_nodes</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">prob</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">Battery</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="n">num_nodes</span><span class="p">))</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">model</span>
+
+    <span class="n">prob</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+    <span class="n">prob</span><span class="o">.</span><span class="n">set_solver_print</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">prob</span><span class="o">.</span><span class="n">run_model</span><span class="p">()</span>
+
+    <span class="n">derivs</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">check_partials</span><span class="p">(</span><span class="n">compact_print</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;done&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Simple model for a set of motors in parallel where efficiency is a function of current.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+
+<span class="k">class</span> <span class="nc">Motors</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model for motors in parallel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;number of motors in parallel&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">3.6</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;W&#39;</span><span class="p">,</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Power at gearbox output&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;current_in_motor&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Total current demanded&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;W&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Power required at motor input&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Derivatives</span>
+        <span class="n">row_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">],</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;current_in_motor&#39;</span><span class="p">]</span>
+        <span class="n">power_out</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">]</span>
+        <span class="n">n_parallel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Simple linear curve fit for efficiency.</span>
+        <span class="n">eff</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">-</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">current</span> <span class="o">/</span> <span class="n">n_parallel</span>
+
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">power_out</span> <span class="o">/</span> <span class="n">eff</span>
+
+    <span class="k">def</span> <span class="nf">compute_partials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;current_in_motor&#39;</span><span class="p">]</span>
+        <span class="n">power_out</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">]</span>
+        <span class="n">n_parallel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">]</span>
+
+        <span class="n">eff</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">-</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">current</span> <span class="o">/</span> <span class="n">n_parallel</span>
+
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">eff</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="s1">&#39;current_in_motor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">power_out</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_parallel</span> <span class="o">*</span> <span class="n">eff</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">MotorsStaticGearboxPower</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Model for motors in parallel.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;number of motors in parallel&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Inputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">3.6</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;W&#39;</span><span class="p">,</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Power at gearbox output&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;current_in_motor&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Total current demanded&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Outputs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;W&#39;</span><span class="p">,</span>
+                        <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Power required at motor input&#39;</span><span class="p">)</span>
+
+        <span class="c1"># Derivatives</span>
+        <span class="n">row_col</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;current_in_motor&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">row_col</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">row_col</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">):</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;current_in_motor&#39;</span><span class="p">]</span>
+        <span class="n">power_out</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">]</span>
+        <span class="n">n_parallel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Simple linear curve fit for efficiency.</span>
+        <span class="n">eff</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">-</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">current</span> <span class="o">/</span> <span class="n">n_parallel</span>
+
+        <span class="n">outputs</span><span class="p">[</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">power_out</span> <span class="o">/</span> <span class="n">eff</span>
+
+    <span class="k">def</span> <span class="nf">compute_partials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+        <span class="n">current</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;current_in_motor&#39;</span><span class="p">]</span>
+        <span class="n">power_out</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">]</span>
+        <span class="n">n_parallel</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;n_parallel&#39;</span><span class="p">]</span>
+
+        <span class="n">eff</span> <span class="o">=</span> <span class="mf">0.9</span> <span class="o">-</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">current</span> <span class="o">/</span> <span class="n">n_parallel</span>
+
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="s1">&#39;power_out_gearbox&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">eff</span>
+        <span class="n">partials</span><span class="p">[</span><span class="s1">&#39;power_in_motor&#39;</span><span class="p">,</span> <span class="s1">&#39;current_in_motor&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.3</span> <span class="o">*</span> <span class="n">power_out</span> <span class="o">/</span> <span class="p">(</span><span class="n">n_parallel</span> <span class="o">*</span> <span class="n">eff</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+    <span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+    <span class="n">num_nodes</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">prob</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">Motors</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="n">num_nodes</span><span class="p">))</span>
+    <span class="n">model</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">model</span>
+
+    <span class="n">prob</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+    <span class="n">prob</span><span class="o">.</span><span class="n">run_model</span><span class="p">()</span>
+
+    <span class="n">derivs</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">check_partials</span><span class="p">(</span><span class="n">compact_print</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;done&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">ODE for example that shows how to use multiple phases in Dymos to model failure of a battery cell</span>
+<span class="sd">in a simple electrical system.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+<span class="kn">from</span> <span class="nn">dymos.examples.battery_multibranch.batteries</span> <span class="kn">import</span> <span class="n">Battery</span>
+<span class="kn">from</span> <span class="nn">dymos.examples.battery_multibranch.motors</span> <span class="kn">import</span> <span class="n">Motors</span>
+
+
+<span class="k">class</span> <span class="nc">BatteryODE</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_battery&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;num_motor&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">num_nodes</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_nodes&#39;</span><span class="p">]</span>
+        <span class="n">num_battery</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_battery&#39;</span><span class="p">]</span>
+        <span class="n">num_motor</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;num_motor&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;pwr_balance&#39;</span><span class="p">,</span>
+                           <span class="n">subsys</span><span class="o">=</span><span class="n">om</span><span class="o">.</span><span class="n">BalanceComp</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;I_Li&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_nodes</span><span class="p">),</span>
+                                                 <span class="n">rhs_name</span><span class="o">=</span><span class="s1">&#39;pwr_out_batt&#39;</span><span class="p">,</span>
+                                                 <span class="n">lhs_name</span><span class="o">=</span><span class="s1">&#39;P_pack&#39;</span><span class="p">,</span>
+                                                 <span class="n">units</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="n">eq_units</span><span class="o">=</span><span class="s1">&#39;W&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">50.</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;battery&#39;</span><span class="p">,</span> <span class="n">Battery</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">n_parallel</span><span class="o">=</span><span class="n">num_battery</span><span class="p">),</span>
+                           <span class="n">promotes_inputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">],</span>
+                           <span class="n">promotes_outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;motors&#39;</span><span class="p">,</span> <span class="n">Motors</span><span class="p">(</span><span class="n">num_nodes</span><span class="o">=</span><span class="n">num_nodes</span><span class="p">,</span> <span class="n">n_parallel</span><span class="o">=</span><span class="n">num_motor</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;battery.P_pack&#39;</span><span class="p">,</span> <span class="s1">&#39;pwr_balance.P_pack&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;motors.power_in_motor&#39;</span><span class="p">,</span> <span class="s1">&#39;pwr_balance.pwr_out_batt&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;pwr_balance.I_Li&#39;</span><span class="p">,</span> <span class="s1">&#39;battery.I_Li&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;battery.I_pack&#39;</span><span class="p">,</span> <span class="s1">&#39;motors.current_in_motor&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonlinear_solver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">NewtonSolver</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nonlinear_solver</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;maxiter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">20</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear_solver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">DirectSolver</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="building-and-running-the-problem">
+<h2>Building and running the problem<a class="headerlink" href="#building-and-running-the-problem" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+<span class="kn">from</span> <span class="nn">openmdao.utils.assert_utils</span> <span class="kn">import</span> <span class="n">assert_rel_error</span>
+
+<span class="kn">import</span> <span class="nn">dymos</span> <span class="k">as</span> <span class="nn">dm</span>
+<span class="kn">from</span> <span class="nn">dymos.examples.battery_multibranch.battery_multibranch_ode</span> <span class="kn">import</span> <span class="n">BatteryODE</span>
+<span class="kn">from</span> <span class="nn">dymos.utils.lgl</span> <span class="kn">import</span> <span class="n">lgl</span>
+
+<span class="n">prob</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">Problem</span><span class="p">()</span>
+
+<span class="n">opt</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">ScipyOptimizeDriver</span><span class="p">()</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">declare_coloring</span><span class="p">()</span>
+<span class="n">opt</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SLSQP&#39;</span>
+
+<span class="n">num_seg</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">seg_ends</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lgl</span><span class="p">(</span><span class="n">num_seg</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">traj</span> <span class="o">=</span> <span class="n">prob</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;traj&#39;</span><span class="p">,</span> <span class="n">dm</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">())</span>
+
+<span class="c1"># First phase: normal operation.</span>
+<span class="n">transcription</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Radau</span><span class="p">(</span><span class="n">num_segments</span><span class="o">=</span><span class="n">num_seg</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">segment_ends</span><span class="o">=</span><span class="n">seg_ends</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">phase0</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">ode_class</span><span class="o">=</span><span class="n">BatteryODE</span><span class="p">,</span> <span class="n">transcription</span><span class="o">=</span><span class="n">transcription</span><span class="p">)</span>
+<span class="n">traj_p0</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">add_phase</span><span class="p">(</span><span class="s1">&#39;phase0&#39;</span><span class="p">,</span> <span class="n">phase0</span><span class="p">)</span>
+
+<span class="n">traj_p0</span><span class="o">.</span><span class="n">set_time_options</span><span class="p">(</span><span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_duration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">traj_p0</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;state_of_charge&#39;</span><span class="p">,</span> <span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">],</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">)</span>
+
+<span class="c1"># Second phase: normal operation.</span>
+
+<span class="n">phase1</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">ode_class</span><span class="o">=</span><span class="n">BatteryODE</span><span class="p">,</span> <span class="n">transcription</span><span class="o">=</span><span class="n">transcription</span><span class="p">)</span>
+<span class="n">traj_p1</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">add_phase</span><span class="p">(</span><span class="s1">&#39;phase1&#39;</span><span class="p">,</span> <span class="n">phase1</span><span class="p">)</span>
+
+<span class="n">traj_p1</span><span class="o">.</span><span class="n">set_time_options</span><span class="p">(</span><span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_duration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">traj_p1</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;state_of_charge&#39;</span><span class="p">,</span> <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">],</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">)</span>
+<span class="n">traj_p1</span><span class="o">.</span><span class="n">add_objective</span><span class="p">(</span><span class="s1">&#39;time&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;final&#39;</span><span class="p">)</span>
+
+<span class="c1"># Second phase, but with battery failure.</span>
+
+<span class="n">phase1_bfail</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">ode_class</span><span class="o">=</span><span class="n">BatteryODE</span><span class="p">,</span> <span class="n">ode_init_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;num_battery&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                        <span class="n">transcription</span><span class="o">=</span><span class="n">transcription</span><span class="p">)</span>
+<span class="n">traj_p1_bfail</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">add_phase</span><span class="p">(</span><span class="s1">&#39;phase1_bfail&#39;</span><span class="p">,</span> <span class="n">phase1_bfail</span><span class="p">)</span>
+
+<span class="n">traj_p1_bfail</span><span class="o">.</span><span class="n">set_time_options</span><span class="p">(</span><span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_duration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">traj_p1_bfail</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;state_of_charge&#39;</span><span class="p">,</span> <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">],</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">)</span>
+
+<span class="c1"># Second phase, but with motor failure.</span>
+
+<span class="n">phase1_mfail</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">ode_class</span><span class="o">=</span><span class="n">BatteryODE</span><span class="p">,</span> <span class="n">ode_init_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;num_motor&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">},</span>
+                        <span class="n">transcription</span><span class="o">=</span><span class="n">transcription</span><span class="p">)</span>
+<span class="n">traj_p1_mfail</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">add_phase</span><span class="p">(</span><span class="s1">&#39;phase1_mfail&#39;</span><span class="p">,</span> <span class="n">phase1_mfail</span><span class="p">)</span>
+
+<span class="n">traj_p1_mfail</span><span class="o">.</span><span class="n">set_time_options</span><span class="p">(</span><span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_duration</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">traj_p1_mfail</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;state_of_charge&#39;</span><span class="p">,</span> <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                        <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;SOC&#39;</span><span class="p">],</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;dXdt:SOC&#39;</span><span class="p">)</span>
+
+<span class="n">traj</span><span class="o">.</span><span class="n">link_phases</span><span class="p">(</span><span class="n">phases</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;phase0&#39;</span><span class="p">,</span> <span class="s1">&#39;phase1&#39;</span><span class="p">],</span> <span class="nb">vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;state_of_charge&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">])</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">link_phases</span><span class="p">(</span><span class="n">phases</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;phase0&#39;</span><span class="p">,</span> <span class="s1">&#39;phase1_bfail&#39;</span><span class="p">],</span> <span class="nb">vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;state_of_charge&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">])</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">link_phases</span><span class="p">(</span><span class="n">phases</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;phase0&#39;</span><span class="p">,</span> <span class="s1">&#39;phase1_mfail&#39;</span><span class="p">],</span> <span class="nb">vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;state_of_charge&#39;</span><span class="p">,</span> <span class="s1">&#39;time&#39;</span><span class="p">])</span>
+
+<span class="n">prob</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;assembled_jac_type&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;csc&#39;</span>
+<span class="n">prob</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">linear_solver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">DirectSolver</span><span class="p">(</span><span class="n">assemble_jac</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+<span class="n">prob</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase0.t_initial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase0.t_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="mi">3600</span>
+
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1.t_initial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="mi">3600</span>
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1.t_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="mi">3600</span>
+
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1_bfail.t_initial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="mi">3600</span>
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1_bfail.t_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="mi">3600</span>
+
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1_mfail.t_initial&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="mi">3600</span>
+<span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1_mfail.t_duration&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span><span class="o">*</span><span class="mi">3600</span>
+
+<span class="n">prob</span><span class="o">.</span><span class="n">set_solver_print</span><span class="p">(</span><span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">dm</span><span class="o">.</span><span class="n">run_problem</span><span class="p">(</span><span class="n">prob</span><span class="p">)</span>
+
+<span class="n">soc0</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase0.states:state_of_charge&#39;</span><span class="p">]</span>
+<span class="n">soc1</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1.states:state_of_charge&#39;</span><span class="p">]</span>
+<span class="n">soc1b</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1_bfail.states:state_of_charge&#39;</span><span class="p">]</span>
+<span class="n">soc1m</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phase1_mfail.states:state_of_charge&#39;</span><span class="p">]</span>
+
+<span class="c1"># Final value for State of Chrage in each segment should be a good test.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;State of Charge after 1 hour&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soc0</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;State of Charge after 2 hours&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soc1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;State of Charge after 2 hours, battery fails at 1 hour&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soc1b</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;State of Charge after 2 hours, motor fails at 1 hour&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">soc1m</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="c1"># Plot Results</span>
+<span class="n">t0</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase0.time.time&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">3600</span>
+<span class="n">t1</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase1.time.time&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">3600</span>
+<span class="n">t1b</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase1_bfail.time.time&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">3600</span>
+<span class="n">t1m</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase1_mfail.time.time&#39;</span><span class="p">]</span><span class="o">/</span><span class="mi">3600</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">soc0</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">soc1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t1b</span><span class="p">,</span> <span class="n">soc1b</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t1m</span><span class="p">,</span> <span class="n">soc1m</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time (hour)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;State of Charge (percent)&#39;</span><span class="p">)</span>
+
+<span class="n">I_Li0</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase0.rhs_all.pwr_balance.I_Li&#39;</span><span class="p">]</span>
+<span class="n">I_Li1</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase1.rhs_all.pwr_balance.I_Li&#39;</span><span class="p">]</span>
+<span class="n">I_Li1b</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase1_bfail.rhs_all.pwr_balance.I_Li&#39;</span><span class="p">]</span>
+<span class="n">I_Li1m</span> <span class="o">=</span> <span class="n">prob</span><span class="p">[</span><span class="s1">&#39;traj.phases.phase1_mfail.rhs_all.pwr_balance.I_Li&#39;</span><span class="p">]</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">subplot</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t0</span><span class="p">,</span> <span class="n">I_Li0</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">I_Li1</span><span class="p">,</span> <span class="s1">&#39;b&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t1b</span><span class="p">,</span> <span class="n">I_Li1b</span><span class="p">,</span> <span class="s1">&#39;r&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">t1m</span><span class="p">,</span> <span class="n">I_Li1m</span><span class="p">,</span> <span class="s1">&#39;c&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s1">&#39;Time (hour)&#39;</span><span class="p">)</span>
+<span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s1">&#39;Line Current (A)&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="s1">&#39;Phase 1&#39;</span><span class="p">,</span> <span class="s1">&#39;Phase 2&#39;</span><span class="p">,</span> <span class="s1">&#39;Phase 2 Battery Fail&#39;</span><span class="p">,</span> <span class="s1">&#39;Phase 2 Motor Fail&#39;</span><span class="p">],</span> <span class="n">loc</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="cell border-box-sizing code_cell rendered"><div class="output_area"><pre>--------------------------------------------------------------------------
+[[3490,1],0]: A high-performance Open MPI point-to-point messaging module
+was unable to find any relevant network interfaces:
+
+Module: OpenFabrics (openib)
+  Host: travis-job-137fcd62-bca7-4f70-92f5-29292b3975cd
+
+Another transport will be used instead, although this may result in
+lower performance.
+--------------------------------------------------------------------------
+--- Linkage Report [traj] ---
+     phase0      phase1
+        states:state_of_charge++  =  states:state_of_charge--
+        time++                    =  time--                  
+     phase0      phase1_bfail
+        states:state_of_charge++  =  states:state_of_charge--
+        time++                    =  time--                  
+     phase0      phase1_mfail
+        states:state_of_charge++  =  states:state_of_charge--
+        time++                    =  time--                  
+----------------------------
+Full total jacobian was computed 3 times, taking 0.074813 seconds.
+Total jacobian shape: (107, 122) 
+
+
+Jacobian shape: (107, 122)  ( 4.63% nonzero)
+FWD solves: 0   REV solves: 8
+Total colors vs. total size: 8 vs 107  (92.5% improvement)
+
+Sparsity computed using tolerance: 1e-25
+Most common number of nonzero entries (605 of 13054) repeated 1 times out of 1 tolerances tested.
+
+Time to compute sparsity: 0.074813 sec.
+Time to compute coloring: 0.004483 sec.
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+  return f(*args, **kwds)
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/site-packages/petsc4py/lib/__init__.py:47: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#x27;s documentation for alternative uses
+  import sys, os, imp, warnings
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+  return f(*args, **kwds)
+/home/travis/build/OpenMDAO/dymos/OpenMDAO/openmdao/solvers/nonlinear/newton.py:116: DeprecationWarning:traj.phases.phase0.rhs_all: Deprecation warning: In V 3.0, the default Newton solver setup will change to use the BoundsEnforceLS line search.
+/home/travis/build/OpenMDAO/dymos/OpenMDAO/openmdao/solvers/nonlinear/newton.py:116: DeprecationWarning:traj.phases.phase1.rhs_all: Deprecation warning: In V 3.0, the default Newton solver setup will change to use the BoundsEnforceLS line search.
+/home/travis/build/OpenMDAO/dymos/OpenMDAO/openmdao/solvers/nonlinear/newton.py:116: DeprecationWarning:traj.phases.phase1_bfail.rhs_all: Deprecation warning: In V 3.0, the default Newton solver setup will change to use the BoundsEnforceLS line search.
+/home/travis/build/OpenMDAO/dymos/OpenMDAO/openmdao/solvers/nonlinear/newton.py:116: DeprecationWarning:traj.phases.phase1_mfail.rhs_all: Deprecation warning: In V 3.0, the default Newton solver setup will change to use the BoundsEnforceLS line search.
+Optimization terminated successfully.    (Exit mode 0)
+            Current function value: 7200.0
+            Iterations: 3
+            Function evaluations: 4
+            Gradient evaluations: 3
+Optimization Complete
+-----------------------------------
+State of Charge after 1 hour
+[0.63464982]
+State of Charge after 2 hours
+[0.23794217]
+State of Charge after 2 hours, battery fails at 1 hour
+[0.0281523]
+State of Charge after 2 hours, motor fails at 1 hour
+[0.18625395]
+</pre></div></div><div class="figure align-default">
+<img alt="../_images/doc_plot_9.png" src="../_images/doc_plot_9.png" />
+</div>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<dl class="citation">
+<dt class="label" id="chin2019"><span class="brackets"><a class="fn-backref" href="#id1">Chin2019</a></span></dt>
+<dd><p>Chin, Jeff, Sydney L. Schnulo, Thomas Miller, Kevin Prokopius and Justin S. Gray. “Battery Performance Modeling on SCEPTOR X-57 Subject to Thermal and Transient Considerations”. AIAA Scitech 2019 Forum, San Diego, CA. 2019.</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="reentry.html" title="Single-Phase Space Shuttle Reentry"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="multi_phase_cannonball.html" title="Multi-Phase Cannonball"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" >Dymos by Example</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,11 @@
+dymos.transcriptions.pseudospectral.components
+----------------------------------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    transcriptions.pseudospectral.components/collocation_comp
+    transcriptions.pseudospectral.components/control_endpoint_defect_comp
+    transcriptions.pseudospectral.components/gauss_lobatto_interleave_comp
+    transcriptions.pseudospectral.components/state_independents
+    transcriptions.pseudospectral.components/state_interp_comp

@@ -1,0 +1,683 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.transcriptions.grid_data &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.transcriptions.grid_data</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="kn">import</span> <span class="n">block_diag</span>
+
+<span class="kn">from</span> <span class="nn">dymos.utils.lgl</span> <span class="kn">import</span> <span class="n">lgl</span>
+<span class="kn">from</span> <span class="nn">dymos.utils.lgr</span> <span class="kn">import</span> <span class="n">lgr</span>
+<span class="kn">from</span> <span class="nn">dymos.utils.hermite</span> <span class="kn">import</span> <span class="n">hermite_matrices</span>
+<span class="kn">from</span> <span class="nn">dymos.utils.lagrange</span> <span class="kn">import</span> <span class="n">lagrange_matrices</span>
+<span class="kn">from</span> <span class="nn">dymos.utils.rk_methods</span> <span class="kn">import</span> <span class="n">rk_methods</span>
+
+
+<div class="viewcode-block" id="gauss_lobatto_subsets_and_nodes"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.gauss_lobatto_subsets_and_nodes">[docs]</a><span class="k">def</span> <span class="nf">gauss_lobatto_subsets_and_nodes</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the subset dictionary corresponding to the Gauss-Lobatto transcription.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The total number of nodes in the Gauss-Lobatto segment.  Must be</span>
+<span class="sd">        an odd number.</span>
+<span class="sd">    seg_idx : int</span>
+<span class="sd">        The index of this segment within its phase.</span>
+<span class="sd">    compressed : bool</span>
+<span class="sd">        True if the subset requested is for a phase with compressed transcription.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    subsets : A dictionary with the following keys:</span>
+<span class="sd">        &#39;disc&#39; gives the indices of the state discretization nodes (deprecated)</span>
+<span class="sd">        &#39;state_disc&#39; gives the indices of the state discretization nodes</span>
+<span class="sd">        &#39;state_input&#39; gives the indices of the state input nodes</span>
+<span class="sd">        &#39;control_disc&#39; gives the indices of the control discretization nodes</span>
+<span class="sd">        &#39;control_input&#39; gives the indices of the control input nodes</span>
+<span class="sd">        &#39;segment_ends&#39; gives the indices of the nodes at the start (even) and end (odd) of a segment</span>
+<span class="sd">        &#39;col&#39; gives the indices of the collocation nodes</span>
+<span class="sd">        &#39;all&#39; gives all node indices</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Subset &#39;state_input&#39; is the same as subset &#39;state_disc&#39; if `compressed == False` or</span>
+<span class="sd">    `first_seg == True`.  The same is true of subsets &#39;control_input&#39; and &#39;control_disc&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;A Gauss-Lobatto scheme must use an odd number of points&#39;</span><span class="p">)</span>
+
+    <span class="n">subsets</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;state_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;state_input&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">compressed</span> <span class="ow">or</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;control_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;control_input&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">compressed</span> <span class="ow">or</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;segment_ends&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;col&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;solution&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;solver_solved&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">compressed</span> <span class="ow">or</span> \
+        <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">::]</span>
+
+    <span class="n">idxs_not_in_solved</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">],</span>
+                                          <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;solver_solved&#39;</span><span class="p">],</span>
+                                          <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;solver_indep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">][</span><span class="n">idxs_not_in_solved</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">subsets</span><span class="p">,</span> <span class="n">lgl</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="radau_pseudospectral_subsets_and_nodes"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.radau_pseudospectral_subsets_and_nodes">[docs]</a><span class="k">def</span> <span class="nf">radau_pseudospectral_subsets_and_nodes</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the subset dictionary corresponding to the Radau Pseudospectral</span>
+<span class="sd">    transcription.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The total number of nodes in the Radau Pseudospectral segment (including right endpoint).</span>
+<span class="sd">    seg_idx : int</span>
+<span class="sd">        The index of this segment within its phase.</span>
+<span class="sd">    compressed : bool</span>
+<span class="sd">        True if the subset requested is for a phase with compressed transcription.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    subsets : A dictionary with the following keys:</span>
+<span class="sd">        &#39;disc&#39; gives the indices of the state discretization nodes (deprecated)</span>
+<span class="sd">        &#39;state_disc&#39; gives the indices of the state discretization nodes</span>
+<span class="sd">        &#39;state_input&#39; gives the indices of the state input nodes</span>
+<span class="sd">        &#39;control_disc&#39; gives the indices of the control discretization nodes</span>
+<span class="sd">        &#39;control_input&#39; gives the indices of the control input nodes</span>
+<span class="sd">        &#39;segment_ends&#39; gives the indices of the nodes at the start (even) and end (odd) of a segment</span>
+<span class="sd">        &#39;col&#39; gives the indices of the collocation nodes</span>
+<span class="sd">        &#39;all&#39; gives all node indices</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Subset &#39;state_input&#39; is the same as subset &#39;state_disc&#39; if `compressed == False` or</span>
+<span class="sd">    `first_seg == True`.  For Radau-Pseudospectral transcription, subset &#39;control_input&#39; is always</span>
+<span class="sd">    the same as subset &#39;control_disc&#39;.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">subsets</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;state_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;state_input&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">compressed</span> <span class="ow">or</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;control_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;control_input&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;segment_ends&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;col&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;solution&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;solver_solved&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">compressed</span> <span class="ow">or</span> \
+        <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">][</span><span class="mi">1</span><span class="p">::]</span>
+
+    <span class="n">idxs_not_in_solved</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">in1d</span><span class="p">(</span><span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">],</span>
+                                          <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;solver_solved&#39;</span><span class="p">],</span>
+                                          <span class="n">invert</span><span class="o">=</span><span class="kc">True</span><span class="p">))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;solver_indep&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">][</span><span class="n">idxs_not_in_solved</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="n">subsets</span><span class="p">,</span> <span class="n">lgr</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">include_endpoint</span><span class="o">=</span><span class="kc">True</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="rk_subsets_and_nodes"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.rk_subsets_and_nodes">[docs]</a><span class="k">def</span> <span class="nf">rk_subsets_and_nodes</span><span class="p">(</span><span class="n">method</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the subset dictionary corresponding to the Runge-Kutta transcription.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    method : str</span>
+<span class="sd">        One of the available RK methods in dymos.utils.rk_methods</span>
+<span class="sd">    seg_idx : int</span>
+<span class="sd">        The index of this segment within its phase.</span>
+<span class="sd">    compressed : bool</span>
+<span class="sd">        True if the subset requested is for a phase with compressed transcription.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    subsets : dict of {str: np.ndarray}</span>
+<span class="sd">        &#39;state_disc&#39; gives the indices of the state discretization nodes</span>
+<span class="sd">        &#39;state_input&#39; gives the indices of the state input nodes</span>
+<span class="sd">        &#39;control_disc&#39; gives the indices of the control discretization nodes</span>
+<span class="sd">        &#39;control_input&#39; gives the indices of the control input nodes</span>
+<span class="sd">        &#39;segment_ends&#39; gives the indices of the nodes at the start (even) and end (odd) of a segment</span>
+<span class="sd">        &#39;step&#39; gives the indices of the nodes at step boundaries</span>
+<span class="sd">        &#39;all&#39; gives all node indices</span>
+<span class="sd">    nodes : np.ndarray</span>
+<span class="sd">        The location of all nodes on the interval -1, 1.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    (subsets, nodes)</span>
+<span class="sd">    Subset &#39;state_input&#39; is the same as subset &#39;state_disc&#39;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># transform c onto [-1, 1]</span>
+    <span class="n">nodes</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rk_methods</span><span class="p">[</span><span class="n">method</span><span class="p">][</span><span class="s1">&#39;c&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="mf">1.0</span>
+    <span class="n">n</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+    <span class="n">control_disc_idxs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">rk_methods</span><span class="p">[</span><span class="n">method</span><span class="p">][</span><span class="s1">&#39;control_disc_indices&#39;</span><span class="p">])</span>
+
+    <span class="n">subsets</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;control_disc&#39;</span><span class="p">:</span> <span class="n">control_disc_idxs</span><span class="p">,</span>
+        <span class="s1">&#39;control_input&#39;</span><span class="p">:</span> <span class="n">control_disc_idxs</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">compressed</span> <span class="ow">or</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">else</span> <span class="n">control_disc_idxs</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span>
+        <span class="s1">&#39;segment_ends&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_disc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;segment_ends&#39;</span><span class="p">]</span>
+    <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_disc&#39;</span><span class="p">]</span> <span class="k">if</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="n">subsets</span><span class="p">[</span><span class="s1">&#39;state_disc&#39;</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="k">return</span> <span class="n">subsets</span><span class="p">,</span> <span class="n">nodes</span></div>
+
+
+<div class="viewcode-block" id="explicit_subsets_and_nodes"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.explicit_subsets_and_nodes">[docs]</a><span class="k">def</span> <span class="nf">explicit_subsets_and_nodes</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">seg_idx</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">shooting</span><span class="o">=</span><span class="s1">&#39;single&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the subset dictionary corresponding to the Runge-Kutta transcription.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n : int</span>
+<span class="sd">        The total number of control discretization nodes in the Runge-Kutta segment.</span>
+<span class="sd">    seg_idx : int</span>
+<span class="sd">        The index of this segment within its phase.</span>
+<span class="sd">    compressed : bool</span>
+<span class="sd">        True if the subset requested is for a phase with compressed transcription.</span>
+<span class="sd">    shooting : str</span>
+<span class="sd">        One of the shooting method types for explicit phases (&#39;single&#39;, &#39;hybrid&#39;, or &#39;multiple&#39;)</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    subsets : dict of {str: np.ndarray}</span>
+<span class="sd">        &#39;state_disc&#39; gives the indices of the state discretization nodes</span>
+<span class="sd">        &#39;state_input&#39; gives the indices of the state input nodes</span>
+<span class="sd">        &#39;control_disc&#39; gives the indices of the control discretization nodes</span>
+<span class="sd">        &#39;control_input&#39; gives the indices of the control input nodes</span>
+<span class="sd">        &#39;segment_ends&#39; gives the indices of the nodes at the start (even) and end (odd) of a segment</span>
+<span class="sd">        &#39;step&#39; gives the indices of the nodes at step boundaries</span>
+<span class="sd">        &#39;all&#39; gives all node indices</span>
+<span class="sd">    nodes : np.ndarray</span>
+<span class="sd">        The location of all nodes on the interval -1, 1.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    (subsets, nodes)</span>
+<span class="sd">    Subset &#39;state_input&#39; is the same as subset &#39;state_disc&#39;.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">subsets</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;state_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">shooting</span> <span class="o">==</span> <span class="s1">&#39;multiple&#39;</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;state_input&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">shooting</span> <span class="o">==</span> <span class="s1">&#39;multiple&#39;</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="mi">0</span><span class="p">,),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;control_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;control_input&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">compressed</span> <span class="ow">or</span> <span class="n">seg_idx</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">else</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;segment_ends&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;col&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;all&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+        <span class="s1">&#39;solution&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="n">subsets</span><span class="p">,</span> <span class="n">lgl</span><span class="p">(</span><span class="n">n</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="make_subset_map"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.make_subset_map">[docs]</a><span class="k">def</span> <span class="nf">make_subset_map</span><span class="p">(</span><span class="n">from_subset_idxs</span><span class="p">,</span> <span class="n">to_subset_idxs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Creates a map from one subset to another using the indices of each subset within all nodes.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    from_subset_idxs : iterable of int</span>
+<span class="sd">        Subset indices for the subset from which we are mapping values.</span>
+<span class="sd">    to_subset_idxs : iterable of int</span>
+<span class="sd">        Subset indices for the subset to which we are mapping values.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    numpy.array of int</span>
+<span class="sd">        An index map which, when applied to values in the from_subset, will provide values</span>
+<span class="sd">        in the to_subset.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">offset</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="nb">map</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">to_subset_idxs</span><span class="p">)):</span>
+        <span class="k">if</span> <span class="n">to_subset_idxs</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">from_subset_idxs</span><span class="p">:</span>
+            <span class="n">offset</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="nb">map</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span> <span class="o">-</span> <span class="n">offset</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="nb">map</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GridData"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.GridData">[docs]</a><span class="k">class</span> <span class="nc">GridData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Properties associated with the GridData of a phase.</span>
+
+<span class="sd">    GridData contains properties associated</span>
+<span class="sd">    with the &quot;grid&quot; or &quot;mesh&quot; of a phase - the number of segments, the</span>
+<span class="sd">    polynomial order of each segment, and the relative lengths of the segments.</span>
+<span class="sd">    In turn, these three defining properties determine various other properties,</span>
+<span class="sd">    such as indexing arrays used to extract the discretization or collocation</span>
+<span class="sd">    nodes from a list of all nodes within the phase.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GridData.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.GridData.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">num_segments</span><span class="p">,</span> <span class="n">transcription</span><span class="p">,</span> <span class="n">transcription_order</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">segment_ends</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">num_steps_per_segment</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Initialize and compute all attributes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        num_segments : int</span>
+<span class="sd">            The number of segments in the phase.</span>
+<span class="sd">        transcription : str</span>
+<span class="sd">            Case-insensitive transcription scheme (e.g., (&#39;gauss-lobatto&#39;, &#39;radau-ps&#39;, &#39;explicit&#39;)).</span>
+<span class="sd">        transcription_order : int or int ndarray[:] or str</span>
+<span class="sd">            The order of the state transcription in each segment, as a scalar or a vector.  For</span>
+<span class="sd">            Runge-Kutta phases, this is the RK method used</span>
+<span class="sd">        segment_ends : Iterable[num_segments + 1] or None</span>
+<span class="sd">            The segments nodes on some arbitrary interval.</span>
+<span class="sd">            This will be normalized to the interval [-1, 1].</span>
+<span class="sd">        compressed : bool</span>
+<span class="sd">            If the transcription is compressed, then states and controls at shared</span>
+<span class="sd">            nodes of adjacent segments are only specified once, and then broadcast</span>
+<span class="sd">            to the appropriate indices.</span>
+<span class="sd">        num_steps_per_segment : int or None</span>
+<span class="sd">            The number of steps to take in each segment, for explicitly integrated phases.</span>
+
+<span class="sd">        Attributes</span>
+<span class="sd">        ----------</span>
+<span class="sd">        transcription : str</span>
+<span class="sd">            The transcription to which this GridData instance applies.  One of</span>
+<span class="sd">            &#39;gauss-lobatto&#39; or &#39;radau-ps&#39;.</span>
+<span class="sd">        num_segments : int</span>
+<span class="sd">            The number of segments in the phase</span>
+<span class="sd">        segment_ends : ndarray or None</span>
+<span class="sd">            The segment boundaries in non-dimensional phase time (phase tau space).</span>
+<span class="sd">            If given as a Iterable, it must be of length (num_segments+1) and it</span>
+<span class="sd">            must be monotonically increasing.</span>
+<span class="sd">            If None, then the segments are equally spaced.</span>
+<span class="sd">        num_steps_per_segment : int</span>
+<span class="sd">            The number of steps to take in each segment of the phase, for explicit phases.</span>
+<span class="sd">        num_nodes : int</span>
+<span class="sd">            The total number of nodes in the phase</span>
+<span class="sd">        node_stau : ndarray</span>
+<span class="sd">            The locations of each node in non-dimensional segment time (segment tau space).</span>
+<span class="sd">        node_ptau : ndarray</span>
+<span class="sd">            The locations of each node in non-dimensional phase time (phase tau space).</span>
+<span class="sd">        node_dptau_dstau : ndarray</span>
+<span class="sd">            The ratio of phase tau to segment tau at each node.</span>
+<span class="sd">        segment_indices : int ndarray[:,2]</span>
+<span class="sd">            Array where each row contains the start and end indices into the nodes.</span>
+<span class="sd">        subset_node_indices : dict of int ndarray[:]</span>
+<span class="sd">            Dict keyed by subset name where each entry are the indices of the nodes</span>
+<span class="sd">            belonging to that given subset.</span>
+<span class="sd">        subset_segment_indices: dict of int ndarray[num_seg,:]</span>
+<span class="sd">            Dict keyed by subset name where each entry are the indices of the nodes</span>
+<span class="sd">            belonging to the given subset, indexed into subset_node_indices!</span>
+<span class="sd">        subset_num_nodes: dict of int</span>
+<span class="sd">            A dict keyed by subset name that provides the total number of</span>
+<span class="sd">            nodes in the phase which belong to the given subset.</span>
+<span class="sd">        subset_num_nodes_per_segment: dict of list</span>
+<span class="sd">            A dict keyed by subset name that provides a list of ints giving the number of</span>
+<span class="sd">            nodes which belong to the given subset in each segment.</span>
+<span class="sd">        compressed: bool</span>
+<span class="sd">            True if the transcription is compressed (connecting nodes of adjacent segments</span>
+<span class="sd">            are not duplicated in the inputs).</span>
+<span class="sd">        input_maps: dict of int ndarray[:]</span>
+<span class="sd">            Dict keyed by the map name that provides a mapping for src_indices to</span>
+<span class="sd">            and from &quot;compressed&quot; form.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">segment_ends</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">segment_ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">num_segments</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">segment_ends</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_segments</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;segment_ends must be of length (num_segments + 1)&#39;</span><span class="p">)</span>
+            <span class="c1"># Assert monotonic increasing</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">all</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">segment_ends</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;segment_ends must be monotonically increasing&#39;</span><span class="p">)</span>
+            <span class="n">segment_ends</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">segment_ends</span><span class="p">)</span>
+
+        <span class="n">v0</span> <span class="o">=</span> <span class="n">segment_ends</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">v1</span> <span class="o">=</span> <span class="n">segment_ends</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">segment_ends</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">segment_ends</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span>
+
+        <span class="c1"># List of all GridData attributes</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_segments</span> <span class="o">=</span> <span class="n">num_segments</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">segment_ends</span> <span class="o">=</span> <span class="n">segment_ends</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_steps_per_segment</span> <span class="o">=</span> <span class="mi">0</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_stau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_ptau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">node_dptau_dstau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">segment_indices</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_segments</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subset_num_nodes</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">subset_num_nodes_per_segment</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">compressed</span> <span class="o">=</span> <span class="n">compressed</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_maps</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;state_input_to_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">),</span>
+                           <span class="s1">&#39;dynamic_control_input_to_disc&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">transcription</span> <span class="o">=</span> <span class="n">transcription</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+
+        <span class="c1"># Define get_subsets and node points based on the transcription scheme</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">transcription</span> <span class="o">==</span> <span class="s1">&#39;gauss-lobatto&#39;</span><span class="p">:</span>
+            <span class="n">get_subsets_and_nodes</span> <span class="o">=</span> <span class="n">gauss_lobatto_subsets_and_nodes</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">transcription</span> <span class="o">==</span> <span class="s1">&#39;radau-ps&#39;</span><span class="p">:</span>
+            <span class="n">get_subsets_and_nodes</span> <span class="o">=</span> <span class="n">radau_pseudospectral_subsets_and_nodes</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">transcription</span> <span class="o">==</span> <span class="s1">&#39;explicit&#39;</span><span class="p">:</span>
+            <span class="n">get_subsets_and_nodes</span> <span class="o">=</span> <span class="n">explicit_subsets_and_nodes</span>
+        <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">transcription</span> <span class="o">==</span> <span class="s1">&#39;runge-kutta&#39;</span><span class="p">:</span>
+            <span class="n">get_subsets_and_nodes</span> <span class="o">=</span> <span class="n">rk_subsets_and_nodes</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Unknown transcription: </span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">transcription</span><span class="p">))</span>
+
+        <span class="c1"># Make sure transcription_order is a vector</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">transcription_order</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transcription_order</span> <span class="o">=</span> <span class="n">num_segments</span> <span class="o">*</span> <span class="p">[</span><span class="n">transcription_order</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">transcription_order</span><span class="p">):</span>
+            <span class="n">transcription_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_segments</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="n">transcription_order</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transcription_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">transcription_order</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">transcription_order</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">transcription_order</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+        <span class="c1"># Make sure num_steps_per_segment is a vector</span>
+        <span class="n">num_steps_per_segment</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">num_segments</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="n">num_steps_per_segment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_steps_per_segment</span> <span class="o">=</span> <span class="n">num_steps_per_segment</span>
+
+        <span class="c1"># Build up the arrays segment by segment</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">segment_indices</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">ind0</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># index of the first node in the segment</span>
+        <span class="k">for</span> <span class="n">iseg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_segments</span><span class="p">):</span>
+            <span class="n">subsets_i</span><span class="p">,</span> <span class="n">nodes_i</span> <span class="o">=</span> <span class="n">get_subsets_and_nodes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">transcription_order</span><span class="p">[</span><span class="n">iseg</span><span class="p">],</span>
+                                                       <span class="n">seg_idx</span><span class="o">=</span><span class="n">iseg</span><span class="p">,</span>
+                                                       <span class="n">compressed</span><span class="o">=</span><span class="n">compressed</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">iseg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">subset_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">subsets_i</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+                <span class="n">subset_ind0</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">subset_names</span><span class="p">}</span>
+                <span class="c1"># index of the first node in the segment for each subset</span>
+                <span class="n">subset_ind1</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="mi">0</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">subset_names</span><span class="p">}</span>
+                <span class="c1"># index of the last node in the segment for each subset</span>
+
+            <span class="n">num_nodes_i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes_i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">+=</span> <span class="n">num_nodes_i</span>
+
+            <span class="c1"># Append our nodes in segment tau space</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_stau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">node_stau</span><span class="p">,</span> <span class="n">nodes_i</span><span class="p">))</span>
+
+            <span class="c1"># Append our nodes in phase tau space</span>
+            <span class="n">v0</span> <span class="o">=</span> <span class="n">segment_ends</span><span class="p">[</span><span class="n">iseg</span><span class="p">]</span>
+            <span class="n">v1</span> <span class="o">=</span> <span class="n">segment_ends</span><span class="p">[</span><span class="n">iseg</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_ptau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">node_ptau</span><span class="p">,</span> <span class="n">v0</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">nodes_i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">node_dptau_dstau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">node_dptau_dstau</span><span class="p">,</span>
+                                                    <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v1</span> <span class="o">-</span> <span class="n">v0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">nodes_i</span><span class="p">)))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">segment_indices</span><span class="p">[</span><span class="n">iseg</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_indices</span><span class="p">[</span><span class="n">iseg</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">num_nodes_i</span>
+            <span class="k">if</span> <span class="n">iseg</span> <span class="o">&lt;</span> <span class="n">num_segments</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">segment_indices</span><span class="p">[</span><span class="n">iseg</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">segment_indices</span><span class="p">[</span><span class="n">iseg</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+
+            <span class="k">for</span> <span class="n">subset_name</span><span class="p">,</span> <span class="n">subset_idxs_i</span> <span class="ow">in</span> <span class="n">subsets_i</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">iseg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">subset_num_nodes_per_segment</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_segments</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span>
+                                                                        <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+                <span class="n">num_subset_nodes_i</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">subset_idxs_i</span><span class="p">)</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num_subset_nodes_i</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subset_num_nodes_per_segment</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">num_subset_nodes_i</span><span class="p">)</span>
+                <span class="n">subset_ind1</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num_subset_nodes_i</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="n">subset_name</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">subset_ind0</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="n">subset_name</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">subset_ind1</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span>
+
+                <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">=</span> \
+                    <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">subset_name</span><span class="p">],</span> <span class="n">subset_idxs_i</span> <span class="o">+</span> <span class="n">ind0</span><span class="p">))</span>
+                <span class="n">subset_ind0</span><span class="p">[</span><span class="n">subset_name</span><span class="p">]</span> <span class="o">+=</span> <span class="n">num_subset_nodes_i</span>
+
+            <span class="n">ind0</span> <span class="o">+=</span> <span class="n">num_nodes_i</span>
+
+        <span class="n">state_input_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="s1">&#39;state_input&#39;</span><span class="p">]</span>
+        <span class="n">state_disc_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="s1">&#39;state_disc&#39;</span><span class="p">]</span>
+
+        <span class="n">control_input_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="s1">&#39;control_input&#39;</span><span class="p">]</span>
+        <span class="n">control_disc_idxs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="s1">&#39;control_disc&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_maps</span><span class="p">[</span><span class="s1">&#39;state_input_to_disc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_subset_map</span><span class="p">(</span><span class="n">state_input_idxs</span><span class="p">,</span> <span class="n">state_disc_idxs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_maps</span><span class="p">[</span><span class="s1">&#39;dynamic_control_input_to_disc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">make_subset_map</span><span class="p">(</span><span class="n">control_input_idxs</span><span class="p">,</span>
+                                                                           <span class="n">control_disc_idxs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GridData.phase_lagrange_matrices"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.GridData.phase_lagrange_matrices">[docs]</a>    <span class="k">def</span> <span class="nf">phase_lagrange_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">given_set_name</span><span class="p">,</span> <span class="n">eval_set_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the matrices mapping values at some nodes to values and derivatives at new nodes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        given_set_name : str</span>
+<span class="sd">            Name of the set of nodes with which to perform the interpolation.</span>
+<span class="sd">        eval_set_name : str</span>
+<span class="sd">            Name of the set of nodes at which to evaluate the values and derivatives.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray[num_eval_set, num_given_set]</span>
+<span class="sd">            Matrix that yields the values at the new nodes.</span>
+<span class="sd">        ndarray[num_eval_set, num_given_set]</span>
+<span class="sd">            Matrix that yields the time derivatives at the new nodes.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The values are mapped using the equation:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            x_{eval} = \\left[ L \\right] x_{given}</span>
+
+<span class="sd">        And the derivatives are mapped with the equation:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\dot{x}_{eval} = \\left[ D \\right] x_{given} \\frac{d \\tau}{dt}</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">L_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">D_blocks</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">iseg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_segments</span><span class="p">):</span>
+            <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="n">given_set_name</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">given_set_name</span><span class="p">][</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
+            <span class="n">nodes_given</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_stau</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+
+            <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="n">eval_set_name</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">eval_set_name</span><span class="p">][</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
+            <span class="n">nodes_eval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_stau</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+
+            <span class="n">L_block</span><span class="p">,</span> <span class="n">D_block</span> <span class="o">=</span> <span class="n">lagrange_matrices</span><span class="p">(</span><span class="n">nodes_given</span><span class="p">,</span> <span class="n">nodes_eval</span><span class="p">)</span>
+
+            <span class="n">L_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L_block</span><span class="p">)</span>
+            <span class="n">D_blocks</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">D_block</span><span class="p">)</span>
+
+        <span class="n">L</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">L_blocks</span><span class="p">)</span>
+        <span class="n">D</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">D_blocks</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">L</span><span class="p">,</span> <span class="n">D</span></div>
+
+<div class="viewcode-block" id="GridData.phase_hermite_matrices"><a class="viewcode-back" href="../../../_srcdocs/packages/transcriptions/grid_data.html#dymos.transcriptions.grid_data.GridData.phase_hermite_matrices">[docs]</a>    <span class="k">def</span> <span class="nf">phase_hermite_matrices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">given_set_name</span><span class="p">,</span> <span class="n">eval_set_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Compute the matrices mapping values at some nodes to values and derivatives at new nodes.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        given_set_name : str</span>
+<span class="sd">            Name of the set of nodes with which to perform the interpolation.</span>
+<span class="sd">        eval_set_name : str</span>
+<span class="sd">            Name of the set of nodes at which to evaluate the values and derivatives.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        ndarray[num_eval_set, num_given_set]</span>
+<span class="sd">            Matrix that maps values at given nodes to values at eval nodes.</span>
+<span class="sd">            This is A_i in the equations above.</span>
+<span class="sd">        ndarray[num_eval_set, num_given_set]</span>
+<span class="sd">            Matrix that maps derivatives at given nodes to values at eval nodes.</span>
+<span class="sd">            This is B_i in the equations above.</span>
+<span class="sd">        ndarray[num_eval_set, num_given_set]</span>
+<span class="sd">            Matrix that maps values at given nodes to derivatives at eval nodes.</span>
+<span class="sd">            This is A_d in the equations above.</span>
+<span class="sd">        ndarray[num_eval_set, num_given_set]</span>
+<span class="sd">            Matrix that maps derivatives at given nodes to derivatives at eval nodes.</span>
+<span class="sd">            This is A_d in the equations above.</span>
+
+<span class="sd">        Notes</span>
+<span class="sd">        -----</span>
+<span class="sd">        The equation for Hermite interpolation of the values is:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            x_{eval} = \\left[ A_i \\right] x_{given}</span>
+<span class="sd">                             + \\frac{dt}{d\\tau} \\left[ B_i \\right] \\dot{x}_{given}</span>
+
+<span class="sd">        Hermite interpolation of the derivatives is performed as:</span>
+
+<span class="sd">        .. math::</span>
+
+<span class="sd">            \\dot{x}_{eval} = \\frac{d\\tau}{dt} \\left[ A_d \\right] x_{given}</span>
+<span class="sd">                                   + \\left[ B_d \\right] \\dot{x}_{given}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">Ai_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Bi_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Ad_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">Bd_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">for</span> <span class="n">iseg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_segments</span><span class="p">):</span>
+            <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="n">given_set_name</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">given_set_name</span><span class="p">][</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
+            <span class="n">nodes_given</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_stau</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+
+            <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="n">eval_set_name</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="p">:]</span>
+            <span class="n">indices</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subset_node_indices</span><span class="p">[</span><span class="n">eval_set_name</span><span class="p">][</span><span class="n">i1</span><span class="p">:</span><span class="n">i2</span><span class="p">]</span>
+            <span class="n">nodes_eval</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">node_stau</span><span class="p">[</span><span class="n">indices</span><span class="p">]</span>
+
+            <span class="n">Ai_seg</span><span class="p">,</span> <span class="n">Bi_seg</span><span class="p">,</span> <span class="n">Ad_seg</span><span class="p">,</span> <span class="n">Bd_seg</span> <span class="o">=</span> <span class="n">hermite_matrices</span><span class="p">(</span><span class="n">nodes_given</span><span class="p">,</span> <span class="n">nodes_eval</span><span class="p">)</span>
+
+            <span class="n">Ai_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Ai_seg</span><span class="p">)</span>
+            <span class="n">Bi_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Bi_seg</span><span class="p">)</span>
+            <span class="n">Ad_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Ad_seg</span><span class="p">)</span>
+            <span class="n">Bd_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Bd_seg</span><span class="p">)</span>
+
+        <span class="n">Ai</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">Ai_list</span><span class="p">)</span>
+        <span class="n">Bi</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">Bi_list</span><span class="p">)</span>
+        <span class="n">Ad</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">Ad_list</span><span class="p">)</span>
+        <span class="n">Bd</span> <span class="o">=</span> <span class="n">block_diag</span><span class="p">(</span><span class="o">*</span><span class="n">Bd_list</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">Ai</span><span class="p">,</span> <span class="n">Bi</span><span class="p">,</span> <span class="n">Ad</span><span class="p">,</span> <span class="n">Bd</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

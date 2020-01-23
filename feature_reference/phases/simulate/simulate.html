@@ -1,0 +1,191 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Simulating ODEs with Scipy &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Organizing Phases into Trajectories" href="../../trajectories.html" />
+    <link rel="prev" title="Objective" href="../objective.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../trajectories.html" title="Organizing Phases into Trajectories"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../objective.html" title="Objective"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../phases.html" accesskey="U">Phases of a Trajectory</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Simulating ODEs with Scipy</a><ul>
+<li><a class="reference internal" href="#simulate-call-signature"><cite>simulate</cite> call signature</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../objective.html"
+                        title="previous chapter">Objective</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../../trajectories.html"
+                        title="next chapter">Organizing Phases into Trajectories</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/feature_reference/phases/simulate/simulate.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="simulating-odes-with-scipy">
+<h1>Simulating ODEs with Scipy<a class="headerlink" href="#simulating-odes-with-scipy" title="Permalink to this headline">¶</a></h1>
+<p>Dymos phases offer the ability to simulate the ODE using the current solution using the
+methods available in <cite>scipy.integrate</cite>.  This has a variety of useful applications.</p>
+<p>First, propagating the ODE as an initial value problem with a given control time-history can be
+useful in demonstrating that the various components in the ODE have been coded correctly.  An ODE system
+that can not properly propagate its dynamics, when formulated as an IVP, has virtually no chance of
+successfully solving an optimal control problem.</p>
+<p>Secondly, the implicit integration techniques employed in Dymos often benefit from a reasonable
+initial guess to the time-histories of the states and controls.  By providing a numerically
+integrated time-history of the states in the system, the collocation defect constraints should all
+be satisfied at the driver’s starting point.  In fact, if any defect constraints are initially
+unsatisfied here it is an indication that the phase has an insufficient grid (the number of
+segments is too low or the transcription order of the segments is too low).  The ability to start
+from numerically propagated solutions is particularly useful for the high-order Gauss-Lobatto
+method, where invalid dynamics at the discretization nodes can lead to wildly inaccurate state
+values at the collocation nodes due to the interpolation step.</p>
+<p>Finally, the accuracy of implicit integration schemes is a function of the collocation grid (the
+number of segments and the polynomial order on each segment).  In this regard, using simulate
+with a variable step integrator can be seen as a “truth model” of sorts.  If the state values at
+the discrete points used in the collocation technique overlaps the explicitly integrated solution,
+it provides confidence in the accuracy of the implicit solution.  If the solutions diverge over time
+or simply fail to match at certain points, it’s an indication that grid refinement is necessary.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>The simulate method of Phase should <strong>not</strong> be used in an optimization context.  The purpose
+of the phase transcriptions used in Dymos is to provide analytic derivatives <strong>across</strong> the
+integration.  This capability is important when applying gradient-based optimization.  For
+instance, the influence of a control value at a particular time on the objective function can
+be quite small.  If this influence is small, it can easily be drowned out by
+errors when trying to apply finite differencing across the integration, leading the optimizer
+to converge slowly or, worse, not converge at all.  Using analytic derivatives typically
+allows convergence in fewer iterations.</p>
+</div>
+<div class="section" id="simulate-call-signature">
+<h2><cite>simulate</cite> call signature<a class="headerlink" href="#simulate-call-signature" title="Permalink to this headline">¶</a></h2>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Phase.</code><code class="sig-name descname">simulate</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">times_per_seg=10</em>, <em class="sig-param">method='RK45'</em>, <em class="sig-param">atol=1e-09</em>, <em class="sig-param">rtol=1e-09</em>, <em class="sig-param">record_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/phase/phase.html#Phase.simulate"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Simulate the Phase using scipy.integrate.solve_ivp.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>times_per_seg</strong><span class="classifier">int or None</span></dt><dd><p>Number of equally spaced times per segment at which output is requested.  If None,
+output will be provided at all Nodes.</p>
+</dd>
+<dt><strong>method</strong><span class="classifier">str</span></dt><dd><p>The scipy.integrate.solve_ivp integration method.</p>
+</dd>
+<dt><strong>atol</strong><span class="classifier">float</span></dt><dd><p>Absolute convergence tolerance for scipy.integrate.solve_ivp.</p>
+</dd>
+<dt><strong>rtol</strong><span class="classifier">float</span></dt><dd><p>Relative convergence tolerance for scipy.integrate.solve_ivp.</p>
+</dd>
+<dt><strong>record_file</strong><span class="classifier">str or None</span></dt><dd><p>If a string, the file to which the result of the simulation will be saved.
+If None, no record of the simulation will be saved.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>problem</strong><span class="classifier"></span></dt><dd><p>An OpenMDAO Problem in which the simulation is implemented.  This Problem interface
+can be interrogated to obtain timeseries outputs in the same manner as other Phases
+to obtain results at the requested times.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../../trajectories.html" title="Organizing Phases into Trajectories"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../objective.html" title="Objective"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../phases.html" >Phases of a Trajectory</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

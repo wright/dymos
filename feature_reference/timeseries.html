@@ -1,0 +1,235 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Retrieving Results: Timeseries Outputs &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Grid Refinement" href="grid_refinement/grid_refinement.html" />
+    <link rel="prev" title="Organizing Phases into Trajectories" href="trajectories.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grid_refinement/grid_refinement.html" title="Grid Refinement"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="trajectories.html" title="Organizing Phases into Trajectories"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" accesskey="U">Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Retrieving Results: Timeseries Outputs</a><ul>
+<li><a class="reference internal" href="#interpolated-timeseries-outputs">Interpolated Timeseries Outputs</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="trajectories.html"
+                        title="previous chapter">Organizing Phases into Trajectories</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="grid_refinement/grid_refinement.html"
+                        title="next chapter">Grid Refinement</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/feature_reference/timeseries.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="retrieving-results-timeseries-outputs">
+<h1>Retrieving Results: Timeseries Outputs<a class="headerlink" href="#retrieving-results-timeseries-outputs" title="Permalink to this headline">¶</a></h1>
+<p>Different optimal control transcriptions work in different ways.
+The Radau Pseudospectral transcription keeps a contiguous vector of state values at all nodes.
+The Gauss Lobatto transcription keeps two separate continuous vectors; one at the discretization nodes and the other at the collocation nodes.
+The RungeKutta transcription has a contiguous vector of values but only those values at segment endpoints are valid.
+Retrieving a timeseries of output values is thus transcription dependent.</p>
+<p>In order to make obtaining the timeseries output of a phase easier, each phase provides a timeseries component which collects and outputs the appropriate timeseries data.
+For the pseudospectral transcriptions, timeseries outputs are provided at all nodes.
+For the RungeKutta transcription, timeseries outputs are provided at the segment endpoints.
+By default, the timeseries output will include the following variables for every problem.</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 54%" />
+<col style="width: 46%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p>Path</p></td>
+<td><p>Description</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.time</span></code></p></td>
+<td><p>Current time value</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.time_phase</span></code></p></td>
+<td><p>Current phase elapsed time</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.states:&lt;x&gt;</span></code></p></td>
+<td><p>Value of state variable named x</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.controls:&lt;u&gt;</span></code></p></td>
+<td><p>Value of control variable named u</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.control_rates:&lt;u&gt;_rate</span></code></p></td>
+<td><p>Time derivative of control named u</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.control_rates:&lt;u&gt;_rate2</span></code></p></td>
+<td><p>Second time derivative of control named u</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.polynomial_controls:&lt;p&gt;</span></code></p></td>
+<td><p>Value of polynomial control variable named u</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.polynomial_control_rates:&lt;p&gt;_rate</span></code></p></td>
+<td><p>Time derivative of polynomial control named u</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.polynomial_control_rates:&lt;p&gt;_rate2</span></code></p></td>
+<td><p>Second time derivative of polynomial control named u</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.design_parameters:&lt;d&gt;</span></code></p></td>
+<td><p>Value of design parameter named d</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.input_parameters:&lt;s&gt;</span></code></p></td>
+<td><p>Value of input parameter named s</p></td>
+</tr>
+</tbody>
+</table>
+<p>In addition to these default values, any output of the ODE can be added to the timeseries output
+using the <code class="docutils literal notranslate"><span class="pre">add_timeseries_output</span></code> method on Phase.  These outputs are available as
+<code class="docutils literal notranslate"><span class="pre">&lt;phase</span> <span class="pre">path&gt;.timeseries.&lt;output</span> <span class="pre">name&gt;</span></code>.</p>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Phase.</code><code class="sig-name descname">add_timeseries_output</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">output_name=None</em>, <em class="sig-param">units=None</em>, <em class="sig-param">shape=(1</em>, <em class="sig-param">)</em>, <em class="sig-param">timeseries='timeseries'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dymos/phase/phase.html#Phase.add_timeseries_output"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Add a variable to the timeseries outputs of the phase.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">string</span></dt><dd><p>The name of the variable to be used as a timeseries output.  Must be one of
+‘time’, ‘time_phase’, one of the states, controls, control rates, or parameters,
+in the phase, or the path to an output variable in the ODE.</p>
+</dd>
+<dt><strong>output_name</strong><span class="classifier">string or None</span></dt><dd><p>The name of the variable as listed in the phase timeseries outputs.  By
+default this is the last element in <cite>name</cite> when split by dots.  The user may
+override the constraint name if splitting the path causes name collisions.</p>
+</dd>
+<dt><strong>units</strong><span class="classifier">str or None</span></dt><dd><p>The units in which the boundary constraint is to be applied.  If None, use the
+units associated with the constrained output.  If provided, must be compatible with
+the variables units.</p>
+</dd>
+<dt><strong>shape</strong><span class="classifier">tuple</span></dt><dd><p>The shape of the timeseries output variable.  This must be provided (if not scalar)
+since Dymos doesn’t necessarily know the shape of ODE outputs until setup time.</p>
+</dd>
+<dt><strong>timeseries</strong><span class="classifier">str or None</span></dt><dd><p>The name of the timeseries to which the output is being added.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<div class="section" id="interpolated-timeseries-outputs">
+<h2>Interpolated Timeseries Outputs<a class="headerlink" href="#interpolated-timeseries-outputs" title="Permalink to this headline">¶</a></h2>
+<p>Sometimes a user may want to interpolate the results of a phase onto a different grid.  This is particularly
+useful in the context of tandem phases.  Additional timeseries may be added to a phase using the
+<code class="docutils literal notranslate"><span class="pre">add_timeseries</span></code> method.  By default all timeseries will provide times, states, controls, and
+parameters on the specified output grid.  Adding other variables is accomplished using the
+<code class="docutils literal notranslate"><span class="pre">timeseries</span></code> argument in the <code class="docutils literal notranslate"><span class="pre">add_timeseries_output</span></code> method.</p>
+<dl class="method">
+<dt>
+<code class="sig-prename descclassname">Phase.</code><code class="sig-name descname">add_timeseries</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">name</em>, <em class="sig-param">transcription</em>, <em class="sig-param">subset='all'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/dymos/phase/phase.html#Phase.add_timeseries"><span class="viewcode-link">[source]</span></a></dt>
+<dd><p>Adds a new timeseries output upon which outputs can be provided.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>name</strong><span class="classifier">str</span></dt><dd><p>A name for the timeseries output path.</p>
+</dd>
+<dt><strong>transcription</strong><span class="classifier">str</span></dt><dd><p>A transcription object which provides a grid upon which the outputs of the timeseries
+are provided.</p>
+</dd>
+<dt><strong>subset</strong><span class="classifier">str</span></dt><dd><p>The name of the node subset in the given transcription at which outputs
+are to be provided.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="grid_refinement/grid_refinement.html" title="Grid Refinement"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="trajectories.html" title="Organizing Phases into Trajectories"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="feature_reference.html" >Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

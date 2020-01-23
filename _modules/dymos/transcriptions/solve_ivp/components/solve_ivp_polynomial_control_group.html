@@ -1,0 +1,330 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../../../" src="../../../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+<span class="kn">from</span> <span class="nn">...grid_data</span> <span class="kn">import</span> <span class="n">GridData</span>
+<span class="kn">from</span> <span class="nn">....utils.lgl</span> <span class="kn">import</span> <span class="n">lgl</span>
+<span class="kn">from</span> <span class="nn">....utils.lagrange</span> <span class="kn">import</span> <span class="n">lagrange_matrices</span>
+<span class="kn">from</span> <span class="nn">....utils.misc</span> <span class="kn">import</span> <span class="n">get_rate_units</span>
+
+
+<div class="viewcode-block" id="SolveIVPLGLPolynomialControlComp"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPLGLPolynomialControlComp">[docs]</a><span class="k">class</span> <span class="nc">SolveIVPLGLPolynomialControlComp</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">ExplicitComponent</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Component which interpolates controls as a single polynomial across the entire phase.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="SolveIVPLGLPolynomialControlComp.initialize"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPLGLPolynomialControlComp.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;time_units&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Units of time&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;grid_data&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">GridData</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Container object for grid info&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Dictionary of options for the polynomial controls&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If None, results are provided at the all nodes within each&#39;</span>
+                                  <span class="s1">&#39;segment.  If an int (n) then results are provided at n &#39;</span>
+                                  <span class="s1">&#39;equally distributed points in time within each segment.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_matrices</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="SolveIVPLGLPolynomialControlComp.setup"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPLGLPolynomialControlComp.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">output_nodes_per_seg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">]</span>
+        <span class="n">gd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;grid_data&#39;</span><span class="p">]</span>
+        <span class="n">num_seg</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">num_segments</span>
+        <span class="n">num_nodes</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_num_nodes</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">]</span>
+        <span class="n">all_nodes_ptau</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">node_ptau</span>
+
+        <span class="k">if</span> <span class="n">output_nodes_per_seg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">output_nodes_ptau</span> <span class="o">=</span> <span class="n">all_nodes_ptau</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_nodes_ptau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">iseg</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_seg</span><span class="p">):</span>
+                <span class="n">i1</span><span class="p">,</span> <span class="n">i2</span> <span class="o">=</span> <span class="n">gd</span><span class="o">.</span><span class="n">subset_segment_indices</span><span class="p">[</span><span class="s1">&#39;all&#39;</span><span class="p">][</span><span class="n">iseg</span><span class="p">,</span> <span class="p">:]</span>
+                <span class="n">ptau1</span> <span class="o">=</span> <span class="n">all_nodes_ptau</span><span class="p">[</span><span class="n">i1</span><span class="p">]</span>
+                <span class="n">ptau2</span> <span class="o">=</span> <span class="n">all_nodes_ptau</span><span class="p">[</span><span class="n">i2</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">output_nodes_ptau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">output_nodes_ptau</span><span class="p">,</span>
+                                                    <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">ptau1</span><span class="p">,</span> <span class="n">ptau2</span><span class="p">,</span> <span class="n">output_nodes_per_seg</span><span class="p">)))</span>
+
+        <span class="n">num_output_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_nodes_ptau</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_rows</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_cols</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sizes</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="s1">&#39;t_duration&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;time_units&#39;</span><span class="p">],</span>
+                       <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;duration of the phase to which this interpolated control group &#39;</span>
+                            <span class="s1">&#39;belongs&#39;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">disc_nodes</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">lgl</span><span class="p">(</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">num_control_input_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">disc_nodes</span><span class="p">)</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="n">size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="n">shape</span><span class="p">)</span>
+            <span class="n">units</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">]</span>
+            <span class="n">rate_units</span> <span class="o">=</span> <span class="n">get_rate_units</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;time_units&#39;</span><span class="p">],</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">rate2_units</span> <span class="o">=</span> <span class="n">get_rate_units</span><span class="p">(</span><span class="n">units</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;time_units&#39;</span><span class="p">],</span> <span class="n">deriv</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+            <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_control_input_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span>
+            <span class="n">output_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">num_output_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span>
+
+            <span class="n">L_do</span><span class="p">,</span> <span class="n">D_do</span> <span class="o">=</span> <span class="n">lagrange_matrices</span><span class="p">(</span><span class="n">disc_nodes</span><span class="p">,</span> <span class="n">output_nodes_ptau</span><span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">D_dd</span> <span class="o">=</span> <span class="n">lagrange_matrices</span><span class="p">(</span><span class="n">disc_nodes</span><span class="p">,</span> <span class="n">disc_nodes</span><span class="p">)</span>
+            <span class="n">D2_do</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">D_do</span><span class="p">,</span> <span class="n">D_dd</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_matrices</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_do</span><span class="p">,</span> <span class="n">D_do</span><span class="p">,</span> <span class="n">D2_do</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;polynomial_controls:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;polynomial_control_values:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;polynomial_control_rates:</span><span class="si">{0}</span><span class="s1">_rate&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;polynomial_control_rates:</span><span class="si">{0}</span><span class="s1">_rate2&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_input</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">input_shape</span><span class="p">),</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">rate_units</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">shape</span><span class="o">=</span><span class="n">output_shape</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="n">rate2_units</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_output_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">num_control_input_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_output_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">num_control_input_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_output_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">num_control_input_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">][:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_do</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">][:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">D_do</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">][:,</span> <span class="n">i</span><span class="p">,</span> <span class="p">:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">D2_do</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">num_output_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span>
+                                                              <span class="n">num_control_input_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">),</span>
+                                                              <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">num_output_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span>
+                                                                <span class="n">num_control_input_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">),</span>
+                                                                <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span><span class="o">.</span><span class="n">reshape</span><span class="p">((</span><span class="n">num_output_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span>
+                                                                  <span class="n">num_control_input_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">),</span>
+                                                                  <span class="n">order</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">size</span>
+
+            <span class="n">rs</span><span class="p">,</span> <span class="n">cs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">val_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">wrt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">rows</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">cs</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">val_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">][</span><span class="n">rs</span><span class="p">,</span> <span class="n">cs</span><span class="p">])</span>
+
+            <span class="n">rs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_nodes</span> <span class="o">*</span> <span class="n">size</span><span class="p">,</span> <span class="n">size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="o">+</span> <span class="n">i</span>
+                                 <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">size</span><span class="p">)])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;t_duration&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rs</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">wrt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">rows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">cols</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">])</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">wrt</span><span class="o">=</span><span class="s1">&#39;t_duration&#39;</span><span class="p">,</span> <span class="n">rows</span><span class="o">=</span><span class="n">rs</span><span class="p">,</span> <span class="n">cols</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros_like</span><span class="p">(</span><span class="n">rs</span><span class="p">))</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">declare_partials</span><span class="p">(</span><span class="n">of</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">wrt</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">],</span>
+                                  <span class="n">rows</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="n">cols</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="SolveIVPLGLPolynomialControlComp.compute"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPLGLPolynomialControlComp.compute">[docs]</a>    <span class="k">def</span> <span class="nf">compute</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">outputs</span><span class="p">,</span> <span class="n">discrete_inputs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">discrete_outputs</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">dt_dptau</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;t_duration&#39;</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">L_do</span><span class="p">,</span> <span class="n">D_do</span><span class="p">,</span> <span class="n">D2_do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matrices</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="n">u</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span>
+
+            <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">D_do</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">D2_do</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span><span class="o">.</span><span class="n">T</span>
+
+            <span class="c1"># divide each &quot;row&quot; of the rates by dt_dptau or dt_dptau**2</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_val_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tensordot</span><span class="p">(</span><span class="n">L_do</span><span class="p">,</span> <span class="n">u</span><span class="p">,</span> <span class="n">axes</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">a</span> <span class="o">/</span> <span class="n">dt_dptau</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+            <span class="n">outputs</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">]]</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span> <span class="o">/</span> <span class="n">dt_dptau</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">T</span></div>
+
+<div class="viewcode-block" id="SolveIVPLGLPolynomialControlComp.compute_partials"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPLGLPolynomialControlComp.compute_partials">[docs]</a>    <span class="k">def</span> <span class="nf">compute_partials</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">partials</span><span class="p">):</span>
+        <span class="n">nn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;grid_data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">num_nodes</span>
+
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">control_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_input_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">num_input_nodes</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">L_do</span><span class="p">,</span> <span class="n">D_do</span><span class="p">,</span> <span class="n">D2_do</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_matrices</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="n">size</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">sizes</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">rate_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">rate2_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_rate2_names</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+
+            <span class="c1"># Unroll matrix-shaped controls into an array at each node</span>
+            <span class="n">u_d</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="n">control_name</span><span class="p">],</span> <span class="p">(</span><span class="n">num_input_nodes</span><span class="p">,</span> <span class="n">size</span><span class="p">))</span>
+
+            <span class="n">t_duration</span> <span class="o">=</span> <span class="n">inputs</span><span class="p">[</span><span class="s1">&#39;t_duration&#39;</span><span class="p">]</span>
+            <span class="n">t_duration_tile</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">t_duration</span><span class="p">,</span> <span class="n">size</span> <span class="o">*</span> <span class="n">nn</span><span class="p">)</span>
+
+            <span class="n">partials</span><span class="p">[</span><span class="n">rate_name</span><span class="p">,</span> <span class="s1">&#39;t_duration&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">D_do</span><span class="p">,</span> <span class="n">u_d</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">t_duration_tile</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)</span>
+
+            <span class="n">partials</span><span class="p">[</span><span class="n">rate2_name</span><span class="p">,</span> <span class="s1">&#39;t_duration&#39;</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="o">-</span><span class="mf">1.0</span> <span class="o">*</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">D2_do</span><span class="p">,</span> <span class="n">u_d</span><span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">order</span><span class="o">=</span><span class="s1">&#39;F&#39;</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">t_duration_tile</span><span class="p">)</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span>
+
+            <span class="n">t_duration_x_size</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">t_duration</span><span class="p">,</span> <span class="n">size</span> <span class="o">*</span> <span class="n">nn</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+            <span class="n">r_nz</span><span class="p">,</span> <span class="n">c_nz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">partials</span><span class="p">[</span><span class="n">rate_name</span><span class="p">,</span> <span class="n">control_name</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rate_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">t_duration_x_size</span><span class="p">))[</span><span class="n">r_nz</span><span class="p">,</span> <span class="n">c_nz</span><span class="p">]</span>
+
+            <span class="n">r_nz</span><span class="p">,</span> <span class="n">c_nz</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_rows</span><span class="p">[</span><span class="n">name</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">rate2_jac_cols</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+            <span class="n">partials</span><span class="p">[</span><span class="n">rate2_name</span><span class="p">,</span> <span class="n">control_name</span><span class="p">]</span> <span class="o">=</span> \
+                <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rate2_jacs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="mf">0.5</span> <span class="o">*</span> <span class="n">t_duration_x_size</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span><span class="p">)[</span><span class="n">r_nz</span><span class="p">,</span> <span class="n">c_nz</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="SolveIVPPolynomialControlGroup"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPPolynomialControlGroup">[docs]</a><span class="k">class</span> <span class="nc">SolveIVPPolynomialControlGroup</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">Group</span><span class="p">):</span>
+
+<div class="viewcode-block" id="SolveIVPPolynomialControlGroup.initialize"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPPolynomialControlGroup.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Dictionary of options for the polynomial controls&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;time_units&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Units of time&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;grid_data&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">GridData</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Container object for grid info&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,),</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                             <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If None, results are provided at the all nodes within each&#39;</span>
+                                  <span class="s1">&#39;segment.  If an int (n) then results are provided at n &#39;</span>
+                                  <span class="s1">&#39;equally distributed points in time within each segment.&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SolveIVPPolynomialControlGroup.setup"><a class="viewcode-back" href="../../../../../_srcdocs/packages/transcriptions.solve_ivp.components/solve_ivp_polynomial_control_group.html#dymos.transcriptions.solve_ivp.components.solve_ivp_polynomial_control_group.SolveIVPPolynomialControlGroup.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">ivc</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">IndepVarComp</span><span class="p">()</span>
+
+        <span class="n">opts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span>
+        <span class="n">pcos</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">]</span>
+        <span class="n">output_nodes_per_seg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;output_nodes_per_seg&#39;</span><span class="p">]</span>
+
+        <span class="c1"># Pull out the interpolated controls</span>
+        <span class="n">num_opt</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="n">opts</span><span class="p">[</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Interpolation order must be &gt;= 1 (linear)&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]:</span>
+                <span class="n">num_opt</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">num_opt</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">ivc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;control_inputs&#39;</span><span class="p">,</span> <span class="n">subsys</span><span class="o">=</span><span class="n">ivc</span><span class="p">,</span> <span class="n">promotes_outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span>
+            <span class="s1">&#39;control_comp&#39;</span><span class="p">,</span>
+            <span class="n">subsys</span><span class="o">=</span><span class="n">SolveIVPLGLPolynomialControlComp</span><span class="p">(</span><span class="n">time_units</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s1">&#39;time_units&#39;</span><span class="p">],</span>
+                                                    <span class="n">grid_data</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s1">&#39;grid_data&#39;</span><span class="p">],</span>
+                                                    <span class="n">polynomial_control_options</span><span class="o">=</span><span class="n">pcos</span><span class="p">,</span>
+                                                    <span class="n">output_nodes_per_seg</span><span class="o">=</span><span class="n">output_nodes_per_seg</span><span class="p">),</span>
+            <span class="n">promotes_inputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">],</span>
+            <span class="n">promotes_outputs</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">])</span>
+
+        <span class="c1"># For any interpolated control with `opt=True`, add an indep var comp output and</span>
+        <span class="c1"># setup the design variable for optimization.</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">options</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;polynomial_control_options&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">num_input_nodes</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;order&#39;</span><span class="p">]</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">shape</span> <span class="o">=</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;shape&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">options</span><span class="p">[</span><span class="s1">&#39;opt&#39;</span><span class="p">]:</span>
+                <span class="n">ivc</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;polynomial_controls:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                               <span class="n">val</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">((</span><span class="n">num_input_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span><span class="p">),</span>
+                               <span class="n">units</span><span class="o">=</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;units&#39;</span><span class="p">])</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

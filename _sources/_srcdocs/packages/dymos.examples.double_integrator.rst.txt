@@ -1,0 +1,7 @@
+dymos.examples.double_integrator
+--------------------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    examples.double_integrator/double_integrator_ode

@@ -1,0 +1,16 @@
+.. index:: launch_vehicle_2d_eom_comp.py
+
+.. _dymos.examples.ssto.launch_vehicle_2d_eom_comp.py:
+
+launch_vehicle_2d_eom_comp.py
+-----------------------------
+
+.. automodule:: dymos.examples.ssto.launch_vehicle_2d_eom_comp
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

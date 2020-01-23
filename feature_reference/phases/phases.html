@@ -1,0 +1,155 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Phases of a Trajectory &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Segments" href="segments.html" />
+    <link rel="prev" title="Runge-Kutta Shooting Method" href="../transcriptions/runge-kutta.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="segments.html" title="Segments"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../transcriptions/runge-kutta.html" title="Runge-Kutta Shooting Method"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" accesskey="U">Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../transcriptions/runge-kutta.html"
+                        title="previous chapter">Runge-Kutta Shooting Method</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="segments.html"
+                        title="next chapter">Segments</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/feature_reference/phases/phases.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="phases-of-a-trajectory">
+<h1>Phases of a Trajectory<a class="headerlink" href="#phases-of-a-trajectory" title="Permalink to this headline">¶</a></h1>
+<p>Dymos uses the concept of <em>phases</em> to support intermediate boundary constraints and path constraints on variables in the system.
+Each phase represents the trajectory of a dynamical system, and may be subject to different equations of motion, force models, and constraints.
+Multiple phases may be assembled to form one or more trajectories by enforcing compatibility constraints between them.</p>
+<p>For implicit and explicit phases, the equations-of-motion or process equations are defined via an ordinary differential equation.</p>
+<p>An ODE is of the form</p>
+<div class="math notranslate nohighlight">
+\[\frac{\partial \textbf x}{\partial t} = \textbf f(t, \textbf x, \textbf u)\]</div>
+<p>where
+<span class="math notranslate nohighlight">\(\textbf x\)</span> is the vector of <em>state variables</em> (the variable being integrated),
+<span class="math notranslate nohighlight">\(t\)</span> is <em>time</em> (or <em>time-like</em>),
+<span class="math notranslate nohighlight">\(\textbf u\)</span> is the vector of <em>parameters</em> (an input to the ODE),
+and
+<span class="math notranslate nohighlight">\(\textbf f\)</span> is the <em>ODE function</em>.</p>
+<p>Dymos can treat the parameters <span class="math notranslate nohighlight">\(\textbf u\)</span> as either static <strong>parameters</strong> or dynamic <strong>controls</strong>.
+In addition, Dymos automatically calculates the first and second time-derivatives of the controls.
+These derivatives can then be utilized as via constraints or as additional parameters to the ODE.
+Subsequently, the optimal control problem as solved by Dymos can be expressed as:</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\textrm{Minimize}:&amp; \quad J = \textbf f_{obj}(t, \textbf x, \textbf u, \dot{\textbf u}, \ddot{\textbf u}) \\
+\textrm{subject to:}&amp; \\
+&amp;\textrm{system dynamics} \quad &amp;\frac{\partial \textbf x}{\partial t} &amp;= \textbf f_{ode}(t, \textbf x, \textbf u, \dot{\textbf u}, \ddot{\textbf u}) \\
+&amp;\textrm{initial time bounds} \quad &amp;t_{0,lb} &amp;\,\le\, t_0 \,\le\, t_{0,ub} \\
+&amp;\textrm{elapsed time bounds} \quad &amp;t_{p,lb} &amp;\,\le\, t_p \,\le\, t_{p,ub} \\
+&amp;\textrm{state bounds} \quad &amp;\textbf x_{lb} &amp;\,\le\, \textbf x \,\le\, \textbf x_{ub} \\
+&amp;\textrm{control bounds} \quad &amp;\textbf u_{lb} &amp;\,\le\, \textbf u \,\le\, \textbf u_{ub} \\
+&amp;\textrm{nonlinear boundary constraints} \quad &amp;\textbf g_{b,lb} &amp;\,\le\, \textbf g_{b}(t, \textbf x, \textbf u, \dot{\textbf u}, \ddot{\textbf u}) \,\le\, \textbf g_{b,ub} \\
+&amp;\textrm{nonlinear path constraints} \quad &amp;\textbf g_{p,lb} &amp;\,\le\, \textbf g_{p}(t, \textbf x, \textbf u, \dot{\textbf u}, \ddot{\textbf u}) \,\le\, \textbf g_{p,ub} \\\end{split}\]</div>
+<p>The ability to utilize control derivatives in the equations of motion provides some unique capabilities, namely the ability to
+easily solve problems using <em>differential inclusion</em>, which will be demonstrated in the examples.</p>
+<p>The solution techniques used by the Phase classes in Dymos generally fall into two categories:
+implicit and explicit phases.  They differ in underlying details but both allow for the same
+general form of the optimal control problem.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="segments.html">Segments</a></li>
+<li class="toctree-l1"><a class="reference internal" href="variables.html">Variables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="constraints.html">Constraints</a></li>
+<li class="toctree-l1"><a class="reference internal" href="objective.html">Objective</a></li>
+<li class="toctree-l1"><a class="reference internal" href="simulate/simulate.html">Simulating ODEs with Scipy</a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="segments.html" title="Segments"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../transcriptions/runge-kutta.html" title="Runge-Kutta Shooting Method"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

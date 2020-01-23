@@ -1,0 +1,159 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ode_integration_interface.py &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="odeint_control_interpolation_comp.py" href="odeint_control_interpolation_comp.html" />
+    <link rel="prev" title="dymos.transcriptions.solve_ivp.components" href="../dymos.transcriptions.solve_ivp.components.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="odeint_control_interpolation_comp.html" title="odeint_control_interpolation_comp.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../dymos.transcriptions.solve_ivp.components.html" title="dymos.transcriptions.solve_ivp.components"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.transcriptions.solve_ivp.components.html" accesskey="U">dymos.transcriptions.solve_ivp.components</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../dymos.transcriptions.solve_ivp.components.html"
+                        title="previous chapter">dymos.transcriptions.solve_ivp.components</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="odeint_control_interpolation_comp.html"
+                        title="next chapter">odeint_control_interpolation_comp.py</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/_srcdocs/packages/transcriptions.solve_ivp.components/ode_integration_interface.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dymos.transcriptions.solve_ivp.components.ode_integration_interface">
+<span id="ode-integration-interface-py"></span><span id="dymos-transcriptions-solve-ivp-components-ode-integration-interface-py"></span><span id="index-0"></span><h1>ode_integration_interface.py<a class="headerlink" href="#module-dymos.transcriptions.solve_ivp.components.ode_integration_interface" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dymos.transcriptions.solve_ivp.components.ode_integration_interface.ODEIntegrationInterface">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.transcriptions.solve_ivp.components.ode_integration_interface.</code><code class="sig-name descname">ODEIntegrationInterface</code><span class="sig-paren">(</span><em class="sig-param">ode_class</em>, <em class="sig-param">time_options</em>, <em class="sig-param">state_options</em>, <em class="sig-param">control_options</em>, <em class="sig-param">polynomial_control_options</em>, <em class="sig-param">design_parameter_options</em>, <em class="sig-param">input_parameter_options</em>, <em class="sig-param">ode_init_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/solve_ivp/components/ode_integration_interface.html#ODEIntegrationInterface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.solve_ivp.components.ode_integration_interface.ODEIntegrationInterface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Given a system class, create a callable object with the same signature as that required
+by scipy.integrate.ode:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">f</span><span class="p">(</span><span class="n">t</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Internally, this is accomplished by constructing an OpenMDAO problem using the ODE with
+a single node.  The interface populates the values of the time, states, and controls,
+and then calls <cite>run_model()</cite> on the problem.  The state rates generated by the ODE
+are then returned back to scipy ode, which continues the integration.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>ode_class</strong><span class="classifier">class</span></dt><dd><p>The ODEClass belonging to the phase being simulated.</p>
+</dd>
+<dt><strong>time_options</strong><span class="classifier">dict of {str: TimeOptionsDictionary}</span></dt><dd><p>The time options for the phase being simulated.</p>
+</dd>
+<dt><strong>state_options</strong><span class="classifier">dict of {str: StateOptionsDictionary}</span></dt><dd><p>The state options for the phase being simulated.</p>
+</dd>
+<dt><strong>control_options</strong><span class="classifier">dict of {str: ControlOptionsDictionary}</span></dt><dd><p>The control options for the phase being simulated.</p>
+</dd>
+<dt><strong>design_parameter_options</strong><span class="classifier">dict of {str: DesignParameterOptionsDictionary}</span></dt><dd><p>The design parameter options for the phase being simulated.</p>
+</dd>
+<dt><strong>input_parameter_options</strong><span class="classifier">dict of {str: InputParameterOptionsDictionary}</span></dt><dd><p>The input parameter options for the phase being simulated.</p>
+</dd>
+<dt><strong>ode_init_kwargs</strong><span class="classifier">dict</span></dt><dd><p>Keyword argument dictionary passed to the ODE at initialization.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<dl class="method">
+<dt id="dymos.transcriptions.solve_ivp.components.ode_integration_interface.ODEIntegrationInterface.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">ode_class</em>, <em class="sig-param">time_options</em>, <em class="sig-param">state_options</em>, <em class="sig-param">control_options</em>, <em class="sig-param">polynomial_control_options</em>, <em class="sig-param">design_parameter_options</em>, <em class="sig-param">input_parameter_options</em>, <em class="sig-param">ode_init_kwargs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/transcriptions/solve_ivp/components/ode_integration_interface.html#ODEIntegrationInterface.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.transcriptions.solve_ivp.components.ode_integration_interface.ODEIntegrationInterface.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="odeint_control_interpolation_comp.html" title="odeint_control_interpolation_comp.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../dymos.transcriptions.solve_ivp.components.html" title="dymos.transcriptions.solve_ivp.components"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.transcriptions.solve_ivp.components.html" >dymos.transcriptions.solve_ivp.components</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

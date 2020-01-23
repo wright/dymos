@@ -1,0 +1,16 @@
+.. index:: aircraft_ode.py
+
+.. _dymos.examples.aircraft_steady_flight.aircraft_ode.py:
+
+aircraft_ode.py
+---------------
+
+.. automodule:: dymos.examples.aircraft_steady_flight.aircraft_ode
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

@@ -1,0 +1,657 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.phase.options &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.phase.options</h1><div class="highlight"><pre>
+<span></span><span class="kn">from</span> <span class="nn">collections.abc</span> <span class="kn">import</span> <span class="n">Iterable</span>
+<span class="kn">from</span> <span class="nn">numbers</span> <span class="kn">import</span> <span class="n">Number</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+
+
+<div class="viewcode-block" id="ControlOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.ControlOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">ControlOptionsDictionary</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary specific to controls.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="ControlOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.ControlOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ControlOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The name of ODE system parameter to be controlled.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The units in which the control variable is defined.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;desc&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The description of the control variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the control value will be a design variable &#39;</span>
+                          <span class="s1">&#39;for the optimization problem.  If False, allow the &#39;</span>
+                          <span class="s1">&#39;control to be connected externally.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_initial&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the initial value of this control is fixed and not a &#39;</span>
+                          <span class="s1">&#39;design variable. This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_final&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the final value of this control is fixed and not a &#39;</span>
+                          <span class="s1">&#39;design variable. This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to store target information for the control.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The targets in the ODE to which the control rate is connected&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate2_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The parameter in the ODE to which the control 2nd derivative &#39;</span>
+                          <span class="s1">&#39;is connected.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The default value of the control variable at the &#39;</span>
+                          <span class="s1">&#39;control discretization nodes.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The shape of the control variable at each point in time.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The lower bound of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The upper bound of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The scaler of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;adder&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The adder of the control variable at the nodes. This&#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref0&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The zero-reference value of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The unit-reference value of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;continuity&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Enforce continuity of control values at segment boundaries. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate_continuity&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Enforce continuity of control first derivatives in dimensionless time &#39;</span>
+                          <span class="s1">&#39;at segment boundaries. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate_continuity_scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Number</span><span class="p">,),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Scaler of the dimensionless rate continuity constraint at &#39;</span>
+                          <span class="s1">&#39;segment boundaries. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate2_continuity&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Enforce continuity of control second derivatives at segment boundaries. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate2_continuity_scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Number</span><span class="p">,),</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Scaler of the dimensionless rate continuity constraint at &#39;</span>
+                          <span class="s1">&#39;segment boundaries. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the value of the shape of the parameter will &#39;</span>
+                          <span class="s1">&#39;be (num_nodes, ...), allowing the variable to be used as either a &#39;</span>
+                          <span class="s1">&#39;static or dynamic control.  This impacts the shape of the partial &#39;</span>
+                          <span class="s1">&#39;derivatives matrix.  Unless a parameter is large and broadcasting a &#39;</span>
+                          <span class="s1">&#39;value to each individual node would be inefficient, users should stick &#39;</span>
+                          <span class="s1">&#39;to the default value of True.&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="PolynomialControlOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.PolynomialControlOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">PolynomialControlOptionsDictionary</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary specific to controls.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="PolynomialControlOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.PolynomialControlOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PolynomialControlOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The name of ODE system parameter to be controlled.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The units in which the control variable is defined.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;desc&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The description of the control variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the control value will be a design variable &#39;</span>
+                          <span class="s1">&#39;for the optimization problem.  If False, allow the &#39;</span>
+                          <span class="s1">&#39;control to be connected externally.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_initial&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the initial value of this control is fixed and not a &#39;</span>
+                          <span class="s1">&#39;design variable. This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_final&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the final value of this control is fixed and not a &#39;</span>
+                          <span class="s1">&#39;design variable. This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to store target information.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The targets in the ODE to which the control rate is connected&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate2_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The parameter in the ODE to which the control 2nd derivative &#39;</span>
+                          <span class="s1">&#39;is connected.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The default value of the control variable at the &#39;</span>
+                          <span class="s1">&#39;control discretization nodes.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The shape of the control variable at each point in time.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The lower bound of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The upper bound of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The scaler of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;adder&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The adder of the control variable at the nodes. This&#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref0&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The zero-reference value of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The unit-reference value of the control variable at the nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;order&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">int</span><span class="p">,),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;A integer that provides the interpolation order when the control is&#39;</span>
+                          <span class="s1">&#39;to assume a single polynomial basis across the entire phase, or None&#39;</span>
+                          <span class="s1">&#39;to use the default control behavior.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the value of the shape of the parameter will &#39;</span>
+                          <span class="s1">&#39;be (num_nodes, ...), allowing the variable to be used as either a &#39;</span>
+                          <span class="s1">&#39;static or dynamic control.  This impacts the shape of the partial &#39;</span>
+                          <span class="s1">&#39;derivatives matrix.  Unless a parameter is large and broadcasting a &#39;</span>
+                          <span class="s1">&#39;value to each individual node would be inefficient, users should stick &#39;</span>
+                          <span class="s1">&#39;to the default value of True.&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="DesignParameterOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.DesignParameterOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">DesignParameterOptionsDictionary</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary specific to design parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="DesignParameterOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.DesignParameterOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">DesignParameterOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The name of ODE system parameter to be set via design parameter.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The units in which the design parameter is defined.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;desc&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The description of the design parameter.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the control value will be a design variable &#39;</span>
+                          <span class="s1">&#39;for the optimization problem.  If False, allow the &#39;</span>
+                          <span class="s1">&#39;control to be connected externally.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;True if this parameter can be used as a dynamic control, else False&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to store target information for the design parameter.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The default value of the design parameter in the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The shape of the design parameter.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The lower bound of the design parameter. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The upper bound of the design parameter. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The scaler of the design parameter. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;adder&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The adder of the design parameter. This&#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref0&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The zero-reference value of the design parameter. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The unit-reference value of the design parameter. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TrajDesignParameterOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.TrajDesignParameterOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">TrajDesignParameterOptionsDictionary</span><span class="p">(</span><span class="n">DesignParameterOptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary specific to trajectory design parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TrajDesignParameterOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.TrajDesignParameterOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TrajDesignParameterOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;custom_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to override the default targets of the trajectory input parameter&#39;</span>
+                          <span class="s1">&#39; in each phase.  By default its target will be the same as its name&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;targets&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to specify the targets for the input parameter in each phase. &#39;</span>
+                          <span class="s1">&#39;If None, Dymos will attempt to connect it to an input parameter of &#39;</span>
+                          <span class="s1">&#39;the same name in each phase.  Otherwise, targets should be a given &#39;</span>
+                          <span class="s1">&#39;as a dictionary.  For each phase name given as a key in the dictionary,&#39;</span>
+                          <span class="s1">&#39;if the associated value is a string, connect the parameter to the phase&#39;</span>
+                          <span class="s1">&#39; input parameter given by the string. If the associated value is a&#39;</span>
+                          <span class="s1">&#39; sequence, treat it as a list of ODE-relative targets for the parameter&#39;</span>
+                          <span class="s1">&#39; in that phase&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="InputParameterOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.InputParameterOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">InputParameterOptionsDictionary</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary specific to input parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="InputParameterOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.InputParameterOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">InputParameterOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The name of ODE system parameter to be set via input parameter, or &#39;</span>
+                          <span class="s1">&#39;an alias.  If an alias is provided, then &quot;target_param&quot; should provide&#39;</span>
+                          <span class="s1">&#39;the ODE system parameter name.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The units in which the design parameter is defined.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;desc&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The description of the design parameter.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;dynamic&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;True if this parameter can be used as a dynamic control, else False&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to store target information for the input parameter.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The default value of the design parameter in the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;The shape of the design parameter.&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TrajInputParameterOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.TrajInputParameterOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">TrajInputParameterOptionsDictionary</span><span class="p">(</span><span class="n">InputParameterOptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary specific to trajectory input parameters.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TrajInputParameterOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.TrajInputParameterOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TrajInputParameterOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;custom_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to override the default targets of the trajectory input parameter&#39;</span>
+                          <span class="s1">&#39; in each phase.  By default its target will be the same as its name&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dict</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;targets&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">dict</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Used to specify the targets for the input parameter in each phase. &#39;</span>
+                          <span class="s1">&#39;If None, Dymos will attempt to connect it to an input parameter of &#39;</span>
+                          <span class="s1">&#39;the same name in each phase.  Otherwise, targets should be a given &#39;</span>
+                          <span class="s1">&#39;as a dictionary.  For each phase name given as a key in the dictionary,&#39;</span>
+                          <span class="s1">&#39;if the associated value is a string, connect the parameter to the phase&#39;</span>
+                          <span class="s1">&#39; input parameter given by the string. If the associated value is a&#39;</span>
+                          <span class="s1">&#39; sequence, treat it as a list of ODE-relative targets for the parameter&#39;</span>
+                          <span class="s1">&#39; in that phase&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="StateOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.StateOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">StateOptionsDictionary</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary specific to controls.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="StateOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.StateOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">StateOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;name of ODE state variable&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;units in which the state variable is defined&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;opt&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If true, the values of this state are a design variable &#39;</span>
+                          <span class="s1">&#39;for the optimizer.  Otherwise it exists as an unconnected&#39;</span>
+                          <span class="s1">&#39;input.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_initial&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the initial value of this state is fixed and not a &#39;</span>
+                          <span class="s1">&#39;design variable. If the state variable has a non-scalar shape, &#39;</span>
+                          <span class="s1">&#39;this may be an iterable of bool for each index. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_final&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="n">Iterable</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the final value of this state is fixed and not a &#39;</span>
+                          <span class="s1">&#39;design variable. If the state variable has a non-scalar shape, &#39;</span>
+                          <span class="s1">&#39;this may be an iterable of bool for each index. This option is &#39;</span>
+                          <span class="s1">&#39;invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;initial_bounds&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Bounds on the value of the state at the start of the phase. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;final_bounds&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Bounds on the value of the state at the end of the phase. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;val&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Default value of the state variable at the discretization nodes&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;desc&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;description of the state variable&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;shape&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;shape of the state variable&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rate_source&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;ODE-path to the derivative of the state variable&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Targets in the ODE to which the state is connected&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;lower&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Lower bound of the state variable at the discretization nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;upper&#39;</span><span class="p">,</span>
+                     <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Upper bound of the state variable at the discretization nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;scaler&#39;</span><span class="p">,</span>
+                     <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Scaler of the state variable at the discretization nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;adder&#39;</span><span class="p">,</span>
+                     <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Adder of the state variable at the discretization nodes. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref0&#39;</span><span class="p">,</span>
+                     <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Zero-reference value of the state variable at the discretization nodes. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;ref&#39;</span><span class="p">,</span>
+                     <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Unit-reference value of the state variable at the discretization nodes. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;defect_scaler&#39;</span><span class="p">,</span>
+                     <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Scaler of the state variable defects at the collocation nodes. &#39;</span>
+                          <span class="s1">&#39;If defect_scaler and defect_ref are both None but the state scaler &#39;</span>
+                          <span class="s1">&#39;or ref are provided, use those values as the defect scaler or ref. &#39;</span>
+                          <span class="s1">&#39;This option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;defect_ref&#39;</span><span class="p">,</span>
+                     <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">Number</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Unit-reference value of the state defects at the collocation nodes. This&#39;</span>
+                          <span class="s1">&#39; option is invalid if opt=False.  If provided, this option overrides&#39;</span>
+                          <span class="s1">&#39; defect_scaler. If defect_scaler and defect_ref are both None but the &#39;</span>
+                          <span class="s1">&#39;state scaler or ref are provided, use those values as the defect &#39;</span>
+                          <span class="s1">&#39;scaler or ref.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;continuity&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="p">(</span><span class="nb">bool</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="n">default</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Enforce continuity of state values at segment boundaries. This &#39;</span>
+                          <span class="s1">&#39;option is invalid if opt=False.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;solve_segments&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If true, collocation defects within each segment are &#39;</span>
+                          <span class="s1">&#39;solved with a newton solver.  If None, use the value of solve_segments &#39;</span>
+                          <span class="s1">&#39;in the transcription.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;connected_initial&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Whether an input is created to pass in the initial state. This may be &#39;</span>
+                          <span class="s1">&#39;set by a trajectory that links phases.&#39;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TimeOptionsDictionary"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.TimeOptionsDictionary">[docs]</a><span class="k">class</span> <span class="nc">TimeOptionsDictionary</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">OptionsDictionary</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    An OptionsDictionary for time options</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="TimeOptionsDictionary.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/phase/options.html#dymos.phase.options.TimeOptionsDictionary.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">read_only</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TimeOptionsDictionary</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">read_only</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;units&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                     <span class="n">default</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">,</span> <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Units for the integration variable&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_initial&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the initial value of time is not a design variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;fix_duration&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the  phase duration is not a design variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;input_initial&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the initial value of time (t_initial) is expected to be &#39;</span>
+                          <span class="s1">&#39;connected to an external output source.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;input_duration&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="nb">bool</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;If True, the phase duration (t_duration) is expected to be &#39;</span>
+                          <span class="s1">&#39;connected to an external output source.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;initial_val&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Value of the integration variable at the start of the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;initial_bounds&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Tuple of (lower, upper) bounds for the integration variable at &#39;</span>
+                          <span class="s1">&#39;the start of the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;initial_scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Scalar for the initial value of the integration variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;initial_adder&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Adder for the initial value of the integration variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;initial_ref0&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Zero-reference value for the initial value of the integration variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;initial_ref&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Unit-reference value for the initial value of the integration variable.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;duration_val&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Value of the duration of the integration variable across the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;duration_bounds&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">),</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Tuple of (lower, upper) bounds for the duration &#39;</span>
+                          <span class="s1">&#39;of the integration variable across the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;duration_scaler&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Scalar for the duration of the integration variable across the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;duration_adder&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Adder for the duration of the integration variable across the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;duration_ref0&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Zero-reference value for the duration of the integration variable &#39;</span>
+                          <span class="s1">&#39;across the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="s1">&#39;duration_ref&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Number</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;Unit-reference value for the duration of the integration variable &#39;</span>
+                          <span class="s1">&#39;across the phase.&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;targets in the ODE to which the integration variable is connected&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;time_phase_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;targets in the ODE to which the elapsed duration of the phase is &#39;</span>
+                          <span class="s1">&#39;connected&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;t_initial_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;targets in the ODE to which the initial time of the phase is &#39;</span>
+                          <span class="s1">&#39;connected&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">declare</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;t_duration_targets&#39;</span><span class="p">,</span> <span class="n">types</span><span class="o">=</span><span class="n">Iterable</span><span class="p">,</span> <span class="n">allow_none</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="p">[],</span>
+                     <span class="n">desc</span><span class="o">=</span><span class="s1">&#39;targets in the ODE to which the total duration of the phase is &#39;</span>
+                          <span class="s1">&#39;connected&#39;</span><span class="p">)</span></div></div>
+
+
+<span class="k">class</span> <span class="nc">_ForDocs</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>  <span class="c1"># pragma: no cover</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class is provided as a way to automatically display options dictionaries in the docs,</span>
+<span class="sd">    since these option dictionaries typically don&#39;t exist in instantiated form in the code base.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">time_options</span> <span class="o">=</span> <span class="n">TimeOptionsDictionary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">state_options</span> <span class="o">=</span> <span class="n">StateOptionsDictionary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">control_options</span> <span class="o">=</span> <span class="n">ControlOptionsDictionary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">design_parameter_options</span> <span class="o">=</span> <span class="n">DesignParameterOptionsDictionary</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">input_parameter_options</span> <span class="o">=</span> <span class="n">InputParameterOptionsDictionary</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

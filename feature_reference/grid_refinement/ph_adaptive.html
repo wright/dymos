@@ -1,0 +1,131 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>ph-Refinement &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Tandem Phases: Using different ODE simultaneously in time" href="../tandem_phases.html" />
+    <link rel="prev" title="Error Estimation" href="error_estimate.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../tandem_phases.html" title="Tandem Phases: Using different ODE simultaneously in time"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="error_estimate.html" title="Error Estimation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grid_refinement.html" accesskey="U">Grid Refinement</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="error_estimate.html"
+                        title="previous chapter">Error Estimation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../tandem_phases.html"
+                        title="next chapter">Tandem Phases:  Using different ODE simultaneously in time</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/feature_reference/grid_refinement/ph_adaptive.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="ph-refinement">
+<h1>ph-Refinement<a class="headerlink" href="#ph-refinement" title="Permalink to this headline">¶</a></h1>
+<p>The refinement strategy is p-then-h. That is, increasing the degree of the interpolating polynomials is the first choice,
+followed by increasing the number of segments in the grid.</p>
+<p>Assume the initial grid of a phase consists of <span class="math notranslate nohighlight">\(K\)</span> segments. If the tolerance (<span class="math notranslate nohighlight">\(\epsilon\)</span>) is not met for
+a given segment, that segment is refined either by increasing the order or by splitting it. Let <span class="math notranslate nohighlight">\(N_{min}\)</span> and
+<span class="math notranslate nohighlight">\(N_{max}\)</span> are the minimum and maximum allowed order for any given segment. If a segment <span class="math notranslate nohighlight">\(k\)</span> requiring
+refinement initially has order <span class="math notranslate nohighlight">\(n_k\)</span>, it is increased to order <span class="math notranslate nohighlight">\(n_k+p_k\)</span> where <span class="math notranslate nohighlight">\(p\)</span> is computed as</p>
+<div class="math notranslate nohighlight">
+\[p_k = \left[\text{log}_{n_k}\left(\frac{e_{max}^{(k)}}{\epsilon}\right)\right]\]</div>
+<p>The expression is rounded up to ensure an integer value is returned.</p>
+<p>If the new value for the segment order (<span class="math notranslate nohighlight">\(\tilde{n}_k = n_k + p_k\)</span>) is less than the maximum order, then order of
+that segment is increased on the new grid. If it exceeds the maximum value, the segment <span class="math notranslate nohighlight">\(k\)</span> is divided into
+<span class="math notranslate nohighlight">\(B_k\)</span> segments, where</p>
+<div class="math notranslate nohighlight">
+\[B_k = max\left(\left[\frac{\tilde{n}_k}{N_{min}}\right], 2\right)\]</div>
+<p>Each of the newly formed segments is set to have the lowest allowed order <span class="math notranslate nohighlight">\(N_{min}\)</span></p>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../tandem_phases.html" title="Tandem Phases: Using different ODE simultaneously in time"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="error_estimate.html" title="Error Estimation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="grid_refinement.html" >Grid Refinement</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,7 @@
+dymos.models.atmosphere
+-----------------------
+
+.. toctree::
+    :maxdepth: 1
+
+    models.atmosphere/atmos_1976

@@ -1,0 +1,33 @@
+:orphan:
+
+.. _source_documentation:
+
+********************
+Source Docs
+********************
+
+.. toctree::
+   :titlesonly:
+   :maxdepth: 1
+
+   packages/dymos.examples
+   packages/dymos.examples.aircraft_steady_flight
+   packages/dymos.examples.brachistochrone
+   packages/dymos.examples.cannonball
+   packages/dymos.examples.double_integrator
+   packages/dymos.examples.finite_burn_orbit_raise
+   packages/dymos.examples.min_time_climb
+   packages/dymos.examples.ssto
+   packages/dymos.models.atmosphere
+   packages/dymos.models.eom
+   packages/dymos.phase
+   packages/dymos.transcriptions
+   packages/dymos.transcriptions.common
+   packages/dymos.transcriptions.pseudospectral
+   packages/dymos.transcriptions.pseudospectral.components
+   packages/dymos.transcriptions.runge_kutta
+   packages/dymos.transcriptions.runge_kutta.components
+   packages/dymos.transcriptions.solve_ivp
+   packages/dymos.transcriptions.solve_ivp.components
+   packages/dymos.trajectory
+   packages/dymos.utils

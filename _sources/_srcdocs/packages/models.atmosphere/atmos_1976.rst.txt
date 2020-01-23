@@ -1,0 +1,16 @@
+.. index:: atmos_1976.py
+
+.. _dymos.models.atmosphere.atmos_1976.py:
+
+atmos_1976.py
+-------------
+
+.. automodule:: dymos.models.atmosphere.atmos_1976
+   :members:
+   :undoc-members:
+   :special-members: __init__, __contains__, __iter__, __setitem__, __getitem__
+   :show-inheritance:
+   :inherited-members:
+
+.. toctree::
+   :maxdepth: 1

@@ -1,0 +1,149 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Grid Refinement &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Error Estimation" href="error_estimate.html" />
+    <link rel="prev" title="Retrieving Results: Timeseries Outputs" href="../timeseries.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="error_estimate.html" title="Error Estimation"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../timeseries.html" title="Retrieving Results: Timeseries Outputs"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" accesskey="U">Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Grid Refinement</a><ul>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../timeseries.html"
+                        title="previous chapter">Retrieving Results: Timeseries Outputs</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="error_estimate.html"
+                        title="next chapter">Error Estimation</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/feature_reference/grid_refinement/grid_refinement.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="grid-refinement">
+<h1>Grid Refinement<a class="headerlink" href="#grid-refinement" title="Permalink to this headline">¶</a></h1>
+<p>Grid refinement is carried out via ph-refinement as proposed by Patterson, Hager, and Rao for Radau pseudospectral
+methods <a class="reference internal" href="#pattersonhagerrao2015" id="id1"><span>[PattersonHagerRao2015]</span></a>. A similar method was shown for a Gauss-Lobatto transcription by Lei et al
+<a class="reference internal" href="#leiliuliyeshao2017" id="id2"><span>[LeiLiuLiYeShao2017]</span></a>.</p>
+<p>Refinement is carried out iteratively in four steps:</p>
+<ol class="arabic simple">
+<li><p>The error in each phase is computed for each phase in the solved problem.</p></li>
+<li><p>The errors are compared to the tolerance to determine which phases require refinement.</p></li>
+<li><p>Phases are refined via ph-refinement and the new required grid is computed.</p></li>
+<li><p>The problem is re-solved on the new grid and the process repeats until the error tolerance is met for all phases.</p></li>
+</ol>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="error_estimate.html">Error Estimation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ph_adaptive.html">ph-Refinement</a></li>
+</ul>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<dl class="citation">
+<dt class="label" id="pattersonhagerrao2015"><span class="brackets"><a class="fn-backref" href="#id1">PattersonHagerRao2015</a></span></dt>
+<dd><p>Michael A. Patterson and William W. Hager and Anil V. Rao. “A ph Mesh Refinement Method for Optimal Control.” Optimal Control Applications and Methods 36.4 (2015): 398-421</p>
+</dd>
+<dt class="label" id="leiliuliyeshao2017"><span class="brackets"><a class="fn-backref" href="#id2">LeiLiuLiYeShao2017</a></span></dt>
+<dd><p>Humin Lei and Tao Liu and Deng Li and Jikun Ye and Lei Shao. ” Adaptive Mesh Iteration Method for Trajectory Optimization Based on Hermite-Pseudospectral Direct Transcription.” Mathematical Problems in Engineering (2017)</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="error_estimate.html" title="Error Estimation"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../timeseries.html" title="Retrieving Results: Timeseries Outputs"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

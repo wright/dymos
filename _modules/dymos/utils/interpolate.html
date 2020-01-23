@@ -1,0 +1,328 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>dymos.utils.interpolate &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" accesskey="U">Module code</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for dymos.utils.interpolate</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+
+<div class="viewcode-block" id="LagrangeBarycentricInterpolant"><a class="viewcode-back" href="../../../_srcdocs/packages/utils/interpolate.html#dymos.utils.interpolate.LagrangeBarycentricInterpolant">[docs]</a><span class="k">class</span> <span class="nc">LagrangeBarycentricInterpolant</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    LagrangeBarycentricInterpolant interpolates values and first derivatives</span>
+<span class="sd">    of set of data using barycentric interpolation of a Lagrange Polynomial.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    nodes : sequence</span>
+<span class="sd">        The nodes of the polynomial from -1 to 1 on which the values to</span>
+<span class="sd">        be interpolated are given.</span>
+
+<span class="sd">    Attributes</span>
+<span class="sd">    ----------</span>
+<span class="sd">    num_nodes : int</span>
+<span class="sd">        The number of nodes in the interpolated polynomial.</span>
+<span class="sd">    tau_i : np.array</span>
+<span class="sd">        The location of the nodes of the polynomial in tau space [-1 1]</span>
+<span class="sd">    x_0 : float</span>
+<span class="sd">        The x-value corresponding to the left-side of the interval (tau = -1)</span>
+<span class="sd">    x_f : float</span>
+<span class="sd">        The x-value corresponding to the right-side of the interval (tau = +1)</span>
+<span class="sd">    f_j : np.array</span>
+<span class="sd">        The values to be interpolated</span>
+<span class="sd">    w_b : np.array</span>
+<span class="sd">        The barycentric weights for the points in the interpolated polynomial</span>
+<span class="sd">    wbfj : np.array</span>
+<span class="sd">        An array of the precomputed product of the interpolated values and</span>
+<span class="sd">        the corresponding barycentric weights.</span>
+<span class="sd">    dx_dtau : float</span>
+<span class="sd">        Half the span from x0 to xf.  The ratio of x-space to</span>
+<span class="sd">        internal tau-space.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    The Barycentric formula is given in Eq. 3.3 of [1]_ as</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        p(x) = l(x) \\Sum \\frac{w_j f_j}{x-x_j}</span>
+
+<span class="sd">    where l(x) is</span>
+
+<span class="sd">    .. math::</span>
+
+<span class="sd">        l(x) = (x-x_0)(x-x_1)(x-x_2)...</span>
+
+<span class="sd">    The singularity in the denominator of p(x) at x = x_n is cancelled</span>
+<span class="sd">    by the the term (x-x_n) in l(x).</span>
+
+<span class="sd">    References</span>
+<span class="sd">    ----------</span>
+<span class="sd">    .. [1] Berrut, Jean-Paul, and Lloyd N. Trefethen.</span>
+<span class="sd">       &quot;Barycentric lagrange interpolation.&quot; Siam Review 46.3 (2004): 501-517.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LagrangeBarycentricInterpolant.__init__"><a class="viewcode-back" href="../../../_srcdocs/packages/utils/interpolate.html#dymos.utils.interpolate.LagrangeBarycentricInterpolant.__init__">[docs]</a>    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">nodes</span><span class="p">,</span> <span class="n">shape</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">nodes</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot; The number of nodes in the interpolated polynomial. &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">tau_i</span> <span class="o">=</span> <span class="n">nodes</span>
+        <span class="sd">&quot;&quot;&quot; The independent variable values at interpolation points. &quot;&quot;&quot;</span>
+
+        <span class="n">_shape</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">,)</span> <span class="o">+</span> <span class="n">shape</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_j</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">_shape</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot; An array of values to be interpolated. &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">w_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot; Barycentric weights for nodes in the interpolated polynomial.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Barycentric Weights</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">k</span> <span class="o">!=</span> <span class="n">j</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">w_b</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tau_i</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_i</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">_shape</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot; An array of the precomputed product of the interpolated</span>
+<span class="sd">            values and the corresponding barycentric weights.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">m</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">prod</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wbfj_flat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span><span class="p">,</span> <span class="n">newshape</span><span class="o">=</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">m</span><span class="p">))</span>
+        <span class="sd">&quot;&quot;&quot; A flattened view of wbfj&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+        <span class="sd">&quot;&quot;&quot; The value of the independent axis corresponding to $\tau = -1$ &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xf</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="sd">&quot;&quot;&quot; The value of the independent axis corresponding to $\tau = 1$ &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">dx_dtau</span> <span class="o">=</span> <span class="mf">1.0</span>
+        <span class="sd">&quot;&quot;&quot; Half the span from x0 to xf.  The ratio of x-space to</span>
+<span class="sd">        internal tau-space. &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_setup</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="LagrangeBarycentricInterpolant.x_to_tau"><a class="viewcode-back" href="../../../_srcdocs/packages/utils/interpolate.html#dymos.utils.interpolate.LagrangeBarycentricInterpolant.x_to_tau">[docs]</a>    <span class="k">def</span> <span class="nf">x_to_tau</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Converts the independent variable x to its corresponding</span>
+<span class="sd">        value of $\tau$.</span>
+
+<span class="sd">        Given bounds on the independent variable x0 and xf which</span>
+<span class="sd">        correspond to $\tau$ of -1 and 1, respectively, the returned value</span>
+<span class="sd">        will be the equivalent $tau$.</span>
+
+<span class="sd">        For instance, if x0 = 0 and xf = 100, x = 50 will have an equivalent</span>
+<span class="sd">        $\tau$ of 0 (halfway on [-1 1]).</span>
+
+<span class="sd">        :param x: The independent variable to be converted to $\tau$.</span>
+<span class="sd">        :return: The equivalent value of $\tau$ given x.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="o">-</span><span class="mf">1.0</span> <span class="o">+</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">x0</span><span class="p">)</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx_dtau</span></div>
+
+<div class="viewcode-block" id="LagrangeBarycentricInterpolant.setup"><a class="viewcode-back" href="../../../_srcdocs/packages/utils/interpolate.html#dymos.utils.interpolate.LagrangeBarycentricInterpolant.setup">[docs]</a>    <span class="k">def</span> <span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x0</span><span class="p">,</span> <span class="n">xf</span><span class="p">,</span> <span class="n">f_j</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prepare the interpolant for use by setting the</span>
+<span class="sd">        values to be interpolated.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x0 : float</span>
+<span class="sd">            The lower bound of the independent variable,</span>
+<span class="sd">            corresponding to $\tau = -1$</span>
+<span class="sd">        xf : float</span>
+<span class="sd">            The upper bound of the independent variable,</span>
+<span class="sd">            corresponding to $\tau = -1$</span>
+<span class="sd">        f_j : np.array</span>
+<span class="sd">            The values to be interpolated at the LGL nodes on [-1 1]</span>
+
+<span class="sd">        Raises</span>
+<span class="sd">        ------</span>
+<span class="sd">        ValueError</span>
+<span class="sd">            If the length of f_j is not the number of nodes in the interpolated</span>
+<span class="sd">            polynomial.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">f_j</span><span class="p">)</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;f_j must have </span><span class="si">{0}</span><span class="s2"> values&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_j</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="n">f_j</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x0</span> <span class="o">=</span> <span class="n">x0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xf</span> <span class="o">=</span> <span class="n">xf</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dx_dtau</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">xf</span> <span class="o">-</span> <span class="n">x0</span><span class="p">)</span>
+
+        <span class="n">fjT</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_j</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span><span class="p">[</span><span class="o">...</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">w_b</span> <span class="o">*</span> <span class="n">fjT</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_setup</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="LagrangeBarycentricInterpolant.eval"><a class="viewcode-back" href="../../../_srcdocs/packages/utils/interpolate.html#dymos.utils.interpolate.LagrangeBarycentricInterpolant.eval">[docs]</a>    <span class="k">def</span> <span class="nf">eval</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Interpolate the LGL polynomial at x.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : float</span>
+<span class="sd">            The independent variable value at which interpolation</span>
+<span class="sd">            is requested.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The interpolated value of the LGL polynomial at x.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_setup</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;LagrangeBarycentricInterpolant has not been setup&#39;</span><span class="p">)</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_to_tau</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="n">g</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_i</span>
+        <span class="n">l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones_like</span><span class="p">(</span><span class="n">g</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+                    <span class="k">continue</span>
+                <span class="n">l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*=</span> <span class="n">g</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">l</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wbfj_flat</span><span class="p">),</span> <span class="n">newshape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="LagrangeBarycentricInterpolant.eval_deriv"><a class="viewcode-back" href="../../../_srcdocs/packages/utils/interpolate.html#dymos.utils.interpolate.LagrangeBarycentricInterpolant.eval_deriv">[docs]</a>    <span class="k">def</span> <span class="nf">eval_deriv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">der</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot; Interpolate the derivative of the polynomial at x.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x : float</span>
+<span class="sd">            The independent variable value at which the derivative</span>
+<span class="sd">            is requested.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        float</span>
+<span class="sd">            The first derivative of the polynomial at x.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_setup</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;LagrangeBarycentricInterpolant has not been setup&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">der</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span><span class="p">:</span>
+            <span class="k">return</span> <span class="mf">0.0</span>
+
+        <span class="n">n</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_nodes</span>
+        <span class="n">tau</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">x_to_tau</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="n">g</span> <span class="o">=</span> <span class="n">tau</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">tau_i</span>
+        <span class="n">lprime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">der</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="n">prod</span> <span class="o">=</span> <span class="mf">1.0</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">{</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">}:</span>
+                            <span class="k">continue</span>
+                        <span class="n">prod</span> <span class="o">*=</span> <span class="n">g</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                    <span class="n">lprime</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">prod</span>
+            <span class="c1"># df_dtau = np.dot(lprime, self.wbfj)</span>
+            <span class="n">df_dtau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lprime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wbfj_flat</span><span class="p">),</span> <span class="n">newshape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">return</span> <span class="n">df_dtau</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx_dtau</span>
+        <span class="k">elif</span> <span class="n">der</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                    <span class="k">if</span> <span class="n">j</span> <span class="o">==</span> <span class="n">i</span><span class="p">:</span>
+                        <span class="k">continue</span>
+                    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                        <span class="k">if</span> <span class="n">k</span> <span class="ow">in</span> <span class="p">{</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">}:</span>
+                            <span class="k">continue</span>
+                        <span class="n">prod</span> <span class="o">=</span> <span class="mf">1.0</span>
+                        <span class="k">for</span> <span class="n">ii</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
+                            <span class="k">if</span> <span class="n">ii</span> <span class="ow">in</span> <span class="p">{</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">}:</span>
+                                <span class="k">continue</span>
+                            <span class="n">prod</span> <span class="o">*=</span> <span class="n">g</span><span class="p">[</span><span class="n">ii</span><span class="p">]</span>
+                        <span class="n">lprime</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+=</span> <span class="n">prod</span>
+            <span class="n">df_dtau</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">lprime</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">wbfj_flat</span><span class="p">),</span> <span class="n">newshape</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">wbfj</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="k">return</span> <span class="n">df_dtau</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">dx_dtau</span><span class="o">**</span><span class="mi">2</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Barycentric interpolant currently only supports up to &#39;</span>
+                             <span class="s1">&#39;second derivatives&#39;</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Module code</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

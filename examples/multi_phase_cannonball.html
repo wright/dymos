@@ -1,0 +1,668 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Multi-Phase Cannonball &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Multibranch Trajectory" href="multibranch_trajectory.html" />
+    <link rel="prev" title="Supersonic Interceptor Minimum Time Climb" href="min_time_climb.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="multibranch_trajectory.html" title="Multibranch Trajectory"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="min_time_climb.html" title="Supersonic Interceptor Minimum Time Climb"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" accesskey="U">Dymos by Example</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Multi-Phase Cannonball</a><ul>
+<li><a class="reference internal" href="#using-two-phases-to-capture-an-intermediate-boundary-constraint">Using two phases to capture an intermediate boundary constraint</a></li>
+<li><a class="reference internal" href="#designing-a-cannonball-for-maximum-range">Designing a cannonball for maximum range</a></li>
+<li><a class="reference internal" href="#building-and-running-the-problem">Building and running the problem</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="min_time_climb.html"
+                        title="previous chapter">Supersonic Interceptor Minimum Time Climb</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="multibranch_trajectory.html"
+                        title="next chapter">Multibranch Trajectory</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/examples/multi_phase_cannonball.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="multi-phase-cannonball">
+<h1>Multi-Phase Cannonball<a class="headerlink" href="#multi-phase-cannonball" title="Permalink to this headline">¶</a></h1>
+<p>Maximizing the range of a cannonball in a vacuum is a typical introductory problem for optimal
+control.  In this example we’re going to demonstrate a more multidisciplinary take on the problem.
+We will assume a density of the metal from which the cannonball is constructed, and a cannon that can
+fire any diameter cannonball but is limited to a maximum muzzle energy.  If we make the cannonball
+large it will be heavy and the cannon will not be capable of propelling it very far.  If we make
+the cannonball too small, it will have a low ballistic coefficient and not be able to sustain its
+momentum in the presence of atmospheric drag.  Somewhere between these two extremes is the cannonball
+radius which allows for maximum range flight.</p>
+<p>The presense of atmospheric drag also means that we typically want to launch the cannonball with more
+horizontal velocity, and thus use a launch angle less than 45 degrees.</p>
+<p>In this problem we will find the optimal design for the cannonball (its radius) and the optimal
+flight profile (its launch angle) simultaneously.</p>
+<div class="section" id="using-two-phases-to-capture-an-intermediate-boundary-constraint">
+<h2>Using two phases to capture an intermediate boundary constraint<a class="headerlink" href="#using-two-phases-to-capture-an-intermediate-boundary-constraint" title="Permalink to this headline">¶</a></h2>
+<p>This problem demonstrates the use of two phases to capture the state of the system at an event
+in the trajectory.  Here, we have the first phase (ascent) terminate when the flight path
+angle reaches zero (apogee).  The descent phase follows until the cannonball impacts the ground.</p>
+<p>The dynamics are given by</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}\frac{d v}{d t} &amp;= \frac{T}{m} \cos(\alpha) - \frac{D}{m} - g \sin(\gamma) \\
+\frac{d \gamma}{d t} &amp;= \frac{T}{mv} \sin(\alpha) + \frac{L}{mv} - \frac{g \cos(\gamma)}{v} \\
+\frac{d h}{d t} &amp;= v \sin(\gamma) \\
+\frac{d r}{d t} &amp;= v \cos(\gamma)\end{split}\]</div>
+<p>The initial conditions are</p>
+<div class="math notranslate nohighlight">
+\[\begin{split}r_0 &amp;= 0 \, \mathrm{m} \\
+h_0 &amp;= 100 \, \mathrm{m} \\
+v_0 &amp;= \mathrm{free} \\
+\gamma_0 &amp;= \mathrm{free} \\\end{split}\]</div>
+<p>and the final conditions are</p>
+<div class="math notranslate nohighlight">
+\[h_f &amp;= 0 \, \mathrm{m}\]</div>
+</div>
+<div class="section" id="designing-a-cannonball-for-maximum-range">
+<h2>Designing a cannonball for maximum range<a class="headerlink" href="#designing-a-cannonball-for-maximum-range" title="Permalink to this headline">¶</a></h2>
+<p>This problem demonstrates a very simple vehicle design capability that is run
+before the trajectory.</p>
+<p>We assume our cannon can shoot a cannonball with some fixed kinetic energy and that
+our cannonball is made of solid iron.  The volume (and mass) of the cannonball is proportional
+to its radius cubed, while the cross-sectional area is proportional to its radius squared.
+If we increase the size of the cannonball, the ballistic coefficient</p>
+<div class="math notranslate nohighlight">
+\[BC = \frac{m}{C_D A}\]</div>
+<p>will increase, meaning the cannonball overcome air resistance more easily and thus carry more distance.</p>
+<p>However, making the cannonball larger also increases its mass.  Our cannon can impart the cannonball
+with, at most, 400 kJ of kinetic energy.  So making the cannonball larger will decrease the
+initial velocity, and thus negatively impact its range.</p>
+<p>We therefore have a design that affects the objective in competing ways.  We cannot make the
+cannonball too large, as it will be too heavy to shoot.  We also cannot make the cannonball too
+small, as it will be more susceptible to air resistance.  Somewhere in between is the sweet spot
+that provides the maximum range cannonball.</p>
+</div>
+<div class="section" id="building-and-running-the-problem">
+<h2>Building and running the problem<a class="headerlink" href="#building-and-running-the-problem" title="Permalink to this headline">¶</a></h2>
+<p>The following code instantiates our problem, our trajectory, two phases, and links them
+accordingly.  The initial flight path angle is free, since 45 degrees is not necessarily optimal
+once air resistance is taken into account.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">openmdao.api</span> <span class="k">as</span> <span class="nn">om</span>
+<span class="kn">from</span> <span class="nn">openmdao.utils.assert_utils</span> <span class="kn">import</span> <span class="n">assert_rel_error</span>
+
+<span class="kn">import</span> <span class="nn">dymos</span> <span class="k">as</span> <span class="nn">dm</span>
+<span class="kn">from</span> <span class="nn">dymos.examples.cannonball.cannonball_ode</span> <span class="kn">import</span> <span class="n">CannonballODE</span>
+
+<span class="kn">from</span> <span class="nn">dymos.examples.cannonball.size_comp</span> <span class="kn">import</span> <span class="n">CannonballSizeComp</span>
+
+<span class="n">p</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">Problem</span><span class="p">(</span><span class="n">model</span><span class="o">=</span><span class="n">om</span><span class="o">.</span><span class="n">Group</span><span class="p">())</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">pyOptSparseDriver</span><span class="p">()</span>
+<span class="n">p</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">options</span><span class="p">[</span><span class="s1">&#39;optimizer&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SLSQP&#39;</span>
+<span class="n">p</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">declare_coloring</span><span class="p">()</span>
+
+<span class="n">external_params</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;external_params&#39;</span><span class="p">,</span> <span class="n">om</span><span class="o">.</span><span class="n">IndepVarComp</span><span class="p">())</span>
+
+<span class="n">external_params</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+<span class="n">external_params</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="s1">&#39;dens&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">7.87</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;g/cm**3&#39;</span><span class="p">)</span>
+
+<span class="n">external_params</span><span class="o">.</span><span class="n">add_design_var</span><span class="p">(</span><span class="s1">&#39;radius&#39;</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">upper</span><span class="o">=</span><span class="mf">0.10</span><span class="p">,</span> <span class="n">ref0</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="mf">0.10</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;size_comp&#39;</span><span class="p">,</span> <span class="n">CannonballSizeComp</span><span class="p">())</span>
+
+<span class="n">traj</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">add_subsystem</span><span class="p">(</span><span class="s1">&#39;traj&#39;</span><span class="p">,</span> <span class="n">dm</span><span class="o">.</span><span class="n">Trajectory</span><span class="p">())</span>
+
+<span class="n">transcription</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Radau</span><span class="p">(</span><span class="n">num_segments</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ascent</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">ode_class</span><span class="o">=</span><span class="n">CannonballODE</span><span class="p">,</span> <span class="n">transcription</span><span class="o">=</span><span class="n">transcription</span><span class="p">)</span>
+
+<span class="n">ascent</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">add_phase</span><span class="p">(</span><span class="s1">&#39;ascent&#39;</span><span class="p">,</span> <span class="n">ascent</span><span class="p">)</span>
+
+<span class="c1"># All initial states except flight path angle are fixed</span>
+<span class="c1"># Final flight path angle is fixed (we will set it to zero so that the phase ends at apogee)</span>
+<span class="n">ascent</span><span class="o">.</span><span class="n">set_time_options</span><span class="p">(</span><span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">duration_bounds</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                        <span class="n">duration_ref</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="n">ascent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.r_dot&#39;</span><span class="p">,</span>
+                 <span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ascent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.h_dot&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;atmos.h&#39;</span><span class="p">],</span>
+                 <span class="n">fix_initial</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">ascent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;gam&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;rad&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.gam_dot&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;eom.gam&#39;</span><span class="p">],</span>
+                 <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">ascent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.v_dot&#39;</span><span class="p">,</span>
+                 <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dynamic_pressure.v&#39;</span><span class="p">,</span> <span class="s1">&#39;eom.v&#39;</span><span class="p">,</span> <span class="s1">&#39;kinetic_energy.v&#39;</span><span class="p">],</span>
+                 <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">ascent</span><span class="o">.</span><span class="n">add_input_parameter</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;aero.S&#39;</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m**2&#39;</span><span class="p">)</span>
+<span class="n">ascent</span><span class="o">.</span><span class="n">add_input_parameter</span><span class="p">(</span><span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;eom.m&#39;</span><span class="p">,</span> <span class="s1">&#39;kinetic_energy.m&#39;</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kg&#39;</span><span class="p">)</span>
+
+<span class="c1"># Limit the muzzle energy</span>
+<span class="n">ascent</span><span class="o">.</span><span class="n">add_boundary_constraint</span><span class="p">(</span><span class="s1">&#39;kinetic_energy.ke&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;initial&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;J&#39;</span><span class="p">,</span>
+                               <span class="n">upper</span><span class="o">=</span><span class="mi">400000</span><span class="p">,</span> <span class="n">lower</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">ref</span><span class="o">=</span><span class="mi">100000</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,))</span>
+
+<span class="c1"># Second Phase (descent)</span>
+<span class="n">transcription</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">GaussLobatto</span><span class="p">(</span><span class="n">num_segments</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">order</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">compressed</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">descent</span> <span class="o">=</span> <span class="n">dm</span><span class="o">.</span><span class="n">Phase</span><span class="p">(</span><span class="n">ode_class</span><span class="o">=</span><span class="n">CannonballODE</span><span class="p">,</span> <span class="n">transcription</span><span class="o">=</span><span class="n">transcription</span><span class="p">)</span>
+
+<span class="n">traj</span><span class="o">.</span><span class="n">add_phase</span><span class="p">(</span><span class="s1">&#39;descent&#39;</span><span class="p">,</span> <span class="n">descent</span><span class="p">)</span>
+
+<span class="c1"># All initial states and time are free (they will be linked to the final states of ascent.</span>
+<span class="c1"># Final altitude is fixed (we will set it to zero so that the phase ends at ground impact)</span>
+<span class="n">descent</span><span class="o">.</span><span class="n">set_time_options</span><span class="p">(</span><span class="n">initial_bounds</span><span class="o">=</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span> <span class="n">duration_bounds</span><span class="o">=</span><span class="p">(</span><span class="o">.</span><span class="mi">5</span><span class="p">,</span> <span class="mi">100</span><span class="p">),</span>
+                         <span class="n">duration_ref</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;s&#39;</span><span class="p">)</span>
+<span class="n">descent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.r_dot&#39;</span><span class="p">,</span>
+                  <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">descent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.h_dot&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;atmos.h&#39;</span><span class="p">],</span>
+                  <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">descent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;gam&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;rad&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.gam_dot&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;eom.gam&#39;</span><span class="p">],</span>
+                  <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">descent</span><span class="o">.</span><span class="n">add_state</span><span class="p">(</span><span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m/s&#39;</span><span class="p">,</span> <span class="n">rate_source</span><span class="o">=</span><span class="s1">&#39;eom.v_dot&#39;</span><span class="p">,</span>
+                  <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;dynamic_pressure.v&#39;</span><span class="p">,</span> <span class="s1">&#39;eom.v&#39;</span><span class="p">,</span> <span class="s1">&#39;kinetic_energy.v&#39;</span><span class="p">],</span>
+                  <span class="n">fix_initial</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">fix_final</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="n">descent</span><span class="o">.</span><span class="n">add_input_parameter</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;aero.S&#39;</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m**2&#39;</span><span class="p">)</span>
+<span class="n">descent</span><span class="o">.</span><span class="n">add_input_parameter</span><span class="p">(</span><span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="n">targets</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;eom.m&#39;</span><span class="p">,</span> <span class="s1">&#39;kinetic_energy.m&#39;</span><span class="p">],</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kg&#39;</span><span class="p">)</span>
+
+<span class="n">descent</span><span class="o">.</span><span class="n">add_objective</span><span class="p">(</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="n">loc</span><span class="o">=</span><span class="s1">&#39;final&#39;</span><span class="p">,</span> <span class="n">scaler</span><span class="o">=-</span><span class="mf">1.0</span><span class="p">)</span>
+
+<span class="c1"># Add internally-managed design parameters to the trajectory.</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">add_design_parameter</span><span class="p">(</span><span class="s1">&#39;CD&#39;</span><span class="p">,</span>
+                          <span class="n">targets</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;aero.CD&#39;</span><span class="p">],</span> <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;aero.CD&#39;</span><span class="p">]},</span>
+                          <span class="n">val</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">opt</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">add_design_parameter</span><span class="p">(</span><span class="s1">&#39;CL&#39;</span><span class="p">,</span>
+                          <span class="n">targets</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;aero.CL&#39;</span><span class="p">],</span> <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;aero.CL&#39;</span><span class="p">]},</span>
+                          <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">opt</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">add_design_parameter</span><span class="p">(</span><span class="s1">&#39;T&#39;</span><span class="p">,</span>
+                          <span class="n">targets</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;eom.T&#39;</span><span class="p">],</span> <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;eom.T&#39;</span><span class="p">]},</span>
+                          <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;N&#39;</span><span class="p">,</span> <span class="n">opt</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">add_design_parameter</span><span class="p">(</span><span class="s1">&#39;alpha&#39;</span><span class="p">,</span>
+                          <span class="n">targets</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;eom.alpha&#39;</span><span class="p">],</span> <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;eom.alpha&#39;</span><span class="p">]},</span>
+                          <span class="n">val</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">,</span> <span class="n">opt</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+<span class="c1"># Add externally-provided design parameters to the trajectory.</span>
+<span class="c1"># In this case, we connect &#39;m&#39; to pre-existing input parameters named &#39;mass&#39; in each phase.</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">add_input_parameter</span><span class="p">(</span><span class="s1">&#39;m&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kg&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                         <span class="n">targets</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="s1">&#39;mass&#39;</span><span class="p">})</span>
+
+<span class="c1"># In this case, by omitting targets, we&#39;re connecting these parameters to parameters</span>
+<span class="c1"># with the same name in each phase.</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">add_input_parameter</span><span class="p">(</span><span class="s1">&#39;S&#39;</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m**2&#39;</span><span class="p">,</span> <span class="n">val</span><span class="o">=</span><span class="mf">0.005</span><span class="p">)</span>
+
+<span class="c1"># Link Phases (link time and all state variables)</span>
+<span class="n">traj</span><span class="o">.</span><span class="n">link_phases</span><span class="p">(</span><span class="n">phases</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">,</span> <span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="nb">vars</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;*&#39;</span><span class="p">])</span>
+
+<span class="c1"># Issue Connections</span>
+<span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;external_params.radius&#39;</span><span class="p">,</span> <span class="s1">&#39;size_comp.radius&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;external_params.dens&#39;</span><span class="p">,</span> <span class="s1">&#39;size_comp.dens&#39;</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;size_comp.mass&#39;</span><span class="p">,</span> <span class="s1">&#39;traj.input_parameters:m&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s1">&#39;size_comp.S&#39;</span><span class="p">,</span> <span class="s1">&#39;traj.input_parameters:S&#39;</span><span class="p">)</span>
+
+<span class="c1"># Finish Problem Setup</span>
+<span class="n">p</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">linear_solver</span> <span class="o">=</span> <span class="n">om</span><span class="o">.</span><span class="n">DirectSolver</span><span class="p">()</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">add_recorder</span><span class="p">(</span><span class="n">om</span><span class="o">.</span><span class="n">SqliteRecorder</span><span class="p">(</span><span class="s1">&#39;ex_two_phase_cannonball.db&#39;</span><span class="p">))</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+
+<span class="c1"># Set Initial Guesses</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;external_params.radius&#39;</span><span class="p">,</span> <span class="mf">0.05</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;external_params.dens&#39;</span><span class="p">,</span> <span class="mf">7.87</span><span class="p">,</span> <span class="n">units</span><span class="o">=</span><span class="s1">&#39;g/cm**3&#39;</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.design_parameters:CD&#39;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.design_parameters:CL&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.design_parameters:T&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.t_initial&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.t_duration&#39;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.states:r&#39;</span><span class="p">,</span> <span class="n">ascent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.states:h&#39;</span><span class="p">,</span> <span class="n">ascent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.states:v&#39;</span><span class="p">,</span> <span class="n">ascent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">200</span><span class="p">,</span> <span class="mi">150</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.states:gam&#39;</span><span class="p">,</span> <span class="n">ascent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">25</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">),</span>
+          <span class="n">units</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.t_initial&#39;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.t_duration&#39;</span><span class="p">,</span> <span class="mf">10.0</span><span class="p">)</span>
+
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.states:r&#39;</span><span class="p">,</span> <span class="n">descent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.states:h&#39;</span><span class="p">,</span> <span class="n">descent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.states:v&#39;</span><span class="p">,</span> <span class="n">descent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">150</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">))</span>
+<span class="n">p</span><span class="o">.</span><span class="n">set_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.states:gam&#39;</span><span class="p">,</span> <span class="n">descent</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">ys</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="o">-</span><span class="mi">45</span><span class="p">],</span> <span class="n">nodes</span><span class="o">=</span><span class="s1">&#39;state_input&#39;</span><span class="p">),</span>
+          <span class="n">units</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)</span>
+
+<span class="n">dm</span><span class="o">.</span><span class="n">run_problem</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.states:r&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+
+<span class="n">exp_out</span> <span class="o">=</span> <span class="n">traj</span><span class="o">.</span><span class="n">simulate</span><span class="p">()</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;optimal radius: </span><span class="si">{0:6.4f}</span><span class="s1"> m &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;external_params.radius&#39;</span><span class="p">,</span>
+                                                     <span class="n">units</span><span class="o">=</span><span class="s1">&#39;m&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;cannonball mass: </span><span class="si">{0:6.4f}</span><span class="s1"> kg &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;size_comp.mass&#39;</span><span class="p">,</span>
+                                                       <span class="n">units</span><span class="o">=</span><span class="s1">&#39;kg&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;launch angle: </span><span class="si">{0:6.4f}</span><span class="s1"> &#39;</span>
+      <span class="s1">&#39;deg &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.states:gam&#39;</span><span class="p">,</span>  <span class="n">units</span><span class="o">=</span><span class="s1">&#39;deg&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;maximum range: </span><span class="si">{0:6.4f}</span><span class="s1"> &#39;</span>
+      <span class="s1">&#39;m &#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.states:r&#39;</span><span class="p">)[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+
+<span class="n">time_imp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.time&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.time&#39;</span><span class="p">)}</span>
+
+<span class="n">time_exp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.time&#39;</span><span class="p">),</span>
+            <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.time&#39;</span><span class="p">)}</span>
+
+<span class="n">r_imp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.states:r&#39;</span><span class="p">),</span>
+         <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.states:r&#39;</span><span class="p">)}</span>
+
+<span class="n">r_exp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.states:r&#39;</span><span class="p">),</span>
+         <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.states:r&#39;</span><span class="p">)}</span>
+
+<span class="n">h_imp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.states:h&#39;</span><span class="p">),</span>
+         <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.states:h&#39;</span><span class="p">)}</span>
+
+<span class="n">h_exp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.states:h&#39;</span><span class="p">),</span>
+         <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.states:h&#39;</span><span class="p">)}</span>
+
+<span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r_imp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="n">h_imp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="s1">&#39;bo&#39;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r_imp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="n">h_imp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r_exp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="n">h_exp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">r_exp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="n">h_exp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+
+<span class="n">axes</span><span class="o">.</span><span class="n">set_xlabel</span><span class="p">(</span><span class="s1">&#39;range (m)&#39;</span><span class="p">)</span>
+<span class="n">axes</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="s1">&#39;altitude (m)&#39;</span><span class="p">)</span>
+
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="n">states</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;r&#39;</span><span class="p">,</span> <span class="s1">&#39;h&#39;</span><span class="p">,</span> <span class="s1">&#39;v&#39;</span><span class="p">,</span> <span class="s1">&#39;gam&#39;</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">state</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">states</span><span class="p">):</span>
+    <span class="n">x_imp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.states:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state</span><span class="p">)),</span>
+             <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.states:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state</span><span class="p">))}</span>
+
+    <span class="n">x_exp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.states:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state</span><span class="p">)),</span>
+             <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.states:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">state</span><span class="p">))}</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_imp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="n">x_imp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="s1">&#39;bo&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_imp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="n">x_imp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_exp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="n">x_exp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_exp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="n">x_exp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+
+<span class="n">params</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;CL&#39;</span><span class="p">,</span> <span class="s1">&#39;CD&#39;</span><span class="p">,</span> <span class="s1">&#39;T&#39;</span><span class="p">,</span> <span class="s1">&#39;alpha&#39;</span><span class="p">,</span> <span class="s1">&#39;mass&#39;</span><span class="p">,</span> <span class="s1">&#39;S&#39;</span><span class="p">]</span>
+<span class="n">fig</span><span class="p">,</span> <span class="n">axes</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">subplots</span><span class="p">(</span><span class="n">nrows</span><span class="o">=</span><span class="mi">6</span><span class="p">,</span> <span class="n">ncols</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">12</span><span class="p">,</span> <span class="mi">6</span><span class="p">))</span>
+<span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">param</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">params</span><span class="p">):</span>
+    <span class="n">p_imp</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.input_parameters:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param</span><span class="p">)),</span>
+        <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.input_parameters:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param</span><span class="p">))}</span>
+
+    <span class="n">p_exp</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;ascent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.ascent.timeseries.&#39;</span>
+                                       <span class="s1">&#39;input_parameters:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param</span><span class="p">)),</span>
+             <span class="s1">&#39;descent&#39;</span><span class="p">:</span> <span class="n">exp_out</span><span class="o">.</span><span class="n">get_val</span><span class="p">(</span><span class="s1">&#39;traj.descent.timeseries.&#39;</span>
+                                        <span class="s1">&#39;input_parameters:</span><span class="si">{0}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param</span><span class="p">))}</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">set_ylabel</span><span class="p">(</span><span class="n">param</span><span class="p">)</span>
+
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_imp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="n">p_imp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="s1">&#39;bo&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_imp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="n">p_imp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_exp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="n">p_exp</span><span class="p">[</span><span class="s1">&#39;ascent&#39;</span><span class="p">],</span> <span class="s1">&#39;b--&#39;</span><span class="p">)</span>
+    <span class="n">axes</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">time_exp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="n">p_exp</span><span class="p">[</span><span class="s1">&#39;descent&#39;</span><span class="p">],</span> <span class="s1">&#39;r--&#39;</span><span class="p">)</span>
+
+<span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="cell border-box-sizing code_cell rendered"><div class="output_area"><pre>--------------------------------------------------------------------------
+[[3492,1],0]: A high-performance Open MPI point-to-point messaging module
+was unable to find any relevant network interfaces:
+
+Module: OpenFabrics (openib)
+  Host: travis-job-137fcd62-bca7-4f70-92f5-29292b3975cd
+
+Another transport will be used instead, although this may result in
+lower performance.
+--------------------------------------------------------------------------
+--- Linkage Report [traj] ---
+     ascent      descent
+        time++         =  time--       
+        states:h++     =  states:h--   
+        states:v++     =  states:v--   
+        states:r++     =  states:r--   
+        states:gam++   =  states:gam-- 
+----------------------------
+Full total jacobian was computed 3 times, taking 0.103231 seconds.
+Total jacobian shape: (87, 88) 
+
+
+Jacobian shape: (87, 88)  (14.79% nonzero)
+FWD solves: 12   REV solves: 15
+Total colors vs. total size: 27 vs 87  (69.0% improvement)
+
+Sparsity computed using tolerance: 1e-25
+Most common number of nonzero entries (1132 of 7656) repeated 1 times out of 1 tolerances tested.
+
+Time to compute sparsity: 0.103231 sec.
+Time to compute coloring: 0.010239 sec.
+
+
+Optimization Problem -- Optimization using pyOpt_sparse
+================================================================================
+    Objective Function: _objfunc
+
+    Solution: 
+--------------------------------------------------------------------------------
+    Total Time:                    2.7875
+       User Objective Time :       0.9849
+       User Sensitivity Time :     1.1071
+       Interface Time :            0.5113
+       Opt Solver Time:            0.1843
+    Calls to Objective Function :     103
+    Calls to Sens Function :           87
+
+
+   Objectives
+      Index  Name                                                 Value          Optimum
+          0  traj.phases.descent.indep_states.states:r    -3.183254E+03     0.000000E+00
+
+   Variables (c - continuous, i - integer, d - discrete)
+      Index  Name                                            Type      Lower Bound            Value      Upper Bound     Status
+          0  external_params.radius_0                           c     0.000000E+00     3.539195E-01     1.000000E+00           
+          1  traj.phases.ascent.time_extents.t_duration_0       c     1.000000E-02     1.064960E-01     1.000000E+00           
+          2  traj.phases.ascent.indep_states.states:r_0         c    -1.000000E+21     3.231186E+02     1.000000E+21           
+          3  traj.phases.ascent.indep_states.states:r_1         c    -1.000000E+21     6.617157E+02     1.000000E+21           
+          4  traj.phases.ascent.indep_states.states:r_2         c    -1.000000E+21     7.552860E+02     1.000000E+21           
+          5  traj.phases.ascent.indep_states.states:r_3         c    -1.000000E+21     9.434874E+02     1.000000E+21           
+          6  traj.phases.ascent.indep_states.states:r_4         c    -1.000000E+21     1.165684E+03     1.000000E+21           
+          7  traj.phases.ascent.indep_states.states:r_5         c    -1.000000E+21     1.229408E+03     1.000000E+21           
+          8  traj.phases.ascent.indep_states.states:r_6         c    -1.000000E+21     1.364776E+03     1.000000E+21           
+          9  traj.phases.ascent.indep_states.states:r_7         c    -1.000000E+21     1.532513E+03     1.000000E+21           
+         10  traj.phases.ascent.indep_states.states:r_8         c    -1.000000E+21     1.581881E+03     1.000000E+21           
+         11  traj.phases.ascent.indep_states.states:r_9         c    -1.000000E+21     1.688966E+03     1.000000E+21           
+         12  traj.phases.ascent.indep_states.states:r_10        c    -1.000000E+21     1.825162E+03     1.000000E+21           
+         13  traj.phases.ascent.indep_states.states:r_11        c    -1.000000E+21     1.865882E+03     1.000000E+21           
+         14  traj.phases.ascent.indep_states.states:r_12        c    -1.000000E+21     1.955232E+03     1.000000E+21           
+         15  traj.phases.ascent.indep_states.states:r_13        c    -1.000000E+21     2.070651E+03     1.000000E+21           
+         16  traj.phases.ascent.indep_states.states:r_14        c    -1.000000E+21     2.105493E+03     1.000000E+21           
+         17  traj.phases.ascent.indep_states.states:h_0         c    -1.000000E+21     1.995390E+02     1.000000E+21           
+         18  traj.phases.ascent.indep_states.states:h_1         c    -1.000000E+21     4.003400E+02     1.000000E+21           
+         19  traj.phases.ascent.indep_states.states:h_2         c    -1.000000E+21     4.538400E+02     1.000000E+21           
+         20  traj.phases.ascent.indep_states.states:h_3         c    -1.000000E+21     5.574740E+02     1.000000E+21           
+         21  traj.phases.ascent.indep_states.states:h_4         c    -1.000000E+21     6.712350E+02     1.000000E+21           
+         22  traj.phases.ascent.indep_states.states:h_5         c    -1.000000E+21     7.017572E+02     1.000000E+21           
+         23  traj.phases.ascent.indep_states.states:h_6         c    -1.000000E+21     7.626709E+02     1.000000E+21           
+         24  traj.phases.ascent.indep_states.states:h_7         c    -1.000000E+21     8.293947E+02     1.000000E+21           
+         25  traj.phases.ascent.indep_states.states:h_8         c    -1.000000E+21     8.468893E+02     1.000000E+21           
+         26  traj.phases.ascent.indep_states.states:h_9         c    -1.000000E+21     8.809007E+02     1.000000E+21           
+         27  traj.phases.ascent.indep_states.states:h_10        c    -1.000000E+21     9.153053E+02     1.000000E+21           
+         28  traj.phases.ascent.indep_states.states:h_11        c    -1.000000E+21     9.234281E+02     1.000000E+21           
+         29  traj.phases.ascent.indep_states.states:h_12        c    -1.000000E+21     9.373014E+02     1.000000E+21           
+         30  traj.phases.ascent.indep_states.states:h_13        c    -1.000000E+21     9.463092E+02     1.000000E+21           
+         31  traj.phases.ascent.indep_states.states:h_14        c    -1.000000E+21     9.468532E+02     1.000000E+21           
+         32  traj.phases.ascent.indep_states.states:gam_0       c    -1.000000E+21     5.588811E-01     1.000000E+21           
+         33  traj.phases.ascent.indep_states.states:gam_1       c    -1.000000E+21     5.461726E-01     1.000000E+21           
+         34  traj.phases.ascent.indep_states.states:gam_2       c    -1.000000E+21     5.228744E-01     1.000000E+21           
+         35  traj.phases.ascent.indep_states.states:gam_3       c    -1.000000E+21     5.141316E-01     1.000000E+21           
+         36  traj.phases.ascent.indep_states.states:gam_4       c    -1.000000E+21     4.911925E-01     1.000000E+21           
+         37  traj.phases.ascent.indep_states.states:gam_5       c    -1.000000E+21     4.530551E-01     1.000000E+21           
+         38  traj.phases.ascent.indep_states.states:gam_6       c    -1.000000E+21     4.393603E-01     1.000000E+21           
+         39  traj.phases.ascent.indep_states.states:gam_7       c    -1.000000E+21     4.048514E-01     1.000000E+21           
+         40  traj.phases.ascent.indep_states.states:gam_8       c    -1.000000E+21     3.498274E-01     1.000000E+21           
+         41  traj.phases.ascent.indep_states.states:gam_9       c    -1.000000E+21     3.305542E-01     1.000000E+21           
+         42  traj.phases.ascent.indep_states.states:gam_10      c    -1.000000E+21     2.829367E-01     1.000000E+21           
+         43  traj.phases.ascent.indep_states.states:gam_11      c    -1.000000E+21     2.092132E-01     1.000000E+21           
+         44  traj.phases.ascent.indep_states.states:gam_12      c    -1.000000E+21     1.839306E-01     1.000000E+21           
+         45  traj.phases.ascent.indep_states.states:gam_13      c    -1.000000E+21     1.226160E-01     1.000000E+21           
+         46  traj.phases.ascent.indep_states.states:gam_14      c    -1.000000E+21     3.070923E-02     1.000000E+21           
+         47  traj.phases.ascent.indep_states.states:v_0         c    -1.000000E+21     5.753436E+02     1.000000E+21           
+         48  traj.phases.ascent.indep_states.states:v_1         c    -1.000000E+21     4.377122E+02     1.000000E+21           
+         49  traj.phases.ascent.indep_states.states:v_2         c    -1.000000E+21     3.333844E+02     1.000000E+21           
+         50  traj.phases.ascent.indep_states.states:v_3         c    -1.000000E+21     3.071239E+02     1.000000E+21           
+         51  traj.phases.ascent.indep_states.states:v_4         c    -1.000000E+21     2.628449E+02     1.000000E+21           
+         52  traj.phases.ascent.indep_states.states:v_5         c    -1.000000E+21     2.189800E+02     1.000000E+21           
+         53  traj.phases.ascent.indep_states.states:v_6         c    -1.000000E+21     2.076293E+02     1.000000E+21           
+         54  traj.phases.ascent.indep_states.states:v_7         c    -1.000000E+21     1.856223E+02     1.000000E+21           
+         55  traj.phases.ascent.indep_states.states:v_8         c    -1.000000E+21     1.616742E+02     1.000000E+21           
+         56  traj.phases.ascent.indep_states.states:v_9         c    -1.000000E+21     1.552348E+02     1.000000E+21           
+         57  traj.phases.ascent.indep_states.states:v_10        c    -1.000000E+21     1.422734E+02     1.000000E+21           
+         58  traj.phases.ascent.indep_states.states:v_11        c    -1.000000E+21     1.276770E+02     1.000000E+21           
+         59  traj.phases.ascent.indep_states.states:v_12        c    -1.000000E+21     1.237086E+02     1.000000E+21           
+         60  traj.phases.ascent.indep_states.states:v_13        c    -1.000000E+21     1.156786E+02     1.000000E+21           
+         61  traj.phases.ascent.indep_states.states:v_14        c    -1.000000E+21     1.067061E+02     1.000000E+21           
+         62  traj.phases.ascent.indep_states.states:v_15        c    -1.000000E+21     1.043151E+02     1.000000E+21           
+         63  traj.phases.descent.time_extents.t_initial_0       c     5.000000E-01     1.064960E+01     1.000000E+02           
+         64  traj.phases.descent.time_extents.t_duration_0      c     5.000000E-03     1.617372E-01     1.000000E+00           
+         65  traj.phases.descent.indep_states.states:r_0        c    -1.000000E+21     2.105493E+03     1.000000E+21           
+         66  traj.phases.descent.indep_states.states:r_1        c    -1.000000E+21     2.410921E+03     1.000000E+21           
+         67  traj.phases.descent.indep_states.states:r_2        c    -1.000000E+21     2.663716E+03     1.000000E+21           
+         68  traj.phases.descent.indep_states.states:r_3        c    -1.000000E+21     2.873405E+03     1.000000E+21           
+         69  traj.phases.descent.indep_states.states:r_4        c    -1.000000E+21     3.045144E+03     1.000000E+21           
+         70  traj.phases.descent.indep_states.states:r_5        c    -1.000000E+21     3.183254E+03     1.000000E+21           
+         71  traj.phases.descent.indep_states.states:h_0        c    -1.000000E+21     9.468532E+02     1.000000E+21           
+         72  traj.phases.descent.indep_states.states:h_1        c    -1.000000E+21     8.987452E+02     1.000000E+21           
+         73  traj.phases.descent.indep_states.states:h_2        c    -1.000000E+21     7.652649E+02     1.000000E+21           
+         74  traj.phases.descent.indep_states.states:h_3        c    -1.000000E+21     5.610567E+02     1.000000E+21           
+         75  traj.phases.descent.indep_states.states:h_4        c    -1.000000E+21     3.010268E+02     1.000000E+21           
+         76  traj.phases.descent.indep_states.states:gam_0      c    -1.000000E+21     4.008001E-19     1.000000E+21           
+         77  traj.phases.descent.indep_states.states:gam_1      c    -1.000000E+21    -3.251299E-01     1.000000E+21           
+         78  traj.phases.descent.indep_states.states:gam_2      c    -1.000000E+21    -6.397925E-01     1.000000E+21           
+         79  traj.phases.descent.indep_states.states:gam_3      c    -1.000000E+21    -8.902037E-01     1.000000E+21           
+         80  traj.phases.descent.indep_states.states:gam_4      c    -1.000000E+21    -1.071778E+00     1.000000E+21           
+         81  traj.phases.descent.indep_states.states:gam_5      c    -1.000000E+21    -1.201149E+00     1.000000E+21           
+         82  traj.phases.descent.indep_states.states:v_0        c    -1.000000E+21     1.043151E+02     1.000000E+21           
+         83  traj.phases.descent.indep_states.states:v_1        c    -1.000000E+21     9.031789E+01     1.000000E+21           
+         84  traj.phases.descent.indep_states.states:v_2        c    -1.000000E+21     8.870191E+01     1.000000E+21           
+         85  traj.phases.descent.indep_states.states:v_3        c    -1.000000E+21     9.333962E+01     1.000000E+21           
+         86  traj.phases.descent.indep_states.states:v_4        c    -1.000000E+21     9.961109E+01     1.000000E+21           
+         87  traj.phases.descent.indep_states.states:v_5        c    -1.000000E+21     1.050676E+02     1.000000E+21           
+
+   Constraints (i - inequality, e - equality)
+      Index  Name                                                             Type          Lower           Value           Upper    Status        Pi
+          0  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    2.696636E-09    0.000000E+00               2.23505E-01
+          1  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    1.586406E-09    0.000000E+00               7.52981E-01
+          2  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    9.757191E-10    0.000000E+00               1.03533E+00
+          3  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    7.958062E-10    0.000000E+00               2.24300E-01
+          4  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    5.684330E-10    0.000000E+00               7.55681E-01
+          5  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    3.712975E-10    0.000000E+00               1.02603E+00
+          6  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    3.220212E-10    0.000000E+00               2.22712E-01
+          7  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    2.339111E-10    0.000000E+00               7.54137E-01
+          8  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    1.451956E-10    0.000000E+00               6.04850E-01
+          9  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    1.245831E-10    0.000000E+00               1.19474E-01
+         10  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    7.918108E-11    0.000000E+00               3.70570E-01
+         11  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    3.262890E-11    0.000000E+00               4.84728E-01
+         12  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00    2.044603E-11    0.000000E+00               1.00898E-01
+         13  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00   -3.147872E-12    0.000000E+00               3.28055E-01
+         14  traj.phases.ascent.collocation_constraint.defects:r                 e   0.000000E+00   -2.884540E-11    0.000000E+00               4.38009E-01
+         15  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    4.480753E-09    0.000000E+00               5.83398E-01
+         16  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    2.060827E-09    0.000000E+00               5.25948E+01
+         17  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    9.490228E-10    0.000000E+00               1.28637E+02
+         18  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    6.608109E-10    0.000000E+00               4.42627E+01
+         19  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    3.478095E-10    0.000000E+00               2.23344E+02
+         20  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    1.313934E-10    0.000000E+00               3.62316E+02
+         21  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    8.605191E-11    0.000000E+00               9.36233E+01
+         22  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00    2.003741E-11    0.000000E+00               3.75633E+02
+         23  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00   -2.579590E-11    0.000000E+00               3.80337E+00
+         24  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00   -3.255323E-11    0.000000E+00               1.13862E+00
+         25  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00   -4.212548E-11    0.000000E+00               5.00583E+00
+         26  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00   -3.991970E-11    0.000000E+00               7.57192E+00
+         27  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00   -3.613620E-11    0.000000E+00               1.79615E+00
+         28  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00   -2.653179E-11    0.000000E+00               6.41662E+00
+         29  traj.phases.ascent.collocation_constraint.defects:h                 e   0.000000E+00   -7.218917E-12    0.000000E+00               8.71234E+00
+         30  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    4.611824E-13    0.000000E+00               1.33533E+00
+         31  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    2.838068E-13    0.000000E+00               1.33640E+00
+         32  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    1.968713E-13    0.000000E+00               1.33505E+00
+         33  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    1.495517E-13    0.000000E+00               5.33590E-01
+         34  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    1.054281E-13    0.000000E+00               5.20618E-01
+         35  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    6.810299E-14    0.000000E+00               7.45449E+02
+         36  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    5.760230E-14    0.000000E+00               7.46518E+02
+         37  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    4.104949E-14    0.000000E+00               2.17641E+02
+         38  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    2.483661E-14    0.000000E+00               6.50032E+00
+         39  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    2.003333E-14    0.000000E+00               1.18121E+00
+         40  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    1.237027E-14    0.000000E+00               3.82835E-04
+         41  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00    2.364687E-15    0.000000E+00               8.16149E+00
+         42  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00   -9.310956E-16    0.000000E+00               5.10851E+02
+         43  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00   -8.838019E-15    0.000000E+00               3.33059E-20
+         44  traj.phases.ascent.collocation_constraint.defects:gam               e   0.000000E+00   -2.132652E-14    0.000000E+00              -1.81430E+00
+         45  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    1.412783E-08    0.000000E+00               7.65774E-04
+         46  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    4.846360E-09    0.000000E+00               3.05464E-04
+         47  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    1.917432E-09    0.000000E+00              -7.03035E-05
+         48  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    1.369158E-09    0.000000E+00              -2.81606E-04
+         49  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    8.053179E-10    0.000000E+00              -2.71272E-04
+         50  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    4.496235E-10    0.000000E+00              -1.48167E-04
+         51  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    3.798785E-10    0.000000E+00               1.33607E-04
+         52  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    2.708532E-10    0.000000E+00              -2.63993E-04
+         53  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    1.814642E-10    0.000000E+00              -6.46851E-05
+         54  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    1.615933E-10    0.000000E+00               1.74956E-05
+         55  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    1.262781E-10    0.000000E+00               6.54939E-05
+         56  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    9.296626E-11    0.000000E+00               1.12419E-04
+         57  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    8.468607E-11    0.000000E+00               1.23875E-04
+         58  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    6.936101E-11    0.000000E+00               8.60097E-05
+         59  traj.phases.ascent.collocation_constraint.defects:v                 e   0.000000E+00    5.335491E-11    0.000000E+00              -2.51492E-05
+         60  traj.phases.descent.collocation_constraint.defects:r                e   0.000000E+00    2.829360E-11    0.000000E+00               2.77577E-02
+         61  traj.phases.descent.collocation_constraint.defects:r                e   0.000000E+00   -6.136793E-12    0.000000E+00               3.13564E-03
+         62  traj.phases.descent.collocation_constraint.defects:r                e   0.000000E+00   -4.982984E-11    0.000000E+00               1.00341E-02
+         63  traj.phases.descent.collocation_constraint.defects:r                e   0.000000E+00   -9.778646E-11    0.000000E+00               1.23849E-02
+         64  traj.phases.descent.collocation_constraint.defects:r                e   0.000000E+00   -1.383881E-10    0.000000E+00               2.62474E-03
+         65  traj.phases.descent.collocation_constraint.defects:h                e   0.000000E+00   -1.856265E-11    0.000000E+00               9.61851E-03
+         66  traj.phases.descent.collocation_constraint.defects:h                e   0.000000E+00   -6.383873E-11    0.000000E+00               1.37689E-02
+         67  traj.phases.descent.collocation_constraint.defects:h                e   0.000000E+00   -1.097842E-10    0.000000E+00              -8.27721E-05
+         68  traj.phases.descent.collocation_constraint.defects:h                e   0.000000E+00   -1.323203E-10    0.000000E+00               4.81734E-04
+         69  traj.phases.descent.collocation_constraint.defects:h                e   0.000000E+00   -1.347566E-10    0.000000E+00              -3.63964E-04
+         70  traj.phases.descent.collocation_constraint.defects:gam              e   0.000000E+00    1.049778E-13    0.000000E+00               1.03721E-05
+         71  traj.phases.descent.collocation_constraint.defects:gam              e   0.000000E+00    1.615406E-13    0.000000E+00               2.71001E-05
+         72  traj.phases.descent.collocation_constraint.defects:gam              e   0.000000E+00    8.594401E-14    0.000000E+00               3.12435E-05
+         73  traj.phases.descent.collocation_constraint.defects:gam              e   0.000000E+00    3.490283E-15    0.000000E+00               8.86251E-05
+         74  traj.phases.descent.collocation_constraint.defects:gam              e   0.000000E+00   -3.986329E-14    0.000000E+00               5.33951E-05
+         75  traj.phases.descent.collocation_constraint.defects:v                e   0.000000E+00    1.288008E-10    0.000000E+00              -3.60255E-05
+         76  traj.phases.descent.collocation_constraint.defects:v                e   0.000000E+00    8.436635E-11    0.000000E+00               1.93771E-04
+         77  traj.phases.descent.collocation_constraint.defects:v                e   0.000000E+00    8.150356E-11    0.000000E+00              -2.81800E-05
+         78  traj.phases.descent.collocation_constraint.defects:v                e   0.000000E+00    8.980195E-11    0.000000E+00              -4.55299E-04
+         79  traj.phases.descent.collocation_constraint.defects:v                e   0.000000E+00    9.647169E-11    0.000000E+00              -2.47378E-05
+         80  traj.linkages.ascent|descent_time                                   e   0.000000E+00    0.000000E+00    0.000000E+00              -3.61198E-04
+         81  traj.linkages.ascent|descent_h                                      e   0.000000E+00    0.000000E+00    0.000000E+00              -2.09504E-04
+         82  traj.linkages.ascent|descent_v                                      e   0.000000E+00    0.000000E+00    0.000000E+00              -4.22504E-03
+         83  traj.linkages.ascent|descent_r                                      e   0.000000E+00    0.000000E+00    0.000000E+00              -9.07459E-03
+         84  traj.linkages.ascent|descent_gam                                    e   0.000000E+00    4.008001E-19    0.000000E+00              -7.41731E-03
+         85  traj.phases.ascent.initial_boundary_constraints.initial_value:ke    i   0.000000E+00    4.000000E+00    4.000000E+00         u    -1.75170E-04
+
+--------------------------------------------------------------------------------
+
+[3183.25405878]
+
+Simulating trajectory traj
+INFO: checking out_of_order
+INFO: checking system
+INFO: checking solvers
+INFO: checking dup_inputs
+INFO: checking missing_recorders
+WARNING: The Problem has no recorder of any kind attached
+INFO: checking comp_has_no_outputs
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+  return f(*args, **kwds)
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/site-packages/petsc4py/lib/__init__.py:47: DeprecationWarning: the imp module is deprecated in favour of importlib; see the module&#x27;s documentation for alternative uses
+  import sys, os, imp, warnings
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: numpy.ufunc size changed, may indicate binary incompatibility. Expected 192 from C header, got 216 from PyObject
+  return f(*args, **kwds)
+/home/travis/miniconda/envs/PY3.6/lib/python3.6/site-packages/numpy/lib/type_check.py:546: DeprecationWarning: np.asscalar(a) is deprecated since NumPy v1.16, use a.item() instead
+  &#x27;a.item() instead&#x27;, DeprecationWarning, stacklevel=1)
+Done simulating trajectory traj
+optimal radius: 0.0419 m 
+cannonball mass: 2.4168 kg 
+launch angle: 32.0215 deg 
+maximum range: 3183.2541 m 
+</pre></div></div><div class="figure align-default">
+<img alt="../_images/doc_plot_8.png" src="../_images/doc_plot_8.png" />
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="multibranch_trajectory.html" title="Multibranch Trajectory"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="min_time_climb.html" title="Supersonic Interceptor Minimum Time Climb"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="examples.html" >Dymos by Example</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

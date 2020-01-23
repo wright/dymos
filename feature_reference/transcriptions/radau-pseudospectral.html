@@ -1,0 +1,235 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Radau Pseudospectral Method &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Runge-Kutta Shooting Method" href="runge-kutta.html" />
+    <link rel="prev" title="High-Order Gauss-Lobatto Collocation" href="gauss-lobatto.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="runge-kutta.html" title="Runge-Kutta Shooting Method"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="gauss-lobatto.html" title="High-Order Gauss-Lobatto Collocation"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="transcriptions.html" accesskey="U">Transcriptions</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Radau Pseudospectral Method</a><ul>
+<li><a class="reference internal" href="#advantages-of-the-radau-pseudospectral-method">Advantages of the Radau Pseudospectral Method</a></li>
+<li><a class="reference internal" href="#disdvantages-of-the-radau-pseudospectral-method">Disdvantages of the Radau Pseudospectral Method</a></li>
+<li><a class="reference internal" href="#references">References</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="gauss-lobatto.html"
+                        title="previous chapter">High-Order Gauss-Lobatto Collocation</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="runge-kutta.html"
+                        title="next chapter">Runge-Kutta Shooting Method</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../_sources/feature_reference/transcriptions/radau-pseudospectral.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="radau-pseudospectral-method">
+<h1>Radau Pseudospectral Method<a class="headerlink" href="#radau-pseudospectral-method" title="Permalink to this headline">¶</a></h1>
+<p>The Radau-Pseudospectral method performs collocation of an optimal control problem by collocating
+the dynamics at the Legendre Gauss Radau nodes <a class="reference internal" href="#garg2010" id="id1"><span>[Garg2010]</span></a>.  The general procedure
+for this method is as follows:</p>
+<ol class="arabic simple">
+<li><p>The phase is divided into polynomial segments on which the dynamics are assumed to be continuous.</p></li>
+<li><p>The states and controls are provided by the optimizer at the LGR nodes <em>plus the endpoint</em> of each segment.</p></li>
+<li><p>Given the state values, form a Lagrange polynomial on each segment and take its derivative to compute the approximate state rates at the collocation nodes.</p></li>
+<li><p>The dynamics are evaluated at the collocation nodes (the LGR nodes not including the endpoint), giving the computed state rates.</p></li>
+<li><p>The difference between the approximated state rates and computed state rates are given to the optimizer as constraints.</p></li>
+<li><p>The optimizer iterates on the state and control values until the optimality conditions are satisfied.</p></li>
+</ol>
+<p><strong>Step 1:  Phase Segmentation</strong></p>
+<p>Each phase is divided into polynomial segments.  The span and polynomial order of each segment
+define the “grid” within each segment.  The grid can be specified by the user or set by an
+automatic grid refinement algorithm, depending on the accuracy required.</p>
+<a class="reference internal image-reference" href="../../_images/01_segments1.png"><img alt="A phase divided into four equal segments" class="align-center" src="../../_images/01_segments1.png" style="width: 640.0px; height: 480.0px;" /></a>
+<p><strong>Step 2:  Discretization</strong></p>
+<p>Each segment is discretized by applying the Legendre-Gauss-Radau (LGR) nodes to normalized
+segment space (<span class="math notranslate nohighlight">\(\tau_{s}\)</span>)</p>
+<a class="reference internal image-reference" href="../../_images/02_nodes1.png"><img alt="The Legendre Gauss Lobatto nodes in each segment." class="align-center" src="../../_images/02_nodes1.png" style="width: 640.0px; height: 480.0px;" /></a>
+<p><strong>Step 3:  Input</strong></p>
+<p>The time of the phase is specified using the initial time (<span class="math notranslate nohighlight">\(t_{initial}\)</span>) and duration
+(<span class="math notranslate nohighlight">\(t_{duration}\)</span>) of the phase.  This sets the value of time at each <em>node</em> within the phase.</p>
+<p>The value of each state is given at each state discretization node (the even-index LGL nodes of
+each segment).  The user typically provides an initial guess for these values.  During optimization
+these are design variables.</p>
+<p>The value of each dynamic control is given at every node in the segment.
+The user typically provides an initial guess for these values.  During optimization these
+are design variables.</p>
+<a class="reference internal image-reference" href="../../_images/03_inputs1.png"><img alt="The discretized state and control values" class="align-center" src="../../_images/03_inputs1.png" style="width: 640.0px; height: 480.0px;" /></a>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>At each segment boundary the value of each state and control is given twice by default.
+The phase will automatically add constraints to ensure continuity at the segment boundary.
+Optionally, the user may provide the argument <cite>compressed=True</cite> upon Phase initialization,
+which specifies that state values are not to be given twice at each segment boundary.
+While this removes some variables from the problem, our experience has shown that the penalty
+is minimal, while using an ‘uncompressed’ transcription provides for better parallelization.</p>
+</div>
+<p><strong>Step 4:  Control Rate Interpolation</strong></p>
+<p>With the control values known at all nodes in the grid, we can form a Lagrange interpolation
+polynomial to compute the derivatives of the control at all nodes.  This allows us to use
+control rates as inputs to the ODE.  In Dymos the first and second derivatives of the
+controls are automatically computed.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>In a segment with 3 LGL nodes, the states are interpolated from values <em>and rates</em> at the two
+endpoint nodes, resulting in a 3th order polynomial.  The controls are interpolated from their
+values at all three nodes, resulting in a 2nd order polynomial.  Enforcing continuity in the
+second derivative of a control at segment bounds is not advisable when using High Order
+Gauss Lobatto with low-order segments.</p>
+</div>
+<a class="reference internal image-reference" href="../../_images/04_control_rate_interpolation1.png"><img alt="Control rates are interpolated." class="align-center" src="../../_images/04_control_rate_interpolation1.png" style="width: 640.0px; height: 480.0px;" /></a>
+<p><strong>Step 5:  State Rate Interpolation</strong></p>
+<p>Using the state and state rates at the discretization nodes, form a Langrange interpolating
+polynomial, giving the approximate state rates at the collocation nodes.</p>
+<a class="reference internal image-reference" href="../../_images/05_state_rate_interpolation.png"><img alt="The state rate time histories are interpolated." class="align-center" src="../../_images/05_state_rate_interpolation.png" style="width: 640.0px; height: 480.0px;" /></a>
+<p><strong>Step 6:  Evaluation of the ODE at All Nodes</strong></p>
+<p>The given ODE is evaluated at all nodes.  Evaluation at the collocation nodes (which don’t include
+the endpoint) provide collocation defects.  Evaluation at the endpoint provides values that are
+potentially needed as boundary constraints or objectives.</p>
+<a class="reference internal image-reference" href="../../_images/06_ode_eval_all.png"><img alt="The slope of the state-time history at all nodes has been evaluated." class="align-center" src="../../_images/06_ode_eval_all.png" style="width: 640.0px; height: 480.0px;" /></a>
+<p><strong>Step 7:  Evaluation of the Collocation Defects</strong></p>
+<p>The collocation <em>defects</em> (<span class="math notranslate nohighlight">\(\Delta\)</span>) are computed by finding the difference between the approximate state values
+at the collocation nodes (from Step 5) and the computed values at the collocation nodes (from Step 6).</p>
+<div class="math notranslate nohighlight">
+\[\Delta = f_{ode}(x_{col}, t_{col}, u_{col}) - x'_{col}\]</div>
+<p>If uncompressed transcription is used, the continuity defects involving the states, controls, and
+(optionally) control rates are also evaluated here.</p>
+<p><strong>Step 8:  Iterate Steps 3 Through 7</strong></p>
+<p>During optimization, the optimizer updates the design variables (initial time, final time,
+state values at the discretization nodes, and control values at all nodes) until the constraints
+posed in Step 7 are satisfied.  At this point the time-history of the state variable is <em>feasible</em>
+,provided the accuracy of our grid is sufficient.  If we have one or more control variable then
+we may have an infinite number of feasible trajectories.  In that case the optimizer will work to
+find the time history that minimizes our objective function.</p>
+<ul class="simple">
+<li><p>Requires an interpolation step that can sometimes make it less amenable to poor initial guesses.</p></li>
+<li><p>Requires two steps to evaluate the dynamics at all nodes in the phase (first the discretization
+nodes, then the collocation nodes).  This poses a performance bottleneck when using
+parallelization to evaluate the dynamics.</p></li>
+<li><p>State path constraints cannot be imposed with simple bounds on states, since the interpolation
+step may interpolate a state value beyond the limits imposed on the design values provided at
+the state discretization nodes.</p></li>
+</ul>
+<div class="section" id="advantages-of-the-radau-pseudospectral-method">
+<h2>Advantages of the Radau Pseudospectral Method<a class="headerlink" href="#advantages-of-the-radau-pseudospectral-method" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>No interpolation of states or controls is necessary, since the collocation nodes are a subset of the state discretization nodes.</p></li>
+<li><p>This method can evaluate the dynamics at all nodes in a phase in a single pass, while the Gauss-Lobatto method requires two passes (evaluate, interpolate, evaluate).  This removes a bottleneck when using parallelization to evaluate the dynamics.</p></li>
+</ul>
+</div>
+<div class="section" id="disdvantages-of-the-radau-pseudospectral-method">
+<h2>Disdvantages of the Radau Pseudospectral Method<a class="headerlink" href="#disdvantages-of-the-radau-pseudospectral-method" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>One point in a phase is not subject to collocation (either the initial point or the end point).  As a result,
+the control values at that node have less (or zero) impact on the collation defect constraints and are meaningless.  Various methods
+exist for working around this deficiency, such as constraining the control value or derivatives at the endpoint, or by running the
+optimization with both in LGR and reversed LGR (rLGR) modes and then taking the valid control from each.</p></li>
+</ul>
+</div>
+<div class="section" id="references">
+<h2>References<a class="headerlink" href="#references" title="Permalink to this headline">¶</a></h2>
+<dl class="citation">
+<dt class="label" id="garg2010"><span class="brackets"><a class="fn-backref" href="#id1">Garg2010</a></span></dt>
+<dd><p>Garg, Divya et al. “A Unified Framework for the Numerical Solution of Optimal Control Problems Using Pseudospectral Methods.” Automatica 46.11 (2010): 1843–1851.</p>
+</dd>
+</dl>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="runge-kutta.html" title="Runge-Kutta Shooting Method"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="gauss-lobatto.html" title="High-Order Gauss-Lobatto Collocation"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../feature_reference.html" >Dymos Feature Reference</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="transcriptions.html" >Transcriptions</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>

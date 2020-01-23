@@ -1,0 +1,7 @@
+dymos.models.eom
+----------------
+
+.. toctree::
+    :maxdepth: 1
+
+    models.eom/flight_path_eom_2d

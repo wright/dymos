@@ -1,0 +1,336 @@
+
+
+<!doctype html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>interpolate.py &#8212; dymos 0.14.2 documentation</title>
+    <link rel="stylesheet" href="../../../_static/bizstyle.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <script type="text/javascript" src="../../../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <script type="text/javascript" src="../../../_static/bizstyle.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="lagrange.py" href="lagrange.html" />
+    <link rel="prev" title="indexing.py" href="indexing.html" />
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <!--[if lt IE 9]>
+    <script type="text/javascript" src="_static/css3-mediaqueries.js"></script>
+    <![endif]-->
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lagrange.html" title="lagrange.py"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="indexing.html" title="indexing.py"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" accesskey="U">dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="indexing.html"
+                        title="previous chapter">indexing.py</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="lagrange.html"
+                        title="next chapter">lagrange.py</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../../../_sources/_srcdocs/packages/utils/interpolate.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3 id="searchlabel">Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../../../search.html" method="get">
+      <input type="text" name="q" aria-labelledby="searchlabel" />
+      <input type="submit" value="Go" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-dymos.utils.interpolate">
+<span id="interpolate-py"></span><span id="dymos-utils-interpolate-py"></span><span id="index-0"></span><h1>interpolate.py<a class="headerlink" href="#module-dymos.utils.interpolate" title="Permalink to this headline">¶</a></h1>
+<dl class="class">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant">
+<em class="property">class </em><code class="sig-prename descclassname">dymos.utils.interpolate.</code><code class="sig-name descname">LagrangeBarycentricInterpolant</code><span class="sig-paren">(</span><em class="sig-param">nodes</em>, <em class="sig-param">shape</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/interpolate.html#LagrangeBarycentricInterpolant"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>LagrangeBarycentricInterpolant interpolates values and first derivatives
+of set of data using barycentric interpolation of a Lagrange Polynomial.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>nodes</strong><span class="classifier">sequence</span></dt><dd><p>The nodes of the polynomial from -1 to 1 on which the values to
+be interpolated are given.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The Barycentric formula is given in Eq. 3.3 of <a class="reference internal" href="#r202e340595e0-1" id="id1"><span>[R202e340595e0-1]</span></a> as</p>
+<div class="math notranslate nohighlight">
+\[p(x) = l(x) \Sum \frac{w_j f_j}{x-x_j}\]</div>
+<p>where l(x) is</p>
+<div class="math notranslate nohighlight">
+\[l(x) = (x-x_0)(x-x_1)(x-x_2)...\]</div>
+<p>The singularity in the denominator of p(x) at x = x_n is cancelled
+by the the term (x-x_n) in l(x).</p>
+<p class="rubric">References</p>
+<dl class="citation">
+<dt class="label" id="r202e340595e0-1"><span class="brackets"><a class="fn-backref" href="#id1">R202e340595e0-1</a></span></dt>
+<dd><p>Berrut, Jean-Paul, and Lloyd N. Trefethen.
+“Barycentric lagrange interpolation.” Siam Review 46.3 (2004): 501-517.</p>
+</dd>
+</dl>
+<p class="rubric">Attributes</p>
+<table class="docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><strong>num_nodes</strong></p></td>
+<td><p>(int) The number of nodes in the interpolated polynomial.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>tau_i</strong></p></td>
+<td><p>(np.array) The location of the nodes of the polynomial in tau space [-1 1]</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>x_0</strong></p></td>
+<td><p>(float) The x-value corresponding to the left-side of the interval (tau = -1)</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>x_f</strong></p></td>
+<td><p>(float) The x-value corresponding to the right-side of the interval (tau = +1)</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>f_j</strong></p></td>
+<td><p>(np.array) The values to be interpolated</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>w_b</strong></p></td>
+<td><p>(np.array) The barycentric weights for the points in the interpolated polynomial</p></td>
+</tr>
+<tr class="row-odd"><td><p><strong>wbfj</strong></p></td>
+<td><p>(np.array) An array of the precomputed product of the interpolated values and the corresponding barycentric weights.</p></td>
+</tr>
+<tr class="row-even"><td><p><strong>dx_dtau</strong></p></td>
+<td><p>(float) Half the span from x0 to xf.  The ratio of x-space to internal tau-space.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.__init__">
+<code class="sig-name descname">__init__</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">nodes</em>, <em class="sig-param">shape</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/interpolate.html#LagrangeBarycentricInterpolant.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initialize self.  See help(type(self)) for accurate signature.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.dx_dtau">
+<code class="sig-name descname">dx_dtau</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.dx_dtau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Half the span from x0 to xf.  The ratio of x-space to
+internal tau-space.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.eval">
+<code class="sig-name descname">eval</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/interpolate.html#LagrangeBarycentricInterpolant.eval"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.eval" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate the LGL polynomial at x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">float</span></dt><dd><p>The independent variable value at which interpolation
+is requested.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>float</strong><span class="classifier"></span></dt><dd><p>The interpolated value of the LGL polynomial at x.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.eval_deriv">
+<code class="sig-name descname">eval_deriv</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em>, <em class="sig-param">der=1</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/interpolate.html#LagrangeBarycentricInterpolant.eval_deriv"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.eval_deriv" title="Permalink to this definition">¶</a></dt>
+<dd><p>Interpolate the derivative of the polynomial at x.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x</strong><span class="classifier">float</span></dt><dd><p>The independent variable value at which the derivative
+is requested.</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>float</strong><span class="classifier"></span></dt><dd><p>The first derivative of the polynomial at x.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.f_j">
+<code class="sig-name descname">f_j</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.f_j" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of values to be interpolated.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.num_nodes">
+<code class="sig-name descname">num_nodes</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.num_nodes" title="Permalink to this definition">¶</a></dt>
+<dd><p>The number of nodes in the interpolated polynomial.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.setup">
+<code class="sig-name descname">setup</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x0</em>, <em class="sig-param">xf</em>, <em class="sig-param">f_j</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/interpolate.html#LagrangeBarycentricInterpolant.setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.setup" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prepare the interpolant for use by setting the
+values to be interpolated.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><dl class="simple">
+<dt><strong>x0</strong><span class="classifier">float</span></dt><dd><p>The lower bound of the independent variable,
+corresponding to $  au = -1$</p>
+</dd>
+<dt><strong>xf</strong><span class="classifier">float</span></dt><dd><p>The upper bound of the independent variable,
+corresponding to $  au = -1$</p>
+</dd>
+<dt><strong>f_j</strong><span class="classifier">np.array</span></dt><dd><p>The values to be interpolated at the LGL nodes on [-1 1]</p>
+</dd>
+</dl>
+</dd>
+<dt class="field-even">Raises</dt>
+<dd class="field-even"><dl class="simple">
+<dt><strong>ValueError</strong></dt><dd><p>If the length of f_j is not the number of nodes in the interpolated
+polynomial.</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.tau_i">
+<code class="sig-name descname">tau_i</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.tau_i" title="Permalink to this definition">¶</a></dt>
+<dd><p>The independent variable values at interpolation points.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.w_b">
+<code class="sig-name descname">w_b</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.w_b" title="Permalink to this definition">¶</a></dt>
+<dd><p>Barycentric weights for nodes in the interpolated polynomial.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.wbfj">
+<code class="sig-name descname">wbfj</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.wbfj" title="Permalink to this definition">¶</a></dt>
+<dd><p>An array of the precomputed product of the interpolated
+values and the corresponding barycentric weights.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.wbfj_flat">
+<code class="sig-name descname">wbfj_flat</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.wbfj_flat" title="Permalink to this definition">¶</a></dt>
+<dd><p>A flattened view of wbfj</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.x0">
+<code class="sig-name descname">x0</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.x0" title="Permalink to this definition">¶</a></dt>
+<dd><p>The value of the independent axis corresponding to $   au = -1$</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.x_to_tau">
+<code class="sig-name descname">x_to_tau</code><span class="sig-paren">(</span><em class="sig-param">self</em>, <em class="sig-param">x</em><span class="sig-paren">)</span><a class="reference internal" href="../../../_modules/dymos/utils/interpolate.html#LagrangeBarycentricInterpolant.x_to_tau"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.x_to_tau" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts the independent variable x to its corresponding
+value of $      au$.</p>
+<p>Given bounds on the independent variable x0 and xf which
+correspond to $ au$ of -1 and 1, respectively, the returned value
+will be the equivalent $tau$.</p>
+<p>For instance, if x0 = 0 and xf = 100, x = 50 will have an equivalent
+$       au$ of 0 (halfway on [-1 1]).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>x</strong> – The independent variable to be converted to $ au$.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>The equivalent value of $      au$ given x.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="dymos.utils.interpolate.LagrangeBarycentricInterpolant.xf">
+<code class="sig-name descname">xf</code><em class="property"> = None</em><a class="headerlink" href="#dymos.utils.interpolate.LagrangeBarycentricInterpolant.xf" title="Permalink to this definition">¶</a></dt>
+<dd><p>The value of the independent axis corresponding to $   au = 1$</p>
+</dd></dl>
+
+</dd></dl>
+
+<div class="toctree-wrapper compound">
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="lagrange.html" title="lagrange.py"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="indexing.html" title="indexing.py"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../../../index.html">dymos 0.14.2 documentation</a> &#187;</li>
+          <li class="nav-item nav-item-1"><a href="../../index.html" >Source Docs</a> &#187;</li>
+          <li class="nav-item nav-item-2"><a href="../dymos.utils.html" >dymos.utils</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2017, National Aeronautics and Space Administration.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.3.1.
+    </div>
+  </body>
+</html>
