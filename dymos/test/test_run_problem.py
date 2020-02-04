@@ -12,6 +12,35 @@ from dymos.examples.brachistochrone.brachistochrone_ode import BrachistochroneOD
 
 from openmdao.utils.general_utils import set_pyoptsparse_opt
 
+def hs_problem_radau(tf):
+    p = om.Problem(model=om.Group())
+    p.driver = om.pyOptSparseDriver()
+    p.driver.declare_coloring()
+    _, optimizer = set_pyoptsparse_opt('SNOPT', fallback=True)
+    p.driver.options['optimizer'] = optimizer
+
+    traj = p.model.add_subsystem('traj', dm.Trajectory())
+    phase0 = traj.add_phase('phase0', dm.Phase(ode_class=HyperSensitiveODE,
+                                               transcription=dm.Radau(num_segments=30, order=3)))
+    phase0.set_time_options(fix_initial=True, fix_duration=True)
+    phase0.add_state('x', fix_initial=True, fix_final=False, rate_source='x_dot', targets=['x'])
+    phase0.add_state('xL', fix_initial=True, fix_final=False, rate_source='L', targets=['xL'])
+    phase0.add_control('u', opt=True, targets=['u'], rate_continuity=False)
+
+    phase0.add_boundary_constraint('x', loc='final', equals=1)
+
+    phase0.add_objective('xL', loc='final')
+
+    phase0.set_refine_options(refine=True)
+
+    p.setup(check=True)
+
+    p.set_val('traj.phase0.states:x', phase0.interpolate(ys=[1.5, 1], nodes='state_input'))
+    p.set_val('traj.phase0.states:xL', phase0.interpolate(ys=[0, 1], nodes='state_input'))
+    p.set_val('traj.phase0.t_initial', 0)
+    p.set_val('traj.phase0.t_duration', tf)
+    p.set_val('traj.phase0.controls:u', phase0.interpolate(ys=[-0.6, 2.4], nodes='control_input'))
+    return p
 
 class TestRunProblem(unittest.TestCase):
 
@@ -22,36 +51,8 @@ class TestRunProblem(unittest.TestCase):
                 os.remove(filename)
 
     def test_run_HS_problem_radau(self):
-        p = om.Problem(model=om.Group())
-        p.driver = om.pyOptSparseDriver()
-        p.driver.declare_coloring()
-        _, optimizer = set_pyoptsparse_opt('SNOPT', fallback=True)
-        p.driver.options['optimizer'] = optimizer
-
-        traj = p.model.add_subsystem('traj', dm.Trajectory())
-        phase0 = traj.add_phase('phase0', dm.Phase(ode_class=HyperSensitiveODE,
-                                                   transcription=dm.Radau(num_segments=30, order=3)))
-        phase0.set_time_options(fix_initial=True, fix_duration=True)
-        phase0.add_state('x', fix_initial=True, fix_final=False, rate_source='x_dot', targets=['x'])
-        phase0.add_state('xL', fix_initial=True, fix_final=False, rate_source='L', targets=['xL'])
-        phase0.add_control('u', opt=True, targets=['u'], rate_continuity=False)
-
-        phase0.add_boundary_constraint('x', loc='final', equals=1)
-
-        phase0.add_objective('xL', loc='final')
-
-        phase0.set_refine_options(refine=True)
-
-        p.setup(check=True)
-
         tf = 100
-
-        p.set_val('traj.phase0.states:x', phase0.interpolate(ys=[1.5, 1], nodes='state_input'))
-        p.set_val('traj.phase0.states:xL', phase0.interpolate(ys=[0, 1], nodes='state_input'))
-        p.set_val('traj.phase0.t_initial', 0)
-        p.set_val('traj.phase0.t_duration', tf)
-        p.set_val('traj.phase0.controls:u', phase0.interpolate(ys=[-0.6, 2.4],
-                                                               nodes='control_input'))
+        p = hs_problem_radau(tf)
         dm.run_problem(p, True)
 
         sqrt_two = np.sqrt(2)
@@ -78,6 +79,16 @@ class TestRunProblem(unittest.TestCase):
                          p.get_val('traj.phase0.timeseries.states:xL')[-1],
                          J,
                          tolerance=5e-4)
+
+    def test_run_HS_problem_radau_restart(self):
+        # first run a problem to generate a 'dymos_solution.db' restart file
+        tf = 100
+        p1 = hs_problem_radau(tf)
+        dm.run_problem(p1, True, refine_iteration_limit=2)
+
+        # create a new problem restarting from the last
+        p2 = hs_problem_radau(tf)
+        dm.run_problem(p2, True, refine_iteration_limit=4, restart='dymos_solution.db')
 
     def test_run_HS_problem_gl(self):
         p = om.Problem(model=om.Group())

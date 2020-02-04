@@ -6,7 +6,33 @@ import openmdao.api as om
 import os
 
 
-def run_problem(problem, refine=False, refine_iteration_limit=10):
+def run_problem(problem, refine=False, refine_iteration_limit=10, restart=None):
+    if restart:  # restore variables from database file specified by 'restart'
+        cr = om.CaseReader(restart)
+        case = cr.get_case(-1)  # BUG: use last case, ideally it should be the only one, but there are many
+
+        print('overwriting problem variables from restart file:', restart)
+        for k,v in case.outputs.items():
+            print('key:', k, 'new shape:', np.shape(v))
+            problem.set_val(k,v)
+
+        problem._initial_condition_cache = {}
+
+        #for k, v in case.get_constraints().items():
+        #    print('key:', k, 'shape:', np.shape(v))
+        #    problem.set_val(k, v)
+        #problem.setup()
+        #problem.final_setup()
+        #probIn = problem.model.list_inputs(prom_name=True)   # not available until model is setup, units=True?
+        #probOut = problem.model.list_outputs(prom_name=True) # not available until model is setup, units=True?
+
+        #design_vars = case.get_design_vars()
+        #objectives = case.get_objectives()
+
+    # record variables to database
+    problem.driver.add_recorder(om.SqliteRecorder('dymos_solution.db'))
+    problem.driver.recording_options['includes'] = ['*timeseries*']
+    problem.record_iteration('final')    # BUG: not working to save only last iteration?
     problem.run_driver()
 
     if refine:
