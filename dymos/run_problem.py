@@ -10,26 +10,27 @@ def run_problem(problem, refine=False, refine_iteration_limit=10, restart=None):
     if restart:  # restore variables from database file specified by 'restart'
         cr = om.CaseReader(restart)
         case = cr.get_case(-1)  # BUG: use last case, ideally it should be the only one, but there are many
-
         print('overwriting problem variables from restart file:', restart)
+
+        # change metadata from restart file
+        phases = {phase_path: problem.model._get_subsystem(phase_path)
+                  for phase_path in find_phases(problem.model)}
+        for p in phases.keys():  # e.g., 'traj.phases.phase0'
+            meta_options = cr.system_metadata[p]['component_options']['transcription'].options
+            prob_options = problem.model._get_subsystem(p).options['transcription'].options
+            for opt in meta_options:  # e,g, num_segments, segment_ends, order, compressed, solve_segments
+                print("%s['component_options']['transcription'].options['%s']" % (p, opt))
+                prob_options[opt] = meta_options[opt]
+
+        problem.setup()  # setup based on new metadata
+
         for k,v in case.outputs.items():
-            print('key:', k, 'new shape:', np.shape(v))
+            print(k, 'new shape:', np.shape(v))
             problem.set_val(k,v)
 
         problem._initial_condition_cache = {}
 
-        #for k, v in case.get_constraints().items():
-        #    print('key:', k, 'shape:', np.shape(v))
-        #    problem.set_val(k, v)
-        #problem.setup()
-        #problem.final_setup()
-        #probIn = problem.model.list_inputs(prom_name=True)   # not available until model is setup, units=True?
-        #probOut = problem.model.list_outputs(prom_name=True) # not available until model is setup, units=True?
-
-        #design_vars = case.get_design_vars()
-        #objectives = case.get_objectives()
-
-    # record variables to database
+    # record variables to database when running driver
     problem.driver.add_recorder(om.SqliteRecorder('dymos_solution.db'))
     problem.driver.recording_options['includes'] = ['*timeseries*']
     problem.record_iteration('final')    # BUG: not working to save only last iteration?
@@ -83,7 +84,6 @@ def find_phases(sys):
 
 
 def re_interpolate_solution(problem, phases, previous_solution):
-
     phase_paths = phases.keys()
 
     prev_ip_dict = {k: v['value'] for k, v in previous_solution['inputs']}

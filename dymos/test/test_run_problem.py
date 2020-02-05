@@ -84,11 +84,11 @@ class TestRunProblem(unittest.TestCase):
         # first run a problem to generate a 'dymos_solution.db' restart file
         tf = 100
         p1 = hs_problem_radau(tf)
-        dm.run_problem(p1, True, refine_iteration_limit=2)
+        dm.run_problem(p1, refine=True, refine_iteration_limit=2)
 
         # create a new problem restarting from the last
         p2 = hs_problem_radau(tf)
-        dm.run_problem(p2, True, refine_iteration_limit=4, restart='dymos_solution.db')
+        dm.run_problem(p2, refine=True, refine_iteration_limit=4, restart='dymos_solution.db')
 
     def test_run_HS_problem_gl(self):
         p = om.Problem(model=om.Group())
