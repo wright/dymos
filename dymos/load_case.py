@@ -63,6 +63,10 @@ def load_case(problem, case):
     case : Case object or OpenMDAO Problem instance
         A Case from a CaseRecorder file.
     """
+
+    #  TODO: use list_inputs and list_outputs with prom_name=True to avoid some of the compexity
+    #  of figuring out promoted_names manually here
+
     inputs = case.inputs if case.inputs is not None else None
     outputs = case.outputs if case.outputs is not None else None
     vars = dict(inputs)
@@ -117,6 +121,7 @@ def load_case(problem, case):
             problem[f'{phase_path}.controls:{control_name}'] = \
                 phase.interpolate(t_all, control_all, nodes='control_input')
 
+        #  TODO: Polynomial controls values should not be interpolated.
         for control_name, options in phase.polynomial_control_options.items():
             control_all = outputs[f'{phase_path}.timeseries.polynomial_controls:{control_name}']
             problem[f'{phase_path}.polynomial_controls:{control_name}'] = \

@@ -12,7 +12,7 @@ from dymos.examples.brachistochrone.brachistochrone_ode import BrachistochroneOD
 
 from openmdao.utils.general_utils import set_pyoptsparse_opt
 
-def hs_problem_radau(tf):
+def hs_problem_radau(tf, num_seg=30):
     p = om.Problem(model=om.Group())
     p.driver = om.pyOptSparseDriver()
     p.driver.declare_coloring()
@@ -21,7 +21,7 @@ def hs_problem_radau(tf):
 
     traj = p.model.add_subsystem('traj', dm.Trajectory())
     phase0 = traj.add_phase('phase0', dm.Phase(ode_class=HyperSensitiveODE,
-                                               transcription=dm.Radau(num_segments=30, order=3)))
+                                               transcription=dm.Radau(num_segments=num_seg, order=3)))
     phase0.set_time_options(fix_initial=True, fix_duration=True)
     phase0.add_state('x', fix_initial=True, fix_final=False, rate_source='x_dot', targets=['x'])
     phase0.add_state('xL', fix_initial=True, fix_final=False, rate_source='L', targets=['xL'])
@@ -42,6 +42,56 @@ def hs_problem_radau(tf):
     p.set_val('traj.phase0.controls:u', phase0.interpolate(ys=[-0.6, 2.4], nodes='control_input'))
     return p
 
+
+def brachistochrone_problem(num_seg=20):
+    p = om.Problem(model=om.Group())
+    p.driver = om.pyOptSparseDriver()
+    p.driver.declare_coloring()
+    p.driver.options['optimizer'] = 'SNOPT'
+    p.driver.opt_settings['iSumm'] = 6
+
+    traj = p.model.add_subsystem('traj', dm.Trajectory())
+    phase0 = traj.add_phase('phase0', dm.Phase(ode_class=BrachistochroneODE,
+                                               transcription=dm.Radau(num_segments=num_seg, order=3)))
+    phase0.set_time_options(fix_initial=True, fix_duration=False)
+    phase0.add_state('x', rate_source=BrachistochroneODE.states['x']['rate_source'],
+                     units=BrachistochroneODE.states['x']['units'],
+                     fix_initial=True, fix_final=False, solve_segments=False)
+    phase0.add_state('y', rate_source=BrachistochroneODE.states['y']['rate_source'],
+                     units=BrachistochroneODE.states['y']['units'],
+                     fix_initial=True, fix_final=False, solve_segments=False)
+    phase0.add_state('v', rate_source=BrachistochroneODE.states['v']['rate_source'],
+                     targets=BrachistochroneODE.states['v']['targets'],
+                     units=BrachistochroneODE.states['v']['units'],
+                     fix_initial=True, fix_final=False, solve_segments=False)
+    phase0.add_control('theta', targets=BrachistochroneODE.parameters['theta']['targets'],
+                       continuity=True, rate_continuity=True,
+                       units='deg', lower=0.01, upper=179.9)
+    phase0.add_input_parameter('g', targets=BrachistochroneODE.parameters['g']['targets'],
+                               units='m/s**2', val=9.80665)
+
+    phase0.add_boundary_constraint('x', loc='final', equals=10)
+    phase0.add_boundary_constraint('y', loc='final', equals=5)
+    # Minimize time at the end of the phase
+    phase0.add_objective('time_phase', loc='final', scaler=10)
+
+    phase0.set_refine_options(refine=True)
+
+    p.model.linear_solver = om.DirectSolver()
+    p.setup(check=True)
+
+    p.set_val('traj.phase0.t_initial', 0.0)
+    p.set_val('traj.phase0.t_duration', 2.0)
+
+    p.set_val('traj.phase0.states:x', phase0.interpolate(ys=[0, 10], nodes='state_input'))
+    p.set_val('traj.phase0.states:y', phase0.interpolate(ys=[10, 5], nodes='state_input'))
+    p.set_val('traj.phase0.states:v', phase0.interpolate(ys=[0, 9.9], nodes='state_input'))
+    p.set_val('traj.phase0.controls:theta', phase0.interpolate(ys=[5, 100], nodes='control_input'))
+    p.set_val('traj.phase0.input_parameters:g', 9.80665)
+
+    return p
+
+
 class TestRunProblem(unittest.TestCase):
 
     @classmethod
@@ -50,11 +100,7 @@ class TestRunProblem(unittest.TestCase):
             if os.path.exists(filename):
                 os.remove(filename)
 
-    def test_run_HS_problem_radau(self):
-        tf = 100
-        p = hs_problem_radau(tf)
-        dm.run_problem(p, True)
-
+    def _assert_solution(self, p, tf):
         sqrt_two = np.sqrt(2)
         val = sqrt_two * tf
         c1 = (1.5 * np.exp(-val) - 1) / (np.exp(-val) - np.exp(val))
@@ -80,15 +126,46 @@ class TestRunProblem(unittest.TestCase):
                          J,
                          tolerance=5e-4)
 
-    def test_run_HS_problem_radau_restart(self):
+    def test_run_HS_problem_radau(self):
+        tf = 100
+        p = hs_problem_radau(tf)
+        dm.run_problem(p, True)
+
+        self._assert_solution(p, tf)
+
+    def test_run_HS_problem_radau_restart_refine_no_interp(self):
+        """
+        Test that using a restart file which does not require reinterpolation of the solution
+        works with Radau transcription.  We're taking the grid structure from the first
+        problem's restart and initializing the second problem with that grid and the
+        associated values.
+        """
         # first run a problem to generate a 'dymos_solution.db' restart file
         tf = 100
-        p1 = hs_problem_radau(tf)
-        dm.run_problem(p1, refine=True, refine_iteration_limit=2)
+        p1 = hs_problem_radau(tf, num_seg=20)
+        dm.run_problem(p1, refine=True, refine_iteration_limit=10)
+
+        self._assert_solution(p1, tf)
 
         # create a new problem restarting from the last
         p2 = hs_problem_radau(tf)
-        dm.run_problem(p2, refine=True, refine_iteration_limit=4, restart='dymos_solution.db')
+        dm.run_problem(p2, refine=False, restart='dymos_solution.db')
+
+        self._assert_solution(p2, tf)
+
+    def test_run_brach_problem_radau_restart_no_refine_no_interp(self):
+        """
+        In this case the grid used in the second problem is the same as that
+        defined in the first problem (no refinement is performed).
+        """
+        # first run a problem to generate a 'dymos_solution.db' restart file
+        p1 = brachistochrone_problem()
+        dm.run_problem(p1, refine=False)
+
+        # create a new problem restarting from the last
+        p2 = brachistochrone_problem()
+        dm.run_problem(p2, refine=False, restart='dymos_solution.db')
+
 
     def test_run_HS_problem_gl(self):
         p = om.Problem(model=om.Group())
@@ -149,48 +226,6 @@ class TestRunProblem(unittest.TestCase):
                          tolerance=5e-4)
 
     def test_run_brachistochrone_problem(self):
-        p = om.Problem(model=om.Group())
-        p.driver = om.pyOptSparseDriver()
-        p.driver.declare_coloring()
-        p.driver.options['optimizer'] = 'SLSQP'
-
-        traj = p.model.add_subsystem('traj', dm.Trajectory())
-        phase0 = traj.add_phase('phase0', dm.Phase(ode_class=BrachistochroneODE,
-                                                   transcription=dm.Radau(num_segments=10, order=3)))
-        phase0.set_time_options(fix_initial=True, fix_duration=True)
-        phase0.add_state('x', rate_source=BrachistochroneODE.states['x']['rate_source'],
-                         units=BrachistochroneODE.states['x']['units'],
-                         fix_initial=True, fix_final=False, solve_segments=False)
-        phase0.add_state('y', rate_source=BrachistochroneODE.states['y']['rate_source'],
-                         units=BrachistochroneODE.states['y']['units'],
-                         fix_initial=True, fix_final=False, solve_segments=False)
-        phase0.add_state('v', rate_source=BrachistochroneODE.states['v']['rate_source'],
-                         targets=BrachistochroneODE.states['v']['targets'],
-                         units=BrachistochroneODE.states['v']['units'],
-                         fix_initial=True, fix_final=False, solve_segments=False)
-        phase0.add_control('theta', targets=BrachistochroneODE.parameters['theta']['targets'],
-                           continuity=True, rate_continuity=True,
-                           units='deg', lower=0.01, upper=179.9)
-        phase0.add_input_parameter('g', targets=BrachistochroneODE.parameters['g']['targets'],
-                                   units='m/s**2', val=9.80665)
-
-        phase0.add_boundary_constraint('x', loc='final', equals=10)
-        phase0.add_boundary_constraint('y', loc='final', equals=5)
-        # Minimize time at the end of the phase
-        phase0.add_objective('time_phase', loc='final', scaler=10)
-
-        phase0.set_refine_options(refine=True)
-
-        p.model.linear_solver = om.DirectSolver()
-        p.setup(check=True)
-
-        p.set_val('traj.phase0.t_initial', 0.0)
-        p.set_val('traj.phase0.t_duration', 2.0)
-
-        p.set_val('traj.phase0.states:x', phase0.interpolate(ys=[0, 10], nodes='state_input'))
-        p.set_val('traj.phase0.states:y', phase0.interpolate(ys=[10, 5], nodes='state_input'))
-        p.set_val('traj.phase0.states:v', phase0.interpolate(ys=[0, 9.9], nodes='state_input'))
-        p.set_val('traj.phase0.controls:theta', phase0.interpolate(ys=[5, 100], nodes='control_input'))
-        p.set_val('traj.phase0.input_parameters:g', 9.80665)
+        p = brachistochrone_problem()
 
         dm.run_problem(p, True)

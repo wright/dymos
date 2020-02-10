@@ -7,10 +7,28 @@ import os
 
 
 def run_problem(problem, refine=False, refine_iteration_limit=10, restart=None):
+    """
+    Run a dymos-specific OpenMDAO problem with some extra capabilities.
+
+    Parameters
+    ----------
+    problem
+    refine
+    refine_iteration_limit
+    restart
+
+    Returns
+    -------
+
+    """
     if restart:  # restore variables from database file specified by 'restart'
         cr = om.CaseReader(restart)
-        case = cr.get_case(-1)  # BUG: use last case, ideally it should be the only one, but there are many
+        case = cr.get_case(-1)
         print('overwriting problem variables from restart file:', restart)
+
+        # TODO: use the load case functionality here
+        # TODO: because it has the same name as an openmdao function but is dymos specific,
+        # TODO: we should probably rename it to restart(case) or load_restart(case).
 
         # change metadata from restart file
         phases = {phase_path: problem.model._get_subsystem(phase_path)
@@ -30,10 +48,10 @@ def run_problem(problem, refine=False, refine_iteration_limit=10, restart=None):
 
         problem._initial_condition_cache = {}
 
-    # record variables to database when running driver
+    # TODO: Ultimately this recorder should be attached to problem and then recorded manually
+    # TODO: Until POEM_011 is implemented, use a driver recorder.
     problem.driver.add_recorder(om.SqliteRecorder('dymos_solution.db'))
-    problem.driver.recording_options['includes'] = ['*timeseries*']
-    problem.record_iteration('final')    # BUG: not working to save only last iteration?
+    problem.driver.recording_options['includes'] = ['*']
     problem.run_driver()
 
     if refine:
