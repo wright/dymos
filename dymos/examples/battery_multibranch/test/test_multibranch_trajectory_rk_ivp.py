@@ -15,7 +15,7 @@ class TestBatteryRKIVP(unittest.TestCase):
     def test_dynamic_input_params(self):
         prob = om.Problem(model=om.Group())
 
-        traj = prob.model.add_subsystem('traj',  dm.Trajectory())
+        traj = prob.model.add_subsystem('traj',  dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
         # NOTE: using RK4 integration here
@@ -162,7 +162,7 @@ class TestBatteryRKIVP(unittest.TestCase):
     def test_static_input_params(self):
         prob = om.Problem(model=om.Group())
 
-        traj = prob.model.add_subsystem('traj',  dm.Trajectory())
+        traj = prob.model.add_subsystem('traj',  dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
         # NOTE: using RK4 integration here

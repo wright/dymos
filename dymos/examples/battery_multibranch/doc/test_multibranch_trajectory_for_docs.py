@@ -28,7 +28,7 @@ class TestBatteryBranchingPhasesForDocs(unittest.TestCase):
         num_seg = 5
         seg_ends, _ = lgl(num_seg + 1)
 
-        traj = prob.model.add_subsystem('traj', dm.Trajectory())
+        traj = prob.model.add_subsystem('traj', dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
         transcription = dm.Radau(num_segments=num_seg, order=5, segment_ends=seg_ends, compressed=False)

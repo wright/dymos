@@ -25,8 +25,13 @@ class Trajectory(om.Group):
     """
     A Trajectory object serves as a container for one or more Phases, as well as the linkage
     conditions between phases.
+
+    Parameters
+    ----------
+    parallel_phases: bool
+        If True, create Trajectory as a ParallelGroup rather than a Group.
     """
-    def __init__(self, **kwargs):
+    def __init__(self, parallel_phases=True, **kwargs):
         super(Trajectory, self).__init__(**kwargs)
 
         self.input_parameter_options = {}
@@ -34,6 +39,7 @@ class Trajectory(om.Group):
         self._linkages = OrderedDict()
         self._phases = OrderedDict()
         self._phase_add_kwargs = {}
+        self.options['parallel_phases'] = parallel_phases
 
     def initialize(self):
         """
@@ -41,6 +47,9 @@ class Trajectory(om.Group):
         """
         self.options.declare('sim_mode', types=bool, default=False,
                              desc='Used internally by Dymos when invoking simulate on a trajectory')
+
+        self.options.declare('parallel_phases', types=bool, default=True,
+                             desc='If True, create Trajectory as a ParallelGroup rather than a Group')
 
     def add_phase(self, name, phase, **kwargs):
         """
@@ -419,7 +428,8 @@ class Trajectory(om.Group):
         if self.input_parameter_options:
             self._setup_input_parameters()
 
-        phases_group = self.add_subsystem('phases', subsys=om.ParallelGroup(), promotes_inputs=['*'],
+        subsys_type = om.ParallelGroup() if self.options['parallel_phases'] else om.Group()
+        phases_group = self.add_subsystem('phases', subsys=subsys_type, promotes_inputs=['*'],
                                           promotes_outputs=['*'])
 
         for name, phs in self._phases.items():

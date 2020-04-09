@@ -38,7 +38,7 @@ class TestBatteryBranchingPhases(unittest.TestCase):
         num_seg = 5
         seg_ends, _ = lgl(num_seg + 1)
 
-        traj = prob.model.add_subsystem('traj',  dm.Trajectory())
+        traj = prob.model.add_subsystem('traj',  dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
         transcription = dm.Radau(num_segments=5, order=5, segment_ends=seg_ends, compressed=False)
@@ -235,7 +235,7 @@ class TestBatteryBranchingPhases(unittest.TestCase):
         num_seg = 5
         seg_ends, _ = lgl(num_seg + 1)
 
-        traj = prob.model.add_subsystem('traj',  dm.Trajectory())
+        traj = prob.model.add_subsystem('traj',  dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
         transcription = dm.Radau(num_segments=5, order=5, segment_ends=seg_ends, compressed=True)
@@ -296,7 +296,7 @@ class TestBatteryBranchingPhases(unittest.TestCase):
         num_seg = 5
         seg_ends, _ = lgl(num_seg + 1)
 
-        traj = prob.model.add_subsystem('traj',  dm.Trajectory())
+        traj = prob.model.add_subsystem('traj',  dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
         transcription = dm.Radau(num_segments=5, order=5, segment_ends=seg_ends, compressed=True)
@@ -394,7 +394,7 @@ class TestBatteryBranchingPhasesRungeKutta(unittest.TestCase):
         num_seg = 20
         seg_ends, _ = lgl(num_seg + 1)
 
-        traj = prob.model.add_subsystem('traj',  dm.Trajectory())
+        traj = prob.model.add_subsystem('traj',  dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
         transcription = dm.RungeKutta(num_segments=num_seg)
@@ -518,7 +518,7 @@ class TestBatteryBranchingPhasesRungeKutta(unittest.TestCase):
         num_seg = 20
         seg_ends, _ = lgl(num_seg + 1)
 
-        traj = prob.model.add_subsystem('traj',  dm.Trajectory())
+        traj = prob.model.add_subsystem('traj',  dm.Trajectory(parallel_phases=False))
 
         # First phase: normal operation.
 
