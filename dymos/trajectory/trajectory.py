@@ -11,6 +11,8 @@ import numpy as np
 
 import openmdao.api as om
 from openmdao.utils.general_utils import warn_deprecation
+from openmdao.core.analysis_error import AnalysisError
+import sys
 
 from ..utils.constants import INF_BOUND
 
@@ -765,7 +767,16 @@ class Trajectory(om.Group):
                                              skip_params=skip_params)
 
         print('\nSimulating trajectory {0}'.format(self.pathname))
-        sim_prob.run_model()
+        try:
+            sim_prob.run_model()
+        except AnalysisError as e:
+            self.showAnalysisErrorInfo(sim_prob)
+            raise e
         print('Done simulating trajectory {0}'.format(self.pathname))
 
         return sim_prob
+
+    def showAnalysisErrorInfo(self, prob):
+        """provide simulation results for those segments which were successfully propagated before the error"""
+        print('show partial results before AnalysisError here')
+        sys.stdout.flush()
